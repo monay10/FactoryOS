@@ -1,12 +1,5 @@
 {
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning",
-      "Microsoft.AspNetCore.HttpLogging": "Information"
-    }
-  },
-  "AllowedHosts": "*",
+  "//": "Sample configuration for the FactoryOS API host foundation. Bind these sections in appsettings. Every value is optional and falls back to a documented default. Never place real secrets here — the JWT signing key and other credentials are supplied out-of-band (environment, user-secrets or a ${secret:...} placeholder resolved by the configuration layer).",
   "Localization": {
     "DefaultCulture": "en",
     "SupportedCultures": [ "en", "tr" ]
@@ -14,7 +7,7 @@
   "Cors": {
     "PolicyName": "FactoryOSDefaultCors",
     "AllowAnyOrigin": false,
-    "AllowedOrigins": []
+    "AllowedOrigins": [ "https://app.example.com" ]
   },
   "ApiVersioning": {
     "DefaultVersion": "1.0",
@@ -25,10 +18,5 @@
     "Enabled": true,
     "Title": "FactoryOS API",
     "Description": "The FactoryOS Enterprise host API. Business capabilities are served by plugin modules under /m/<key>/."
-  },
-  "Infrastructure": {
-    "FileStorageRootPath": "storage",
-    "DefaultCacheTimeToLive": "00:05:00",
-    "DefaultCulture": "en"
   }
 }

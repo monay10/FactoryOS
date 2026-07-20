@@ -20,7 +20,7 @@ public sealed class TransactionTests
     public async Task Commit_flushes_the_unit_of_work()
     {
         var uow = new FakeUnitOfWork();
-        var manager = new TransactionManager(uow);
+        var manager = new TransactionManager([uow]);
 
         await using var transaction = await manager.BeginAsync();
         await transaction.CommitAsync();
@@ -32,7 +32,7 @@ public sealed class TransactionTests
     public async Task Rollback_leaves_the_unit_of_work_unflushed()
     {
         var uow = new FakeUnitOfWork();
-        var manager = new TransactionManager(uow);
+        var manager = new TransactionManager([uow]);
 
         await using var transaction = await manager.BeginAsync();
         await transaction.RollbackAsync();
@@ -43,11 +43,19 @@ public sealed class TransactionTests
     [Fact]
     public async Task A_disposed_transaction_reports_completion()
     {
-        var manager = new TransactionManager(new FakeUnitOfWork());
+        var manager = new TransactionManager([new FakeUnitOfWork()]);
 
         var transaction = (Transaction)await manager.BeginAsync();
         await transaction.CommitAsync();
 
         Assert.True(transaction.IsCompleted);
+    }
+
+    [Fact]
+    public async Task Beginning_a_transaction_without_a_unit_of_work_fails_clearly()
+    {
+        var manager = new TransactionManager([]);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => manager.BeginAsync());
     }
 }

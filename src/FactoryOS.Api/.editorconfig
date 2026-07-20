@@ -1,0 +1,8 @@
+# Scoped analyzer configuration for the API host project.
+#
+# The host middleware emits low-frequency, readability-first diagnostics (request completion, handled/unhandled
+# exceptions). The high-performance LoggerMessage source-generator pattern (CA1848) and its companion
+# argument-evaluation rule (CA1873) are not warranted for these, so they are disabled for this project only.
+[*.cs]
+dotnet_diagnostic.CA1848.severity = none
+dotnet_diagnostic.CA1873.severity = none

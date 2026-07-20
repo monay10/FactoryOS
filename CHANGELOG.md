@@ -7,6 +7,46 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0006 — ASP.NET Core host foundation (2026-07-20)
+
+Added
+- **`FactoryOS.Api`** — the cross-cutting HTTP host foundation, wired without touching any business module (no
+  controllers, no auth, no database). Offline constraint: OpenAPI/Swagger and API versioning are implemented on
+  framework primitives (the Swashbuckle/Asp.Versioning packages are unavailable in this environment):
+  - **Middleware** (`Middleware/HostMiddleware.cs`): `GlobalExceptionMiddleware` (maps the FactoryOS domain-exception
+    family to RFC 7807 problem details), `CorrelationIdMiddleware` (`X-Correlation-Id` in/out + log scope),
+    `RequestTimingMiddleware` (`X-Response-Time-ms`), `RequestLoggingMiddleware`, `CultureMiddleware`.
+  - **Health**: `HostSelfHealthCheck` + `GET /health`, `/health/live`, `/health/ready` (tag-filtered, JSON writer).
+  - **OpenAPI/Swagger**: `OpenApiDocumentFactory` serves a real OpenAPI 3.0.1 document at `/openapi/v1.json` and a
+    Swagger UI at `/swagger`; document version tracks the default API version.
+  - **API versioning foundation** (`Hosting/ApiVersioning.cs`): `ApiVersion` (parse/try-parse), `IApiVersionReader`/
+    `ApiVersionReader` (header → query → default).
+  - **ProblemDetails**: `AddProblemDetails` with a customizer that stamps `traceId`/`correlationId` on every problem.
+  - **Request localization** (supported cultures + default), **named CORS policy**, **response compression**,
+    **HTTP logging** — all bound from configuration.
+  - **Options** (`Hosting/ApiFoundationOptions.cs`): `CorsSettings`, `LocalizationSettings`, `ApiVersioningSettings`,
+    `OpenApiSettings`, bound from the `Cors`/`Localization`/`ApiVersioning`/`OpenApi` sections.
+  - **DI/pipeline** (`Hosting/ApiHostFoundation.cs`): `AddApiHostFoundation` / `UseApiHostFoundation` /
+    `MapApiHostFoundation`, composed into `Program.cs` around the existing Application, Infrastructure, plugin and
+    gateway wiring; the old inline `/health` map was replaced by the health-check endpoints. Scoped `.editorconfig`
+    disables CA1848/CA1873 (readability-first host logging).
+  - **Configuration**: `appsettings.json` / `appsettings.Development.json` gained `Logging`, `Localization`, `Cors`,
+    `ApiVersioning`, `OpenApi` and `Infrastructure` sections. No secrets are embedded (JWT signing key stays external).
+- **Tests** — 20 host tests in `FactoryOS.IntegrationTests/Api/` (a TestServer host exercising health/live/ready,
+  OpenAPI, Swagger, correlation + timing headers, and validation/not-found/unexpected → problem-details mapping) plus
+  version/OpenAPI/culture unit checks.
+
+Fixed
+- **`TransactionManager` (Commit 0005)** now takes an optional `IEnumerable<IUnitOfWork>` instead of a hard
+  `IUnitOfWork` dependency, so the host composes under DI validation (`ValidateOnBuild` in Development) when no
+  persistence unit of work is registered; `BeginAsync` throws a clear error if used without one. This unblocked host
+  startup, verified live: `GET /health`, `/health/live`, `/health/ready`, `/openapi/v1.json` and `/swagger` all
+  respond on a running host.
+
+Notes
+- Architecture impact: only the Api project (production) changed, plus the Infrastructure `TransactionManager`
+  correction and the two test projects. Build green (0/0); .NET tests 912 → 933.
+
 ### Commit 0005 — Infrastructure foundation (2026-07-20)
 
 Added

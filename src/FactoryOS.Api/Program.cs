@@ -10,6 +10,11 @@ var builder = WebApplication.CreateBuilder(args);
 // It is absent in a bare host, in which case no modules are loaded and the gateway serves an empty set.
 var pluginsRoot = Path.Combine(builder.Environment.ContentRootPath, "plugins");
 
+// Cross-cutting HTTP host foundation: problem details, health, versioning, OpenAPI, localization,
+// CORS, compression, HTTP logging and the request middleware. Registered before the module graph so
+// it wraps every request the gateway serves.
+builder.AddApiHostFoundation();
+
 // Composition root: the API host depends on the Application layer and, for wiring only, the
 // Infrastructure composition root. The plugin modules are discovered, loaded and configured here, and
 // the gateway exposes their inventory, UI registry and endpoints.
@@ -22,6 +27,10 @@ builder.Services
 
 var app = builder.Build();
 
+// The host foundation pipeline wraps everything below (exception boundary, correlation, timing,
+// logging, localization, CORS, compression).
+app.UseApiHostFoundation();
+
 // Optional demo seed: default roles (and a user per role when a password is configured) so a fresh
 // deployment has something to log in with. Disabled unless Identity:Seed:Enabled is set.
 var seedOptions = app.Services.GetRequiredService<IOptions<IdentitySeedOptions>>().Value;
@@ -30,7 +39,8 @@ if (seedOptions.Enabled)
     app.Services.GetRequiredService<DefaultIdentitySeeder>().Seed(seedOptions);
 }
 
-app.MapGet("/health", () => Results.Ok(new { status = "Healthy" }));
+// Health probes (/health, /health/live, /health/ready), the OpenAPI document and the Swagger UI.
+app.MapApiHostFoundation();
 
 // Credential login and refresh-token rotation, wired identically for the host and its integration tests.
 app.MapAuthEndpoints();

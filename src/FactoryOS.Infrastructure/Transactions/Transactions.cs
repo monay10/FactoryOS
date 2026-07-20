@@ -48,22 +48,34 @@ public sealed class Transaction : ITransaction
     public bool IsCompleted => _completed;
 }
 
-/// <summary>The default <see cref="ITransactionManager"/>, beginning transactions over the ambient unit of work.</summary>
+/// <summary>
+/// The default <see cref="ITransactionManager"/>, beginning transactions over the ambient unit of work. The unit of
+/// work is an optional dependency — resolved through <see cref="IEnumerable{T}"/> so a host without a persistence
+/// layer still composes — and a transaction can only be started once one is registered.
+/// </summary>
 public sealed class TransactionManager : ITransactionManager
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IUnitOfWork? _unitOfWork;
 
     /// <summary>Initializes a new instance of the <see cref="TransactionManager"/> class.</summary>
-    /// <param name="unitOfWork">The unit of work transactions commit through.</param>
-    public TransactionManager(IUnitOfWork unitOfWork)
+    /// <param name="unitOfWorks">The registered units of work; at most one is expected.</param>
+    public TransactionManager(IEnumerable<IUnitOfWork> unitOfWorks)
     {
-        _unitOfWork = Guard.AgainstNull(unitOfWork);
+        Guard.AgainstNull(unitOfWorks);
+        _unitOfWork = unitOfWorks.FirstOrDefault();
     }
 
     /// <inheritdoc />
     public Task<ITransaction> BeginAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+
+        if (_unitOfWork is null)
+        {
+            throw new InvalidOperationException(
+                "No IUnitOfWork is registered; a persistence layer must register one before a transaction can begin.");
+        }
+
         return Task.FromResult<ITransaction>(new Transaction(_unitOfWork));
     }
 }
