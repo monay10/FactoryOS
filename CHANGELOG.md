@@ -7,6 +7,37 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0004 — Application foundation (2026-07-20)
+
+Added
+- **`FactoryOS.Application`** — the application-layer contracts and pipeline (the project was previously empty). All
+  new; reconciled with the existing architecture (no duplicate abstractions, `.NET 10`):
+  - **CQRS** (`Messaging`): `ICommand`, `ICommand<T>`, `IQuery<T>`, `IStreamQuery<T>` + their handlers;
+    `IPipelineBehavior<TRequest,TResponse>`, `RequestHandlerDelegate<T>`, `IRequestContext`, `IAuthorizedRequest`.
+  - **Validation**: `IValidator<T>`, `ICommandValidator<T>`, `IQueryValidator<T,R>`, `IValidationResult`,
+    `ValidationResult`, `ValidationFailure`, `IValidationContext<T>`.
+  - **Services**: `IApplicationClock` (extends the reused `IDateTimeProvider`), `ICurrentUser`, `ICurrentTenant`,
+    `ICurrentFactory`, `ICurrentPlant`, `ICurrentWorkCenter`.
+  - **Notifications**: `INotificationPublisher`, `IDomainEventPublisher`, `IIntegrationEventPublisher`.
+  - **Caching**: `ICacheService`, `ICacheProvider`, `ICacheKeyGenerator`. **Transactions**: `ITransaction`,
+    `ITransactionManager`. **Files**: `IFileStorage`, `IFileProvider`. **Localization**: `ILocalizationService`.
+    **Mapping**: `IObjectMapper`.
+  - **Behaviors**: `LoggingBehavior`, `ValidationBehavior`, `PerformanceBehavior`, `TransactionBehavior`,
+    `AuthorizationBehavior` (open generics).
+  - **Configuration**: `ApplicationContext` (scoped `IRequestContext`), `ApplicationOptions`, `ApplicationConstants`.
+  - `AddApplication` now registers the options, scoped request context and the five behaviors in composition order.
+    Added `Microsoft.Extensions.Logging.Abstractions`; a scoped `.editorconfig` disables CA1040/CA1848/CA1873 for this
+    project (intentional CQRS marker interfaces + readability-first behavior logging).
+- **Tests** — 14 unit tests in `FactoryOS.Tests/Application/` (registration wiring; validation/authorization/
+  transaction/logging behaviors; `ValidationResult`; `ApplicationContext`). `FactoryOS.Tests` references
+  `FactoryOS.Application`.
+
+Notes
+- **Not duplicated**: the clock (`IApplicationClock` extends Domain's `IDateTimeProvider` rather than shadowing it);
+  integration events reuse `FactoryOS.Contracts.Events.IIntegrationEvent`.
+- Architecture impact: none to existing layers — only the (empty) Application project and the unit-test project
+  changed. Build green (0/0); .NET tests 846 → 860.
+
 ### Commit 0003 — Shared Kernel primitives (2026-07-20)
 
 Added

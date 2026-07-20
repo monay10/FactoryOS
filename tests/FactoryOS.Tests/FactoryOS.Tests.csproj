@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\FactoryOS.Shared\FactoryOS.Shared.csproj" />
+    <ProjectReference Include="..\..\src\FactoryOS.Application\FactoryOS.Application.csproj" />
     <ProjectReference Include="..\..\src\FactoryOS.Domain\FactoryOS.Domain.csproj" />
     <ProjectReference Include="..\..\src\FactoryOS.Connectors\FactoryOS.Connectors.csproj" />
     <ProjectReference Include="..\..\src\FactoryOS.Iot\FactoryOS.Iot.csproj" />

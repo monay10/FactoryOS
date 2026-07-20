@@ -1,0 +1,12 @@
+# Scoped analyzer configuration for the Application layer.
+#
+# CQRS/messaging marker interfaces (ICommand, ICommand<T>, IQuery<T>, IStreamQuery<T>) are intentional, empty
+# type markers that drive handler dispatch and generic constraints. CA1040 ("avoid empty interfaces") does not
+# apply to this deliberate pattern, so it is disabled for this project only.
+[*.cs]
+dotnet_diagnostic.CA1040.severity = none
+
+# Pipeline behaviors log cross-cutting diagnostics; the high-performance LoggerMessage pattern (CA1848) is not
+# warranted for these low-frequency, readability-first log statements.
+dotnet_diagnostic.CA1848.severity = none
+dotnet_diagnostic.CA1873.severity = none
