@@ -48,7 +48,7 @@ public sealed class JwtAccessTokenService : IAccessTokenService
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = key,
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero,
+            ClockSkew = TimeSpan.FromSeconds(_options.ClockSkewSeconds),
         };
     }
 

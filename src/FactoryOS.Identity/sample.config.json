@@ -1,0 +1,32 @@
+{
+  "//": "Sample configuration for the FactoryOS Identity foundation. Bind these sections into appsettings. The JWT signing key is a SECRET — never commit a real key. Supply it out-of-band via environment (Jwt__SigningKey), user-secrets, or a ${secret:...} placeholder resolved by the configuration layer. The key must be at least 32 bytes (256 bits).",
+  "Jwt": {
+    "Issuer": "factoryos",
+    "Audience": "factoryos",
+    "SigningKey": "${secret:Jwt:SigningKey}",
+    "AccessTokenMinutes": 15,
+    "RefreshTokenDays": 7,
+    "ClockSkewSeconds": 0
+  },
+  "Identity": {
+    "RequireUniqueUserName": true,
+    "RequireTenantScope": true,
+    "PasswordPolicy": {
+      "MinimumLength": 12,
+      "RequireUppercase": true,
+      "RequireLowercase": true,
+      "RequireDigit": true,
+      "RequireNonAlphanumeric": true
+    },
+    "Lockout": {
+      "Enabled": true,
+      "MaxFailedAccessAttempts": 5,
+      "LockoutMinutes": 15
+    },
+    "Session": {
+      "IdleTimeoutMinutes": 30,
+      "AbsoluteTimeoutHours": 8,
+      "SlidingExpiration": true
+    }
+  }
+}

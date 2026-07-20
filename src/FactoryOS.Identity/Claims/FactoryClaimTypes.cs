@@ -21,6 +21,9 @@ public static class FactoryClaimTypes
     /// <summary>A role claim (one per assigned role).</summary>
     public const string Role = "factoryos:role";
 
+    /// <summary>The session identifier claim, present when a token is bound to a server-side session.</summary>
+    public const string Session = "factoryos:session";
+
     /// <summary>A permission claim (one per effective permission).</summary>
     public const string Permission = "factoryos:permission";
 }

@@ -7,6 +7,41 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0008 — Identity foundation (2026-07-20)
+
+Added
+- **`FactoryOS.Identity`** — completed the identity foundation on top of the substantial layer that already existed
+  (`User`/`Role`/`Permission`/`Tenant`/`Organization`, `Pbkdf2PasswordHasher`, `JwtAccessTokenService`,
+  `RefreshTokenService`, `PermissionAuthorizer`, `ClaimsFactory`, in-memory stores, seeder). Only the Identity project
+  changed. Existing abstractions were **reused, not duplicated**: `User`/`Role`/`Permission` serve as the application
+  user/role/permission, `IAccessTokenService`/`JwtAccessTokenService` as the token service, and
+  `IPasswordHasher`/`Pbkdf2PasswordHasher` as the password hasher — no parallel `ITokenService`/`PasswordHasher` was
+  introduced. New additions:
+  - **Configuration** (`Configuration/`): `IdentityConstants`, `IdentityOptions` with nested `PasswordPolicyOptions`,
+    `LockoutOptions` and `SessionOptions` (bound from `Identity`, `Identity:PasswordPolicy`, `Identity:Session`).
+  - **Context & accessors** (`Context/`, `Execution/`): scoped `IdentityContext` (initialize-once ambient principal;
+    tenant always in scope), `ICurrentPrincipalAccessor`/`CurrentPrincipalAccessor`,
+    `ICurrentClaimsAccessor`/`CurrentClaimsAccessor`; `ApplicationClaim` claim descriptor and a `Session` claim type.
+  - **Password policy** (`Policies/`): `IPasswordPolicy`/`PasswordPolicyValidator` (minimum length, uppercase,
+    lowercase, digit, non-alphanumeric).
+  - **Account lockout** (`Lockout/`): `IAccountLockoutService`/`AccountLockoutService`, `ILoginAttemptStore` +
+    in-memory store, `LockoutState` (threshold-based lock, timed unlock, reset on success, inert when disabled).
+  - **Sessions** (`Sessions/`): `ApplicationSession` (sliding idle + absolute timeout), `ISessionStore` + in-memory
+    store, `ISessionService`/`SessionService` (create, validate, touch, revoke, revoke-all-for-user).
+  - **Identity façade** (`Services/`): `IIdentityService`/`IdentityService` (register user with policy + uniqueness +
+    tenant checks, change password, and permission/role/claim resolution) composing the existing stores, hasher and
+    claim factory.
+  - **JWT** (`Tokens/`): added configurable `ClockSkewSeconds` to `JwtOptions`, applied by `JwtAccessTokenService`
+    (default `0` preserves exact expiry). Issuer, audience, signing credentials and expiration remain as before.
+  - **DI** (`Foundation/IdentityFoundation.cs`): `AddIdentityFoundation()` binds the identity/password-policy/session
+    sections and registers the context, accessors, password policy, lockout, sessions and identity façade on top of the
+    base `AddIdentityModule` (idempotent via `TryAdd`).
+- **Tests** — 21 unit tests (`FactoryOS.Tests/Identity/IdentityFoundationTests.cs`: DI resolution, password policy,
+  lockout lifecycle, session idle/absolute expiry + revocation, user registration/resolution, identity context and
+  current accessors) and 3 integration tests (`FactoryOS.IntegrationTests/Identity/`: a registered user's JWT validates
+  back into a tenant/permission-carrying principal, session create/validate/revoke through the wired service, and
+  refresh-token issue/validate/rotate with replay rejection).
+
 ### Commit 0007 — Persistence foundation (2026-07-20)
 
 Added

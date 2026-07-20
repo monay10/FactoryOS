@@ -20,4 +20,10 @@ public sealed class JwtOptions
 
     /// <summary>Gets or sets the refresh-token lifetime in days.</summary>
     public int RefreshTokenDays { get; set; } = 7;
+
+    /// <summary>
+    /// Gets or sets the permitted clock skew, in seconds, applied when validating a token's lifetime.
+    /// Defaults to zero (no tolerance) so token expiry is exact by default.
+    /// </summary>
+    public int ClockSkewSeconds { get; set; }
 }
