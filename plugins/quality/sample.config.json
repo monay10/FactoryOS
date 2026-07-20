@@ -1,0 +1,13 @@
+{
+  "module": "quality",
+  "options": {
+    "defectRateThreshold": 0.05,
+    "minimumInspectedUnits": 20,
+    "windowSize": 20
+  },
+  "api": {
+    "//tenant": "The tenant is resolved by the gateway from the 'X-FactoryOS-Tenant' header (preferred) or the 'tenant' query fallback shown below; a request with no resolvable tenant is rejected with 400.",
+    "lines": "GET /m/quality/lines[?breaching=true]   (header X-FactoryOS-Tenant: <tenant>)  |  GET /m/quality/lines?tenant=<tenant>&breaching=true   — current per-line rolling defect rate; optional filter to only lines breaching the threshold",
+    "summary": "GET /m/quality/summary   (header X-FactoryOS-Tenant: <tenant>)  |  GET /m/quality/summary?tenant=<tenant>   — tracked line count and how many currently breach"
+  }
+}

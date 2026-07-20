@@ -1,0 +1,11 @@
+{
+  "connector": "webhook",
+  "options": {
+    "transport": "webhook",
+    "channelUrls": {
+      "ops": "https://hooks.example.com/services/${secret:ops-webhook-token}",
+      "quality": "https://hooks.example.com/services/${secret:quality-webhook-token}"
+    },
+    "defaultUrl": "https://hooks.example.com/services/${secret:default-webhook-token}"
+  }
+}

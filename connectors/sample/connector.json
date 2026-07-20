@@ -1,0 +1,8 @@
+{
+  "key": "sample-logo",
+  "name": "Sample Logo Connector",
+  "sourceSystem": "Logo",
+  "description": "Reference connector demonstrating a Logo ERP stock read normalized into the Standard Model.",
+  "provides": [ "InventoryItem" ],
+  "mapping": "mapping.json"
+}

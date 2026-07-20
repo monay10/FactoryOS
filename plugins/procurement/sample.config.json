@@ -1,0 +1,8 @@
+{
+  "module": "procurement",
+  "options": {
+    "reorderMultiple": 2,
+    "minimumOrderQuantity": 1,
+    "requisitionPrefix": "PR"
+  }
+}

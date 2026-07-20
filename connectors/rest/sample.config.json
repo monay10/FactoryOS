@@ -1,0 +1,16 @@
+{
+  "connector": "rest",
+  "sourceSystem": "REST",
+  "options": {
+    "baseAddress": "https://erp.example.com/api/",
+    "requestPath": "v1/products",
+    "arrayPath": "data.items",
+    "sourceEntity": "Product",
+    "headers": {
+      "Authorization": "Bearer ${secret:ERP_API_TOKEN}"
+    }
+  },
+  "schedule": {
+    "cron": "*/10 * * * *"
+  }
+}

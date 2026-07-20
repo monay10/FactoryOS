@@ -1,0 +1,16 @@
+{
+  "connector": "entraid",
+  "sourceSystem": "EntraID",
+  "options": {
+    "baseUrl": "https://graph.microsoft.com",
+    "tenantId": "${secret:ENTRA_TENANT_ID}",
+    "clientId": "${secret:ENTRA_CLIENT_ID}",
+    "clientSecret": "${secret:ENTRA_CLIENT_SECRET}",
+    "accessToken": "${secret:ENTRA_GRAPH_TOKEN}",
+    "usersPath": "/v1.0/users?$select=id,userPrincipalName,displayName,mail,accountEnabled",
+    "groupsPath": "/v1.0/groups?$select=id,displayName,description"
+  },
+  "schedule": {
+    "cron": "0 */2 * * *"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "key": "carbon",
+  "name": "Carbon",
+  "version": "1.0.0",
+  "description": "Converts energy consumption into carbon-equivalent emissions using configured emission factors and tracks cumulative CO2e per source.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.Carbon.dll",
+  "entryType": "FactoryOS.Plugins.Carbon.CarbonPlugin",
+  "dependencies": [],
+  "provides": [ "carbon.accounting" ],
+  "consumes": [ "EnergyConsumptionRecorded" ],
+  "emits": [ "CarbonEmissionCalculated" ],
+  "ui": [
+    {
+      "id": "carbon.dashboard",
+      "title": "Carbon",
+      "route": "/carbon",
+      "component": "carbon/Dashboard",
+      "icon": "leaf",
+      "navSection": "Sustainability",
+      "order": 40
+    }
+  ]
+}

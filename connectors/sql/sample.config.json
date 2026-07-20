@@ -1,0 +1,13 @@
+{
+  "connector": "sql",
+  "sourceSystem": "SQL",
+  "options": {
+    "provider": "Npgsql",
+    "connectionString": "Host=erp-db;Database=LOGODB;Username=factoryos;Password=${secret:LOGO_DB_PASSWORD}",
+    "query": "SELECT sku, name, quantity, unit FROM stock",
+    "sourceEntity": "stock"
+  },
+  "schedule": {
+    "cron": "*/30 * * * *"
+  }
+}

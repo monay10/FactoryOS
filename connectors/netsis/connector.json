@@ -1,0 +1,8 @@
+{
+  "key": "netsis",
+  "name": "Netsis Connector",
+  "sourceSystem": "Netsis",
+  "description": "Reads the Netsis ERP item master with aggregated stock balance, normalized into the Standard Model.",
+  "provides": [ "InventoryItem" ],
+  "mapping": "mapping.json"
+}

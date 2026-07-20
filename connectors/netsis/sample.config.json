@@ -1,0 +1,11 @@
+{
+  "connector": "netsis",
+  "sourceSystem": "Netsis",
+  "options": {
+    "provider": "Microsoft.Data.SqlClient",
+    "connectionString": "Server=netsis-db;Database=NETSISDB;User Id=factoryos;Password=${secret:NETSIS_DB_PASSWORD}"
+  },
+  "schedule": {
+    "cron": "*/20 * * * *"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "key": "activedirectory",
+  "name": "Active Directory Connector",
+  "sourceSystem": "ActiveDirectory",
+  "description": "Reads users and groups from Microsoft Active Directory, normalized into the Standard Model.",
+  "provides": [ "DirectoryUser", "DirectoryGroup" ],
+  "mapping": "mapping.json"
+}

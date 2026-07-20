@@ -1,0 +1,16 @@
+{
+  "sourceSystem": "Netsis",
+  "entities": [
+    {
+      "sourceEntity": "TBLSTSABIT",
+      "targetEntity": "InventoryItem",
+      "naturalKey": [ "Sku" ],
+      "fields": [
+        { "target": "Sku", "source": "STOK_KODU", "transform": "upper", "required": true },
+        { "target": "Name", "source": "STOK_ADI", "transform": "trim", "required": true },
+        { "target": "Quantity", "source": "BAKIYE", "transform": "decimal", "default": 0 },
+        { "target": "Unit", "source": "OLCU_BR1", "transform": "lower" }
+      ]
+    }
+  ]
+}

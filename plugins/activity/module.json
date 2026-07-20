@@ -1,0 +1,29 @@
+{
+  "key": "activity",
+  "name": "Activity Feed",
+  "version": "1.0.0",
+  "description": "The factory timeline: folds noteworthy events (fired rules, work orders, safety stand-downs, quality alerts, completed production orders, energy spikes, low-stock crossings, certification gaps, AI insights) into a per-tenant, newest-first activity feed — a live chronological record complementing the Company Brain's knowledge base.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.Activity.dll",
+  "entryType": "FactoryOS.Plugins.Activity.ActivityPlugin",
+  "dependencies": [],
+  "provides": [ "activity.feed", "activity.api" ],
+  "consumes": [ "RuleTriggered", "WorkOrderCreated", "WorkOrderClosed", "SafetyStandDownTriggered", "QualityAlertRaised", "QualityLineQuarantined", "DeliveryHealthDegraded", "ProductionOrderCompleted", "EnergySpikeDetected", "LowStockDetected", "CertificationGapDetected", "InsightGenerated" ],
+  "emits": [],
+  "api": [
+    { "method": "GET", "path": "/m/activity/feed", "query": [ "tenant", "max", "category" ], "description": "A tenant's most recent activity-feed entries, newest first; optionally narrowed to one category (case-insensitive)." },
+    { "method": "GET", "path": "/m/activity/summary", "query": [ "tenant" ], "description": "Activity-feed headline for a tenant: total kept and a per-category tally, ordered by count descending." }
+  ],
+  "ui": [
+    {
+      "id": "activity.feed",
+      "title": "Activity",
+      "route": "/activity",
+      "component": "activity/Feed",
+      "icon": "activity",
+      "requiredPermission": "activity.view",
+      "navSection": "Experience",
+      "order": 20
+    }
+  ]
+}

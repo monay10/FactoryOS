@@ -1,0 +1,13 @@
+{
+  "module": "activity",
+  "options": {
+    "feedCapacity": 200
+  },
+  "//categories": "Entries are bucketed by category: Rule, Maintenance, Safety, Quality, Delivery, Production (completed production orders — the feed's first milestone-reached line alongside the alert-shaped entries) Energy (meter spikes above baseline), Warehouse (items crossing at or below their reorder point), Compliance (workers staffed without a valid required certification) and Insight (AI-generated root-cause hypotheses from the Insight agent).",
+  "api": {
+    "//tenant": "The tenant is resolved by the gateway from the 'X-FactoryOS-Tenant' header (preferred) or the 'tenant' query fallback shown below; a request with no resolvable tenant is rejected with 400.",
+    "feed": "GET /m/activity/feed?max=50   (header X-FactoryOS-Tenant: <tenant>)  |  GET /m/activity/feed?tenant=<tenant>&max=50",
+    "//category": "Add &category=<name> to narrow the feed to one category (case-insensitive), e.g. GET /m/activity/feed?category=Production&max=50.",
+    "summary": "GET /m/activity/summary   (header X-FactoryOS-Tenant: <tenant>)  ->  { tenant, total, byCategory: [ { category, count }, ... ] } — a per-category tally for an at-a-glance strip."
+  }
+}

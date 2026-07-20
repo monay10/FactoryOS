@@ -1,0 +1,26 @@
+{
+  "sourceSystem": "LDAP",
+  "entities": [
+    {
+      "sourceEntity": "USERS",
+      "targetEntity": "DirectoryUser",
+      "naturalKey": [ "Username" ],
+      "fields": [
+        { "target": "Username", "source": "uid", "transform": "lower", "required": true },
+        { "target": "DisplayName", "source": "cn", "transform": "trim", "required": true },
+        { "target": "Email", "source": "mail", "transform": "lower" },
+        { "target": "Enabled", "constant": true }
+      ]
+    },
+    {
+      "sourceEntity": "GROUPS",
+      "targetEntity": "DirectoryGroup",
+      "naturalKey": [ "GroupName" ],
+      "fields": [
+        { "target": "GroupName", "source": "cn", "transform": "trim", "required": true },
+        { "target": "DisplayName", "source": "cn", "transform": "trim", "required": true },
+        { "target": "Description", "source": "description", "transform": "trim" }
+      ]
+    }
+  ]
+}

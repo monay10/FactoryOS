@@ -1,0 +1,29 @@
+{
+  "key": "insight",
+  "name": "Insight Agent",
+  "version": "1.0.0",
+  "kind": "agent",
+  "description": "AI digital worker: reacts to alert events and fired rules and, through the LLM Gateway, generates a root-cause hypothesis and recommended action, re-entered onto the bus as InsightGenerated.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Agents.Insight.dll",
+  "entryType": "FactoryOS.Agents.Insight.InsightAgentPlugin",
+  "model": "reasoning",
+  "dependencies": [],
+  "consumes": [ "SafetyStandDownTriggered", "QualityAlertRaised", "RuleTriggered", "InsightGenerated" ],
+  "emits": [ "InsightGenerated" ],
+  "api": [
+    { "method": "GET", "path": "/m/insight/feed", "query": [ "tenant", "max" ], "description": "A tenant's recent AI-generated insights, newest first." },
+    { "method": "GET", "path": "/m/insight/summary", "query": [ "tenant" ], "description": "Insight-feed headline for a tenant: total kept and a per-trigger tally." }
+  ],
+  "ui": [
+    {
+      "id": "insight.feed",
+      "title": "AI Insights",
+      "route": "/insights",
+      "component": "insight/Feed",
+      "icon": "sparkles",
+      "navSection": "AI",
+      "order": 10
+    }
+  ]
+}

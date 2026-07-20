@@ -1,0 +1,24 @@
+{
+  "key": "digitaltwin",
+  "name": "Digital Twin",
+  "version": "1.0.0",
+  "description": "Experience-layer read model: mirrors each physical asset's live state (latest metric gauges, OEE health and derived status) by consuming telemetry and OEE events.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.DigitalTwin.dll",
+  "entryType": "FactoryOS.Plugins.DigitalTwin.DigitalTwinPlugin",
+  "dependencies": [],
+  "provides": [ "digitaltwin.asset-state" ],
+  "consumes": [ "MeterReadingReceived", "OeeCalculated" ],
+  "emits": [],
+  "ui": [
+    {
+      "id": "digitaltwin.assets",
+      "title": "Digital Twin",
+      "route": "/twin",
+      "component": "digitaltwin/AssetView",
+      "icon": "cube",
+      "navSection": "Experience",
+      "order": 20
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "connector": "activedirectory",
+  "sourceSystem": "ActiveDirectory",
+  "options": {
+    "host": "ldaps://dc01.corp.example.com:636",
+    "bindDn": "CN=FactoryOS Service,OU=Service Accounts,DC=corp,DC=example,DC=com",
+    "bindPassword": "${secret:AD_BIND_PASSWORD}",
+    "userSearchBase": "OU=Users,DC=corp,DC=example,DC=com",
+    "userFilter": "(&(objectCategory=person)(objectClass=user))",
+    "groupSearchBase": "OU=Groups,DC=corp,DC=example,DC=com",
+    "groupFilter": "(objectClass=group)"
+  },
+  "schedule": {
+    "cron": "0 */4 * * *"
+  }
+}

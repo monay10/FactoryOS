@@ -1,0 +1,8 @@
+{
+  "key": "rest",
+  "name": "REST Connector",
+  "sourceSystem": "REST",
+  "description": "Generic connector that GETs a JSON resource, one Standard Model record per array object.",
+  "provides": [ "InventoryItem" ],
+  "mapping": "mapping.json"
+}

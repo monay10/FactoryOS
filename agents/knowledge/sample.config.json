@@ -1,0 +1,7 @@
+{
+  "agent": "knowledge",
+  "//sources": "The agent narrates and ingests noteworthy events into the Company Brain's memory under stable source ids: activity/rule/*, activity/workorder/*, activity/safety/*, activity/quality/*, activity/production/* (completed production orders), activity/delivery/* (degraded notification delivery) activity/energy/* (energy spikes above baseline), activity/warehouse/* (low-stock crossings), activity/compliance/* (workers staffed without a valid required certification) and activity/insight/* (AI-generated root-cause hypotheses).",
+  "options": {
+    "embeddingModel": "embed"
+  }
+}

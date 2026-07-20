@@ -1,0 +1,17 @@
+{
+  "//": "Sample Identity configuration. Merge into appsettings (or a secrets provider). Secrets are placeholders — never commit real keys or passwords. The Jwt signing key must be at least 32 bytes. AccessTokenMinutes keeps the access token short-lived; the SPA renews it via POST /auth/refresh using the refresh token returned by login (rotated on every use, so a replayed token is rejected), and RefreshTokenDays bounds how long a session can be renewed without re-entering credentials. Identity:Seed is off by default; enabling it seeds the default roles and one demo user per role (admin / supervisor / energy / quality) under the seed tenant, so a fresh deployment can log in via POST /auth/login and receive a token whose factoryos:permission claims drive the shell's navigation.",
+  "Jwt": {
+    "Issuer": "factoryos",
+    "Audience": "factoryos",
+    "SigningKey": "${secret:jwt-signing-key}",
+    "AccessTokenMinutes": 15,
+    "RefreshTokenDays": 7
+  },
+  "Identity": {
+    "Seed": {
+      "Enabled": true,
+      "TenantId": "11111111-1111-1111-1111-111111111111",
+      "Password": "${secret:identity-demo-password}"
+    }
+  }
+}

@@ -1,0 +1,148 @@
+<Solution>
+  <Folder Name="/edge/">
+    <Project Path="edge/FactoryOS.Edge/FactoryOS.Edge.csproj" />
+  </Folder>
+  <Folder Name="/connectors/" />
+  <Folder Name="/connectors/activedirectory/">
+    <Project Path="connectors/activedirectory/FactoryOS.Connectors.ActiveDirectory.csproj" />
+  </Folder>
+  <Folder Name="/connectors/csv/">
+    <Project Path="connectors/csv/FactoryOS.Connectors.Csv.csproj" />
+  </Folder>
+  <Folder Name="/connectors/entraid/">
+    <Project Path="connectors/entraid/FactoryOS.Connectors.EntraId.csproj" />
+  </Folder>
+  <Folder Name="/connectors/ldap/">
+    <Project Path="connectors/ldap/FactoryOS.Connectors.Ldap.csproj" />
+  </Folder>
+  <Folder Name="/connectors/log/">
+    <Project Path="connectors/log/FactoryOS.Connectors.Log.csproj" />
+  </Folder>
+  <Folder Name="/connectors/webhook/">
+    <Project Path="connectors/webhook/FactoryOS.Connectors.Webhook.csproj" />
+  </Folder>
+  <Folder Name="/connectors/logo/">
+    <Project Path="connectors/logo/FactoryOS.Connectors.Logo.csproj" />
+  </Folder>
+  <Folder Name="/connectors/mikro/">
+    <Project Path="connectors/mikro/FactoryOS.Connectors.Mikro.csproj" />
+  </Folder>
+  <Folder Name="/connectors/netsis/">
+    <Project Path="connectors/netsis/FactoryOS.Connectors.Netsis.csproj" />
+  </Folder>
+  <Folder Name="/connectors/oracle/">
+    <Project Path="connectors/oracle/FactoryOS.Connectors.Oracle.csproj" />
+  </Folder>
+  <Folder Name="/connectors/sap/">
+    <Project Path="connectors/sap/FactoryOS.Connectors.Sap.csproj" />
+  </Folder>
+  <Folder Name="/connectors/rest/">
+    <Project Path="connectors/rest/FactoryOS.Connectors.Rest.csproj" />
+  </Folder>
+  <Folder Name="/connectors/sample/">
+    <Project Path="connectors/sample/FactoryOS.Connectors.Sample.csproj" />
+  </Folder>
+  <Folder Name="/connectors/sql/">
+    <Project Path="connectors/sql/FactoryOS.Connectors.Sql.csproj" />
+  </Folder>
+  <Folder Name="/agents/" />
+  <Folder Name="/agents/brain/">
+    <Project Path="agents/brain/FactoryOS.Agents.Brain.csproj" />
+  </Folder>
+  <Folder Name="/agents/insight/">
+    <Project Path="agents/insight/FactoryOS.Agents.Insight.csproj" />
+  </Folder>
+  <Folder Name="/agents/knowledge/">
+    <Project Path="agents/knowledge/FactoryOS.Agents.Knowledge.csproj" />
+  </Folder>
+  <Folder Name="/plugins/" />
+  <Folder Name="/plugins/dashboard/">
+    <Project Path="plugins/dashboard/FactoryOS.Plugins.Dashboard.csproj" />
+  </Folder>
+  <Folder Name="/plugins/deliveryhealth/">
+    <Project Path="plugins/deliveryhealth/FactoryOS.Plugins.DeliveryHealth.csproj" />
+  </Folder>
+  <Folder Name="/plugins/digitaltwin/">
+    <Project Path="plugins/digitaltwin/FactoryOS.Plugins.DigitalTwin.csproj" />
+  </Folder>
+  <Folder Name="/plugins/notification/">
+    <Project Path="plugins/notification/FactoryOS.Plugins.Notification.csproj" />
+  </Folder>
+  <Folder Name="/plugins/reporting/">
+    <Project Path="plugins/reporting/FactoryOS.Plugins.Reporting.csproj" />
+  </Folder>
+  <Folder Name="/plugins/ruleengine/">
+    <Project Path="plugins/ruleengine/FactoryOS.Plugins.RuleEngine.csproj" />
+  </Folder>
+  <Folder Name="/plugins/scheduler/">
+    <Project Path="plugins/scheduler/FactoryOS.Plugins.Scheduler.csproj" />
+  </Folder>
+  <Folder Name="/plugins/carbon/">
+    <Project Path="plugins/carbon/FactoryOS.Plugins.Carbon.csproj" />
+  </Folder>
+  <Folder Name="/plugins/activity/">
+    <Project Path="plugins/activity/FactoryOS.Plugins.Activity.csproj" />
+  </Folder>
+  <Folder Name="/plugins/brain/">
+    <Project Path="plugins/brain/FactoryOS.Plugins.Brain.csproj" />
+  </Folder>
+  <Folder Name="/plugins/energy/">
+    <Project Path="plugins/energy/FactoryOS.Plugins.Energy.csproj" />
+  </Folder>
+  <Folder Name="/plugins/filestorage/">
+    <Project Path="plugins/filestorage/FactoryOS.Plugins.FileStorage.csproj" />
+  </Folder>
+  <Folder Name="/plugins/hr/">
+    <Project Path="plugins/hr/FactoryOS.Plugins.Hr.csproj" />
+  </Folder>
+  <Folder Name="/plugins/maintenance/">
+    <Project Path="plugins/maintenance/FactoryOS.Plugins.Maintenance.csproj" />
+  </Folder>
+  <Folder Name="/plugins/oee/">
+    <Project Path="plugins/oee/FactoryOS.Plugins.Oee.csproj" />
+  </Folder>
+  <Folder Name="/plugins/procurement/">
+    <Project Path="plugins/procurement/FactoryOS.Plugins.Procurement.csproj" />
+  </Folder>
+  <Folder Name="/plugins/production/">
+    <Project Path="plugins/production/FactoryOS.Plugins.Production.csproj" />
+  </Folder>
+  <Folder Name="/plugins/quality/">
+    <Project Path="plugins/quality/FactoryOS.Plugins.Quality.csproj" />
+  </Folder>
+  <Folder Name="/plugins/safety/">
+    <Project Path="plugins/safety/FactoryOS.Plugins.Safety.csproj" />
+  </Folder>
+  <Folder Name="/plugins/warehouse/">
+    <Project Path="plugins/warehouse/FactoryOS.Plugins.Warehouse.csproj" />
+  </Folder>
+  <Folder Name="/plugins/workflow/">
+    <Project Path="plugins/workflow/FactoryOS.Plugins.Workflow.csproj" />
+  </Folder>
+  <Folder Name="/plugins/sample/">
+    <Project Path="plugins/sample/FactoryOS.Plugins.Sample.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/FactoryOS.Ai/FactoryOS.Ai.csproj" />
+    <Project Path="src/FactoryOS.Api/FactoryOS.Api.csproj" />
+    <Project Path="src/FactoryOS.Application/FactoryOS.Application.csproj" />
+    <Project Path="src/FactoryOS.Configuration/FactoryOS.Configuration.csproj" />
+    <Project Path="src/FactoryOS.Connectors/FactoryOS.Connectors.csproj" />
+    <Project Path="src/FactoryOS.Contracts/FactoryOS.Contracts.csproj" />
+    <Project Path="src/FactoryOS.Core/FactoryOS.Core.csproj" />
+    <Project Path="src/FactoryOS.Domain/FactoryOS.Domain.csproj" />
+    <Project Path="src/FactoryOS.EventBus/FactoryOS.EventBus.csproj" />
+    <Project Path="src/FactoryOS.Gateway/FactoryOS.Gateway.csproj" />
+    <Project Path="src/FactoryOS.Identity/FactoryOS.Identity.csproj" />
+    <Project Path="src/FactoryOS.Infrastructure/FactoryOS.Infrastructure.csproj" />
+    <Project Path="src/FactoryOS.Iot/FactoryOS.Iot.csproj" />
+    <Project Path="src/FactoryOS.Persistence/FactoryOS.Persistence.csproj" />
+    <Project Path="src/FactoryOS.Plugin/FactoryOS.Plugin.csproj" />
+    <Project Path="src/FactoryOS.Shared/FactoryOS.Shared.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FactoryOS.ArchitectureTests/FactoryOS.ArchitectureTests.csproj" />
+    <Project Path="tests/FactoryOS.IntegrationTests/FactoryOS.IntegrationTests.csproj" />
+    <Project Path="tests/FactoryOS.Tests/FactoryOS.Tests.csproj" />
+  </Folder>
+</Solution>

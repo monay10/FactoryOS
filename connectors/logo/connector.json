@@ -1,0 +1,8 @@
+{
+  "key": "logo",
+  "name": "Logo Connector",
+  "sourceSystem": "Logo",
+  "description": "Reads the Logo ERP item master and period stock totals, normalized into the Standard Model.",
+  "provides": [ "InventoryItem" ],
+  "mapping": "mapping.json"
+}

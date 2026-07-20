@@ -1,0 +1,37 @@
+# .NET
+bin/
+obj/
+out/
+*.user
+*.suo
+.vs/
+
+# Build / test artifacts
+[Tt]est[Rr]esults/
+coverage/
+*.trx
+*.coverage
+
+# Rider / VS Code
+.idea/
+.vscode/
+
+# Environment / secrets
+*.env
+.env
+appsettings.*.Local.json
+secrets.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Web / frontend (web/)
+node_modules/
+dist/
+web/.env
+web/.env.local
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

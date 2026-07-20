@@ -1,0 +1,39 @@
+{
+  "key": "oee",
+  "name": "OEE",
+  "version": "1.0.0",
+  "description": "Computes Overall Equipment Effectiveness (Availability × Performance × Quality) from reported production periods.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.Oee.dll",
+  "entryType": "FactoryOS.Plugins.Oee.OeePlugin",
+  "dependencies": [],
+  "provides": [ "oee.monitoring" ],
+  "consumes": [ "ProductionPeriodReported" ],
+  "emits": [ "OeeCalculated" ],
+  "api": [
+    {
+      "method": "GET",
+      "path": "/m/oee/snapshots",
+      "query": [ "tenant" ],
+      "description": "A tenant's latest OEE snapshot per machine, ordered by machine then period, each flagged against the target."
+    },
+    {
+      "method": "GET",
+      "path": "/m/oee/summary",
+      "query": [ "tenant" ],
+      "description": "A tenant's OEE rollup: the target, snapshot count, average OEE and how many machines are below target."
+    }
+  ],
+  "ui": [
+    {
+      "id": "oee.dashboard",
+      "title": "OEE",
+      "route": "/oee",
+      "component": "oee/Dashboard",
+      "icon": "gauge",
+      "requiredPermission": "oee.view",
+      "navSection": "Operations",
+      "order": 35
+    }
+  ]
+}

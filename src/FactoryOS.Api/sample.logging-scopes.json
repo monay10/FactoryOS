@@ -1,0 +1,12 @@
+{
+  "//": "Sample logging configuration that renders the per-request tenant scope opened by the gateway's tenant-resolution middleware. Merge the 'Logging' section into appsettings.json (or an environment override). With IncludeScopes enabled, every log line emitted while a request is handled is stamped with its 'Tenant' — making multi-tenant activity trivially greppable. Nothing here is customer-specific.",
+  "Logging": {
+    "Console": {
+      "IncludeScopes": true
+    },
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  }
+}

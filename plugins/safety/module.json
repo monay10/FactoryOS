@@ -1,0 +1,24 @@
+{
+  "key": "safety",
+  "name": "Safety",
+  "version": "1.0.0",
+  "description": "Monitors reported safety incidents and recommends a stand-down on a severe incident or when incidents accumulate past the frequency threshold.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.Safety.dll",
+  "entryType": "FactoryOS.Plugins.Safety.SafetyPlugin",
+  "dependencies": [],
+  "provides": [ "safety.monitoring" ],
+  "consumes": [ "SafetyIncidentReported" ],
+  "emits": [ "SafetyStandDownTriggered" ],
+  "ui": [
+    {
+      "id": "safety.dashboard",
+      "title": "Safety",
+      "route": "/safety",
+      "component": "safety/Dashboard",
+      "icon": "shield",
+      "navSection": "Sustainability",
+      "order": 41
+    }
+  ]
+}

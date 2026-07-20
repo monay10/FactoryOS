@@ -1,0 +1,33 @@
+{
+  "key": "sample",
+  "name": "Sample Plugin",
+  "version": "1.0.0",
+  "description": "Reference plugin demonstrating the FactoryOS plugin contract.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.Sample.dll",
+  "entryType": "FactoryOS.Plugins.Sample.SamplePlugin",
+  "dependencies": [],
+  "provides": [ "sample.greeting" ],
+  "consumes": [],
+  "emits": [],
+  "ui": [
+    {
+      "id": "sample.home",
+      "title": "Sample Home",
+      "route": "/sample",
+      "component": "sample/Home",
+      "icon": "home",
+      "navSection": "Sample",
+      "order": 10
+    },
+    {
+      "id": "sample.about",
+      "title": "About Sample",
+      "route": "/sample/about",
+      "component": "sample/About",
+      "requiredPermission": "sample.read",
+      "navSection": "Sample",
+      "order": 20
+    }
+  ]
+}

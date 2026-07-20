@@ -1,0 +1,10 @@
+{
+  "key": "webhook",
+  "name": "Webhook Transport Connector",
+  "direction": "outbound",
+  "transport": "webhook",
+  "description": "Outbound connector that delivers dispatched notifications by POSTing them as JSON to a per-channel webhook endpoint, then emits NotificationDelivered. The door out for the 'webhook' transport.",
+  "entryType": "FactoryOS.Connectors.Webhook.WebhookConnectorPlugin",
+  "consumes": [ "NotificationDispatched" ],
+  "emits": [ "NotificationDelivered" ]
+}

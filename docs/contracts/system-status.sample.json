@@ -1,0 +1,16 @@
+{
+  "//": "Sample response of GET /system — the operating system presenting itself in one call: platform identity and version, how many plugins are installed and active, how many need attention (an unmet dependency), the sorted union of capabilities the ACTIVE plugins provide, and how many distinct event types flow across them. A capstone rollup of the gateway's discovery surface (/modules, /store, capabilities), built purely from manifests: the same core answers differently for every factory solely by which plugins are active.",
+  "product": "FactoryOS Enterprise",
+  "version": "0.1.0",
+  "modulesInstalled": 22,
+  "modulesActive": 21,
+  "pluginsNeedingAttention": 0,
+  "capabilities": [
+    "activity.feed",
+    "brain.answerlog",
+    "dashboard.operations-board",
+    "energy.readmodel",
+    "oee.readmodel"
+  ],
+  "eventTypes": 34
+}

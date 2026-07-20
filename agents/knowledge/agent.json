@@ -1,0 +1,14 @@
+{
+  "key": "knowledge",
+  "name": "Knowledge Ingest Agent",
+  "version": "1.0.0",
+  "kind": "agent",
+  "description": "AI digital worker: narrates noteworthy events (fired rules, work orders, safety stand-downs, quality alerts, completed production orders, degraded notification delivery, energy spikes, low-stock crossings, certification gaps, AI insights) into knowledge documents and ingests them through the Knowledge Indexer, giving the Company Brain a retrievable memory of live operations.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Agents.Knowledge.dll",
+  "entryType": "FactoryOS.Agents.Knowledge.KnowledgeAgentPlugin",
+  "model": "embed",
+  "dependencies": [],
+  "consumes": [ "RuleTriggered", "WorkOrderCreated", "SafetyStandDownTriggered", "QualityAlertRaised", "ProductionOrderCompleted", "DeliveryHealthDegraded", "EnergySpikeDetected", "LowStockDetected", "CertificationGapDetected", "InsightGenerated" ],
+  "emits": []
+}

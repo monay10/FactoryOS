@@ -1,0 +1,45 @@
+{
+  "edge": "gateway-1",
+  "tenant": "acme",
+  "sources": [
+    {
+      "protocol": "mqtt",
+      "broker": "tcp://mqtt-broker:1883",
+      "credentials": { "username": "edge", "password": "${secret:MQTT_PASSWORD}" },
+      "topicTemplate": "factory/+/{device}/{tag}",
+      "subscribe": ["factory/#"]
+    },
+    {
+      "protocol": "opcua",
+      "endpoint": "opc.tcp://opcua-server:4840",
+      "security": { "mode": "SignAndEncrypt", "identity": "${secret:OPCUA_CERT}" },
+      "nodeMap": [
+        { "nodeId": "ns=2;s=PM1.Power", "device": "pm-1", "tag": "power" },
+        { "nodeId": "ns=2;s=PM1.Temp", "device": "pm-1", "tag": "temp" }
+      ]
+    },
+    {
+      "protocol": "modbus",
+      "transport": "tcp",
+      "host": "modbus-plc",
+      "port": 502,
+      "unitId": 1,
+      "pollSeconds": 5,
+      "registerMap": [
+        { "registerType": "InputRegister", "address": 100, "dataType": "UInt32", "wordOrder": "BigEndian", "device": "line-1", "tag": "energy" },
+        { "registerType": "HoldingRegister", "address": 200, "dataType": "Float32", "wordOrder": "BigEndian", "device": "line-1", "tag": "temp" }
+      ]
+    },
+    {
+      "protocol": "s7",
+      "host": "s7-plc",
+      "rack": 0,
+      "slot": 1,
+      "pollSeconds": 5,
+      "variableMap": [
+        { "area": "DataBlock", "dbNumber": 1, "byteOffset": 4, "dataType": "Real", "device": "line-1", "tag": "power" },
+        { "area": "DataBlock", "dbNumber": 1, "byteOffset": 8, "dataType": "DInt", "device": "line-1", "tag": "counter" }
+      ]
+    }
+  ]
+}

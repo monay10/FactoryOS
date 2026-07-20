@@ -1,0 +1,8 @@
+{
+  "key": "entraid",
+  "name": "Microsoft Entra ID Connector",
+  "sourceSystem": "EntraID",
+  "description": "Reads users and groups from Microsoft Entra ID via Microsoft Graph, normalized into the Standard Model.",
+  "provides": [ "DirectoryUser", "DirectoryGroup" ],
+  "mapping": "mapping.json"
+}

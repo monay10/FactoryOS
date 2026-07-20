@@ -1,0 +1,13 @@
+{
+  "connector": "csv",
+  "sourceSystem": "CSV",
+  "options": {
+    "filePath": "/data/imports/inventory.csv",
+    "sourceEntity": "Inventory",
+    "delimiter": ",",
+    "hasHeader": true
+  },
+  "schedule": {
+    "cron": "0 * * * *"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "key": "notification",
+  "name": "Notification",
+  "version": "1.0.0",
+  "description": "Platform-layer notification routing: turns requested workflow actions into dispatched notifications by configurable channel-to-transport routing, records them in a per-tenant outbox, and emits NotificationDispatched for transport connectors.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.Notification.dll",
+  "entryType": "FactoryOS.Plugins.Notification.NotificationPlugin",
+  "dependencies": [],
+  "provides": [ "notification.outbox", "notification.api" ],
+  "consumes": [ "WorkflowActionRequested", "ReportGenerated", "BrainAnswered" ],
+  "emits": [ "NotificationDispatched" ],
+  "api": [
+    { "method": "GET", "path": "/m/notification/outbox", "query": [ "tenant", "max" ], "description": "A tenant's dispatched-notification history, newest first." }
+  ],
+  "ui": [
+    {
+      "id": "notification.outbox",
+      "title": "Notifications",
+      "route": "/notifications",
+      "component": "notification/Outbox",
+      "icon": "bell",
+      "navSection": "Platform",
+      "order": 20
+    }
+  ]
+}

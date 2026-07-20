@@ -1,0 +1,16 @@
+{
+  "module": "energy",
+  "options": {
+    "spikeThreshold": 0.25,
+    "minimumSamples": 3,
+    "baselineWindow": 20,
+    "spikeFeedCapacity": 50
+  },
+  "//readmodel": "The read model is fed purely from the bus: each MeterReadingReceived updates the latest reading and rolling baseline per meter, and a detected spike is pushed onto a bounded, newest-first feed. No consumer touches the Edge Gateway or a meter directly.",
+  "api": {
+    "//tenant": "The tenant is resolved by the gateway from the 'X-FactoryOS-Tenant' header (preferred) or the 'tenant' query fallback; a request with no resolvable tenant is rejected with 400.",
+    "meters": "GET /m/energy/meters   (header X-FactoryOS-Tenant: <tenant>)  ->  { tenant, meters: [ { meterId, metric, value, baseline, deltaPercent, unit, readingAt }, ... ] }",
+    "spikes": "GET /m/energy/spikes?max=50   (header X-FactoryOS-Tenant: <tenant>)  ->  { tenant, spikes: [ { meterId, metric, value, baseline, deltaPercent, unit, readingAt }, ... ] } (newest first)",
+    "summary": "GET /m/energy/summary   (header X-FactoryOS-Tenant: <tenant>)  ->  { tenant, meters, spikes }"
+  }
+}

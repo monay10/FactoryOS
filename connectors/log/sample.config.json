@@ -1,0 +1,6 @@
+{
+  "connector": "log",
+  "options": {
+    "transport": "log"
+  }
+}

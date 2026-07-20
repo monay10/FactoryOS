@@ -1,0 +1,24 @@
+{
+  "key": "production",
+  "name": "Production",
+  "version": "1.0.0",
+  "description": "Tracks production-order progress against target quantity and raises a completion event when the target is reached.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.Production.dll",
+  "entryType": "FactoryOS.Plugins.Production.ProductionPlugin",
+  "dependencies": [],
+  "provides": [ "production.tracking" ],
+  "consumes": [ "ProductionOrderReleased", "ProductionCountReported" ],
+  "emits": [ "ProductionOrderCompleted" ],
+  "ui": [
+    {
+      "id": "production.dashboard",
+      "title": "Production",
+      "route": "/production",
+      "component": "production/Dashboard",
+      "icon": "clipboard-list",
+      "navSection": "Operations",
+      "order": 34
+    }
+  ]
+}

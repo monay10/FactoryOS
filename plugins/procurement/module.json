@@ -1,0 +1,24 @@
+{
+  "key": "procurement",
+  "name": "Procurement",
+  "version": "1.0.0",
+  "description": "Raises a purchase requisition to replenish an item when it is detected low on stock, sized by the configured reorder policy.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.Procurement.dll",
+  "entryType": "FactoryOS.Plugins.Procurement.ProcurementPlugin",
+  "dependencies": [],
+  "provides": [ "procurement.requisitioning" ],
+  "consumes": [ "LowStockDetected" ],
+  "emits": [ "PurchaseRequisitionRaised" ],
+  "ui": [
+    {
+      "id": "procurement.dashboard",
+      "title": "Procurement",
+      "route": "/procurement",
+      "component": "procurement/Dashboard",
+      "icon": "shopping-cart",
+      "navSection": "Operations",
+      "order": 38
+    }
+  ]
+}

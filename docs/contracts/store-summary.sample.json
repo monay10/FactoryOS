@@ -1,0 +1,10 @@
+{
+  "//": "Sample response of GET /store/summary — a marketplace health headline for an at-a-glance strip: how many plugins are installed, a per-state tally (ordered by count descending, ties by state name), and how many have at least one unmet dependency (the Store's 'needs attention' count). Computed from the same data as /store/plugins. Mirrors the summary convention shared with activity (byCategory), brain (byModel) and dashboard (byKind).",
+  "total": 22,
+  "byState": [
+    { "state": "Started", "count": 20 },
+    { "state": "Disabled", "count": 1 },
+    { "state": "Failed", "count": 1 }
+  ],
+  "withUnmetDependencies": 1
+}

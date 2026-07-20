@@ -1,0 +1,8 @@
+{
+  "module": "reporting",
+  "options": {
+    "retainDays": 90,
+    "reportAction": "GenerateReport",
+    "reportKeyPrefix": "reports/oee/"
+  }
+}

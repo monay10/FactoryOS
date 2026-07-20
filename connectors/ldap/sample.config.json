@@ -1,0 +1,16 @@
+{
+  "connector": "ldap",
+  "sourceSystem": "LDAP",
+  "options": {
+    "host": "ldaps://ldap.example.com:636",
+    "bindDn": "cn=factoryos,ou=service,dc=example,dc=com",
+    "bindPassword": "${secret:LDAP_BIND_PASSWORD}",
+    "userBaseDn": "ou=people,dc=example,dc=com",
+    "userFilter": "(objectClass=inetOrgPerson)",
+    "groupBaseDn": "ou=groups,dc=example,dc=com",
+    "groupFilter": "(objectClass=groupOfNames)"
+  },
+  "schedule": {
+    "cron": "0 */6 * * *"
+  }
+}

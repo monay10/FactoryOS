@@ -1,0 +1,35 @@
+{
+  "//": "Sample response of GET /modules/ui/nav — the shell's cross-module navigation, built purely from active plugins' manifests (no core code, no customer branching). Sections are ordered by name (Ordinal; screens declaring no section group under an empty name that sorts first). Within a section, items are ordered by declared order, then title, then owning module. Each item carries the manifest key of the module that owns it so the shell can lazy-load the component from that module's bundle and gate it by requiredPermission.",
+  "sections": [
+    {
+      "section": "AI",
+      "items": [
+        {
+          "module": "brain",
+          "id": "brain.answers",
+          "title": "Brain Answers",
+          "route": "/brain/answers",
+          "component": "brain/Answers",
+          "icon": "message-circle",
+          "requiredPermission": null,
+          "order": 21
+        }
+      ]
+    },
+    {
+      "section": "Experience",
+      "items": [
+        {
+          "module": "dashboard",
+          "id": "dashboard.operations",
+          "title": "Operations",
+          "route": "/dashboard",
+          "component": "dashboard/OperationsBoard",
+          "icon": "dashboard",
+          "requiredPermission": null,
+          "order": 1
+        }
+      ]
+    }
+  ]
+}

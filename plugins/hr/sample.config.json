@@ -1,0 +1,6 @@
+{
+  "module": "hr",
+  "options": {
+    "treatMissingAsGap": true
+  }
+}

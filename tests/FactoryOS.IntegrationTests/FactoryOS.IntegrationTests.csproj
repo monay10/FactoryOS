@@ -1,0 +1,80 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="10.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.10" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.4" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FactoryOS.Persistence\FactoryOS.Persistence.csproj" />
+    <ProjectReference Include="..\..\src\FactoryOS.Domain\FactoryOS.Domain.csproj" />
+    <ProjectReference Include="..\..\src\FactoryOS.Api\FactoryOS.Api.csproj" />
+    <ProjectReference Include="..\..\src\FactoryOS.Gateway\FactoryOS.Gateway.csproj" />
+    <ProjectReference Include="..\..\src\FactoryOS.Identity\FactoryOS.Identity.csproj" />
+    <ProjectReference Include="..\..\src\FactoryOS.Plugin\FactoryOS.Plugin.csproj" />
+    <ProjectReference Include="..\..\src\FactoryOS.EventBus\FactoryOS.EventBus.csproj" />
+    <ProjectReference Include="..\..\src\FactoryOS.Contracts\FactoryOS.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\FactoryOS.Connectors\FactoryOS.Connectors.csproj" />
+    <ProjectReference Include="..\..\src\FactoryOS.Iot\FactoryOS.Iot.csproj" />
+    <ProjectReference Include="..\..\edge\FactoryOS.Edge\FactoryOS.Edge.csproj" />
+    <ProjectReference Include="..\..\connectors\sample\FactoryOS.Connectors.Sample.csproj" />
+    <ProjectReference Include="..\..\connectors\csv\FactoryOS.Connectors.Csv.csproj" />
+    <ProjectReference Include="..\..\connectors\log\FactoryOS.Connectors.Log.csproj" />
+    <ProjectReference Include="..\..\agents\brain\FactoryOS.Agents.Brain.csproj" />
+    <ProjectReference Include="..\..\agents\insight\FactoryOS.Agents.Insight.csproj" />
+    <ProjectReference Include="..\..\agents\knowledge\FactoryOS.Agents.Knowledge.csproj" />
+    <ProjectReference Include="..\..\connectors\webhook\FactoryOS.Connectors.Webhook.csproj" />
+    <ProjectReference Include="..\..\connectors\sql\FactoryOS.Connectors.Sql.csproj" />
+    <ProjectReference Include="..\..\connectors\rest\FactoryOS.Connectors.Rest.csproj" />
+    <ProjectReference Include="..\..\connectors\logo\FactoryOS.Connectors.Logo.csproj" />
+    <ProjectReference Include="..\..\connectors\netsis\FactoryOS.Connectors.Netsis.csproj" />
+    <ProjectReference Include="..\..\connectors\mikro\FactoryOS.Connectors.Mikro.csproj" />
+    <ProjectReference Include="..\..\connectors\sap\FactoryOS.Connectors.Sap.csproj" />
+    <ProjectReference Include="..\..\connectors\oracle\FactoryOS.Connectors.Oracle.csproj" />
+    <ProjectReference Include="..\..\connectors\ldap\FactoryOS.Connectors.Ldap.csproj" />
+    <ProjectReference Include="..\..\connectors\activedirectory\FactoryOS.Connectors.ActiveDirectory.csproj" />
+    <ProjectReference Include="..\..\connectors\entraid\FactoryOS.Connectors.EntraId.csproj" />
+    <ProjectReference Include="..\..\plugins\energy\FactoryOS.Plugins.Energy.csproj" />
+    <ProjectReference Include="..\..\plugins\filestorage\FactoryOS.Plugins.FileStorage.csproj" />
+    <ProjectReference Include="..\..\plugins\maintenance\FactoryOS.Plugins.Maintenance.csproj" />
+    <ProjectReference Include="..\..\plugins\oee\FactoryOS.Plugins.Oee.csproj" />
+    <ProjectReference Include="..\..\plugins\carbon\FactoryOS.Plugins.Carbon.csproj" />
+    <ProjectReference Include="..\..\plugins\activity\FactoryOS.Plugins.Activity.csproj" />
+    <ProjectReference Include="..\..\plugins\brain\FactoryOS.Plugins.Brain.csproj" />
+    <ProjectReference Include="..\..\plugins\dashboard\FactoryOS.Plugins.Dashboard.csproj" />
+    <ProjectReference Include="..\..\plugins\deliveryhealth\FactoryOS.Plugins.DeliveryHealth.csproj" />
+    <ProjectReference Include="..\..\plugins\digitaltwin\FactoryOS.Plugins.DigitalTwin.csproj" />
+    <ProjectReference Include="..\..\plugins\notification\FactoryOS.Plugins.Notification.csproj" />
+    <ProjectReference Include="..\..\plugins\reporting\FactoryOS.Plugins.Reporting.csproj" />
+    <ProjectReference Include="..\..\plugins\ruleengine\FactoryOS.Plugins.RuleEngine.csproj" />
+    <ProjectReference Include="..\..\plugins\scheduler\FactoryOS.Plugins.Scheduler.csproj" />
+    <ProjectReference Include="..\..\plugins\hr\FactoryOS.Plugins.Hr.csproj" />
+    <ProjectReference Include="..\..\plugins\procurement\FactoryOS.Plugins.Procurement.csproj" />
+    <ProjectReference Include="..\..\plugins\production\FactoryOS.Plugins.Production.csproj" />
+    <ProjectReference Include="..\..\plugins\quality\FactoryOS.Plugins.Quality.csproj" />
+    <ProjectReference Include="..\..\plugins\safety\FactoryOS.Plugins.Safety.csproj" />
+    <ProjectReference Include="..\..\plugins\warehouse\FactoryOS.Plugins.Warehouse.csproj" />
+    <ProjectReference Include="..\..\plugins\workflow\FactoryOS.Plugins.Workflow.csproj" />
+  </ItemGroup>
+
+</Project>

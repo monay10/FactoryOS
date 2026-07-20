@@ -1,0 +1,24 @@
+{
+  "key": "ruleengine",
+  "name": "Rule Engine",
+  "version": "1.0.0",
+  "description": "Platform-layer rule automation: evaluates declarative metric-threshold rules against the Standard Model reading stream, computed OEE and computed carbon emissions, and emits RuleTriggered for each match, for modules and agents to act on.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.RuleEngine.dll",
+  "entryType": "FactoryOS.Plugins.RuleEngine.RuleEnginePlugin",
+  "dependencies": [],
+  "provides": [ "ruleengine.rules" ],
+  "consumes": [ "MeterReadingReceived", "OeeCalculated", "CarbonEmissionCalculated" ],
+  "emits": [ "RuleTriggered" ],
+  "ui": [
+    {
+      "id": "ruleengine.rules",
+      "title": "Rules",
+      "route": "/rules",
+      "component": "ruleengine/Rules",
+      "icon": "bolt",
+      "navSection": "Platform",
+      "order": 31
+    }
+  ]
+}

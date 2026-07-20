@@ -1,0 +1,16 @@
+{
+  "sourceSystem": "Mikro",
+  "entities": [
+    {
+      "sourceEntity": "STOKLAR",
+      "targetEntity": "InventoryItem",
+      "naturalKey": [ "Sku" ],
+      "fields": [
+        { "target": "Sku", "source": "sto_kod", "transform": "upper", "required": true },
+        { "target": "Name", "source": "sto_isim", "transform": "trim", "required": true },
+        { "target": "Quantity", "source": "bakiye", "transform": "decimal", "default": 0 },
+        { "target": "Unit", "source": "sto_birim1_ad", "transform": "lower" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "key": "csv",
+  "name": "CSV Connector",
+  "sourceSystem": "CSV",
+  "description": "Generic connector that reads a delimited text file, one Standard Model record per row.",
+  "provides": [ "InventoryItem" ],
+  "mapping": "mapping.json"
+}

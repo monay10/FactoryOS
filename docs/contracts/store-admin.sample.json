@@ -1,0 +1,16 @@
+{
+  "//": "The Store write side (Phase 5). POST /store/plugins/{key}/enable and POST /store/plugins/{key}/disable toggle a plugin's activation with no tenant branching. Responses: 200 with the plugin's refreshed Store entry (same shape as an item in /store/plugins — dependency health is recomputed, since disabling one plugin can flip another's 'satisfied'); 404 if no plugin has that key; 409 if the plugin is in a Failed state (fix and reload it first). Disabling is idempotent (a second disable is a no-op). In the first-party modular monolith, enabling returns a plugin straight to 'Started'; the out-of-process Store runtime will load and start the assembly on enable.",
+  "request": "POST /store/plugins/oee/disable",
+  "response_200": {
+    "key": "oee",
+    "name": "OEE",
+    "version": "1.2.0",
+    "description": "Overall Equipment Effectiveness read model.",
+    "author": "FactoryOS",
+    "state": "Disabled",
+    "provides": [ "oee.readmodel" ],
+    "dependencies": []
+  },
+  "response_404": { "outcome": "NotFound", "key": "ghost", "state": null },
+  "response_409": { "outcome": "Failed", "key": "legacy-scada", "state": "Failed" }
+}

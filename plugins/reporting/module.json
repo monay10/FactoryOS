@@ -1,0 +1,25 @@
+{
+  "key": "reporting",
+  "name": "Reporting",
+  "version": "1.0.0",
+  "description": "Experience-layer read model: aggregates the OEE event stream into per-machine daily history (average, best, worst) for reports and charts, and renders a stored CSV artifact when a report schedule comes due.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.Reporting.dll",
+  "entryType": "FactoryOS.Plugins.Reporting.ReportingPlugin",
+  "dependencies": [],
+  "requires": [ "filestorage.objects" ],
+  "provides": [ "reporting.oee-daily" ],
+  "consumes": [ "OeeCalculated", "ScheduledTaskDue" ],
+  "emits": [ "ReportGenerated" ],
+  "ui": [
+    {
+      "id": "reporting.oee",
+      "title": "OEE Trend",
+      "route": "/reports/oee",
+      "component": "reporting/OeeTrend",
+      "icon": "chart",
+      "navSection": "Experience",
+      "order": 10
+    }
+  ]
+}

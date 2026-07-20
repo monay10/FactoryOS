@@ -1,0 +1,16 @@
+{
+  "sourceSystem": "SAP",
+  "entities": [
+    {
+      "sourceEntity": "MARA",
+      "targetEntity": "InventoryItem",
+      "naturalKey": [ "Sku" ],
+      "fields": [
+        { "target": "Sku", "source": "MATNR", "transform": "upper", "required": true },
+        { "target": "Name", "source": "MAKTX", "transform": "trim", "required": true },
+        { "target": "Quantity", "source": "LABST", "transform": "decimal", "default": 0 },
+        { "target": "Unit", "source": "MEINS", "transform": "lower" }
+      ]
+    }
+  ]
+}

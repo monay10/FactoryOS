@@ -1,0 +1,11 @@
+{
+  "connector": "mikro",
+  "sourceSystem": "Mikro",
+  "options": {
+    "provider": "Microsoft.Data.SqlClient",
+    "connectionString": "Server=mikro-db;Database=MikroDB;User Id=factoryos;Password=${secret:MIKRO_DB_PASSWORD}"
+  },
+  "schedule": {
+    "cron": "*/20 * * * *"
+  }
+}

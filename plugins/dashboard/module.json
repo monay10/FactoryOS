@@ -1,0 +1,39 @@
+{
+  "key": "dashboard",
+  "name": "Dashboard",
+  "version": "1.0.0",
+  "description": "Experience-layer read model: keeps a live per-tenant operations board (latest OEE per machine and a recent alert feed) current by consuming events from any module.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.Dashboard.dll",
+  "entryType": "FactoryOS.Plugins.Dashboard.DashboardPlugin",
+  "dependencies": [],
+  "provides": [ "dashboard.operations-board" ],
+  "consumes": [ "OeeCalculated", "SafetyStandDownTriggered", "QualityAlertRaised", "LowStockDetected", "EnergySpikeDetected", "DeliveryHealthDegraded", "WorkOrderClosed", "QualityLineQuarantined" ],
+  "emits": [],
+  "api": [
+    {
+      "method": "GET",
+      "path": "/m/dashboard/board",
+      "query": [ "tenant", "level", "kind" ],
+      "description": "A tenant's live operations board in one call: latest OEE per machine and the recent alert feed (newest first); optional level and/or kind filters narrow the feed while the critical count stays a whole-board headline."
+    },
+    {
+      "method": "GET",
+      "path": "/m/dashboard/summary",
+      "query": [ "tenant" ],
+      "description": "A tenant's board headline: machines tracked, machines below target, recent alerts, critical alerts and a per-kind alert breakdown (ordered by count descending)."
+    }
+  ],
+  "ui": [
+    {
+      "id": "dashboard.operations",
+      "title": "Operations",
+      "route": "/dashboard",
+      "component": "dashboard/OperationsBoard",
+      "icon": "dashboard",
+      "requiredPermission": "dashboard.view",
+      "navSection": "Experience",
+      "order": 1
+    }
+  ]
+}

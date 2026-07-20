@@ -1,0 +1,25 @@
+{
+  "key": "brain",
+  "name": "Brain Query Agent",
+  "version": "1.0.0",
+  "kind": "agent",
+  "description": "AI digital worker: answers questions posed on the bus from the tenant's knowledge base via the Company Brain (RAG + LLM Gateway), re-entering the grounded answer as BrainAnswered.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Agents.Brain.dll",
+  "entryType": "FactoryOS.Agents.Brain.BrainQueryAgentPlugin",
+  "model": "fast",
+  "dependencies": [],
+  "consumes": [ "BrainQuestionAsked" ],
+  "emits": [ "BrainAnswered" ],
+  "ui": [
+    {
+      "id": "brain.ask",
+      "title": "Ask the Brain",
+      "route": "/brain/ask",
+      "component": "brain/Ask",
+      "icon": "message-circle",
+      "navSection": "AI",
+      "order": 20
+    }
+  ]
+}

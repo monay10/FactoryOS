@@ -1,0 +1,39 @@
+{
+  "key": "warehouse",
+  "name": "Warehouse",
+  "version": "1.0.0",
+  "description": "Maintains per-warehouse on-hand levels from stock movements and raises a low-stock alert when an item crosses its reorder point.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.Warehouse.dll",
+  "entryType": "FactoryOS.Plugins.Warehouse.WarehousePlugin",
+  "dependencies": [],
+  "provides": [ "warehouse.inventory" ],
+  "consumes": [ "StockMovementRecorded", "ItemReorderPointDefined" ],
+  "emits": [ "LowStockDetected" ],
+  "api": [
+    {
+      "method": "GET",
+      "path": "/m/warehouse/stock",
+      "query": [ "tenant", "belowReorder" ],
+      "description": "A tenant's on-hand levels per warehouse item, each flagged against its reorder point; an optional filter narrows to items below reorder."
+    },
+    {
+      "method": "GET",
+      "path": "/m/warehouse/summary",
+      "query": [ "tenant" ],
+      "description": "A tenant's stock rollup: how many items are tracked and how many are below their reorder point."
+    }
+  ],
+  "ui": [
+    {
+      "id": "warehouse.dashboard",
+      "title": "Warehouse",
+      "route": "/warehouse",
+      "component": "warehouse/Dashboard",
+      "icon": "package",
+      "requiredPermission": "warehouse.view",
+      "navSection": "Operations",
+      "order": 37
+    }
+  ]
+}

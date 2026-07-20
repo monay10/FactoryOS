@@ -1,0 +1,30 @@
+{
+  "key": "energy",
+  "name": "Energy Monitoring",
+  "version": "1.0.0",
+  "description": "Consumes meter readings, records energy consumption and detects consumption spikes against a rolling baseline.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.Energy.dll",
+  "entryType": "FactoryOS.Plugins.Energy.EnergyPlugin",
+  "dependencies": [],
+  "provides": [ "energy.monitoring", "energy.readmodel" ],
+  "consumes": [ "MeterReadingReceived" ],
+  "emits": [ "EnergyConsumptionRecorded", "EnergySpikeDetected" ],
+  "api": [
+    { "method": "GET", "path": "/m/energy/meters", "query": [ "tenant" ], "description": "A tenant's live per-meter readings: the latest value against its rolling baseline and how far above (or below) it sits, in percent." },
+    { "method": "GET", "path": "/m/energy/spikes", "query": [ "tenant", "max" ], "description": "A tenant's most recent detected consumption spikes, newest first." },
+    { "method": "GET", "path": "/m/energy/summary", "query": [ "tenant" ], "description": "A tenant's energy headline: meters tracked and spikes retained." }
+  ],
+  "ui": [
+    {
+      "id": "energy.dashboard",
+      "title": "Energy",
+      "route": "/energy",
+      "component": "energy/Dashboard",
+      "icon": "bolt",
+      "requiredPermission": "energy.view",
+      "navSection": "Operations",
+      "order": 30
+    }
+  ]
+}

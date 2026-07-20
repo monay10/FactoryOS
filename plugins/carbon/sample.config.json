@@ -1,0 +1,10 @@
+{
+  "module": "carbon",
+  "options": {
+    "emissionFactors": {
+      "ActivePower": 0.4,
+      "NaturalGas": 2.02
+    },
+    "defaultEmissionFactor": 0
+  }
+}

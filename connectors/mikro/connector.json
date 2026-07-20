@@ -1,0 +1,8 @@
+{
+  "key": "mikro",
+  "name": "Mikro Connector",
+  "sourceSystem": "Mikro",
+  "description": "Reads the Mikro ERP stock master with aggregated stock balance, normalized into the Standard Model.",
+  "provides": [ "InventoryItem" ],
+  "mapping": "mapping.json"
+}

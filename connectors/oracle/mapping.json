@@ -1,0 +1,16 @@
+{
+  "sourceSystem": "Oracle",
+  "entities": [
+    {
+      "sourceEntity": "MTL_SYSTEM_ITEMS",
+      "targetEntity": "InventoryItem",
+      "naturalKey": [ "Sku" ],
+      "fields": [
+        { "target": "Sku", "source": "SEGMENT1", "transform": "upper", "required": true },
+        { "target": "Name", "source": "DESCRIPTION", "transform": "trim", "required": true },
+        { "target": "Quantity", "source": "ONHAND", "transform": "decimal", "default": 0 },
+        { "target": "Unit", "source": "PRIMARY_UOM_CODE", "transform": "lower" }
+      ]
+    }
+  ]
+}

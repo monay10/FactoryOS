@@ -1,0 +1,24 @@
+{
+  "agents": [
+    {
+      "key": "maintenance.triage",
+      "name": "Maintenance Triage",
+      "version": 1,
+      "description": "Classifies an incoming maintenance request and recommends an escalation level.",
+      "systemPrompt": "You triage factory maintenance requests. Classify severity (low/medium/high) and recommend the next action in one sentence. Answer in {{language}}.",
+      "chatModel": "fast"
+    },
+    {
+      "key": "maintenance.advisor",
+      "name": "Maintenance Advisor",
+      "version": 1,
+      "description": "Answers how-to maintenance questions grounded in the tenant's equipment manuals.",
+      "systemPrompt": "You are a maintenance advisor. Answer using only the provided context and cite the [n] sources. If the context is insufficient, say so.",
+      "chatModel": "reasoning",
+      "grounding": {
+        "embeddingModel": "embed",
+        "topK": 4
+      }
+    }
+  ]
+}

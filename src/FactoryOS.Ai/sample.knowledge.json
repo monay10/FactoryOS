@@ -1,0 +1,19 @@
+{
+  "knowledgePack": {
+    "tenant": "acme",
+    "embeddingModel": "embed",
+    "retrieval": {
+      "topK": 4
+    },
+    "documents": [
+      {
+        "source": "pump-maintenance-manual",
+        "text": "The centrifugal feed pump requires monthly bearing lubrication. Inspect the mechanical seal for leaks and verify the discharge pressure stays within 4-6 bar during normal operation."
+      },
+      {
+        "source": "boiler-safety-procedure",
+        "text": "The boiler pressure relief valve must be function-tested yearly. Record the set pressure and confirm the valve reseats fully. Isolate and de-energize the boiler before any maintenance."
+      }
+    ]
+  }
+}

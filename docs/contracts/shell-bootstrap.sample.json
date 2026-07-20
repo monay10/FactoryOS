@@ -1,0 +1,35 @@
+{
+  "//": "Sample response of GET /shell — everything a shell needs on a cold start in one call, composed from the same providers behind /tenant, /modules/ui/nav and /modules/api. An unresolved tenant is not an error: the shell can prompt for one. Everything reflects exactly the active plugins; there is no core-side branching.",
+  "tenant": {
+    "resolved": true,
+    "tenant": "acme"
+  },
+  "nav": {
+    "sections": [
+      {
+        "section": "Experience",
+        "items": [
+          {
+            "module": "dashboard",
+            "id": "dashboard.operations",
+            "title": "Operations",
+            "route": "/dashboard",
+            "component": "dashboard/OperationsBoard",
+            "icon": "dashboard",
+            "requiredPermission": null,
+            "order": 1
+          }
+        ]
+      }
+    ]
+  },
+  "apis": [
+    {
+      "key": "activity",
+      "name": "Activity",
+      "routes": [
+        { "method": "GET", "path": "/m/activity/feed", "query": [ "tenant", "max" ], "description": "A tenant's recent activity, newest first." }
+      ]
+    }
+  ]
+}

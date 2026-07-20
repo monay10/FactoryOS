@@ -1,0 +1,9 @@
+{
+  "module": "scheduler",
+  "options": {
+    "schedules": [
+      { "id": "daily-oee-report", "action": "GenerateReport", "everySeconds": 86400 },
+      { "id": "erp-stock-pull", "action": "PullErpStock", "everySeconds": 3600 }
+    ]
+  }
+}

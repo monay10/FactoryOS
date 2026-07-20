@@ -1,0 +1,10 @@
+{
+  "key": "log",
+  "name": "Log Transport Connector",
+  "direction": "outbound",
+  "transport": "log",
+  "description": "The reference outbound connector: delivers dispatched notifications by journaling them and emitting NotificationDelivered. The door out for the 'log' transport.",
+  "entryType": "FactoryOS.Connectors.Log.LogConnectorPlugin",
+  "consumes": [ "NotificationDispatched" ],
+  "emits": [ "NotificationDelivered" ]
+}

@@ -1,0 +1,12 @@
+{
+  "module": "ruleengine",
+  "options": {
+    "rules": [
+      { "id": "overtemp-press-1", "metric": "Temperature", "operator": "GreaterThan", "threshold": 85.0, "action": "RaiseMaintenanceAlert" },
+      { "id": "power-spike", "metric": "ActivePower", "operator": "GreaterOrEqual", "threshold": 500.0, "action": "NotifyEnergyDesk" },
+      { "id": "pressure-low", "metric": "Pressure", "operator": "LessThan", "threshold": 2.0, "action": "RaiseMaintenanceAlert" },
+      { "//oee": "Rules whose metric is 'Oee' evaluate against computed OeeCalculated facts (Oee is a fraction in [0,1]); the machine is carried as the meter.", "id": "oee-degraded", "metric": "Oee", "operator": "LessThan", "threshold": 0.6, "action": "RaiseMaintenanceAlert" },
+      { "//carbon": "Rules whose metric is 'CarbonCo2e' evaluate against computed CarbonEmissionCalculated facts (per-reading kg CO₂e); the emitting source is carried as the meter.", "id": "carbon-spike", "metric": "CarbonCo2e", "operator": "GreaterThan", "threshold": 50.0, "action": "RaiseSustainabilityAlert" }
+    ]
+  }
+}

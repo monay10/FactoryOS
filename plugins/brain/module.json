@@ -1,0 +1,30 @@
+{
+  "key": "brain",
+  "name": "Company Brain",
+  "version": "1.0.0",
+  "description": "The HTTP face of the Company Brain: POST /ask publishes a BrainQuestionAsked on the bus (asking is decoupled from answering), and GET /answers serves a per-tenant, newest-first log of the grounded answers the Brain Query agent re-enters as BrainAnswered — so a UI can hold a conversation without touching the AI layer.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.Brain.dll",
+  "entryType": "FactoryOS.Plugins.Brain.BrainPlugin",
+  "dependencies": [],
+  "provides": [ "brain.answerlog", "brain.api" ],
+  "consumes": [ "BrainAnswered" ],
+  "emits": [ "BrainQuestionAsked" ],
+  "api": [
+    { "method": "POST", "path": "/m/brain/ask", "query": [ "tenant" ], "description": "Pose a question to the Company Brain. Publishes a BrainQuestionAsked on the bus and returns 202 with the question id; the grounded answer arrives asynchronously and surfaces at GET /answers." },
+    { "method": "GET", "path": "/m/brain/answers", "query": [ "tenant", "max" ], "description": "A tenant's most recent grounded Brain answers, newest first, each with its question, model and knowledge citations." },
+    { "method": "GET", "path": "/m/brain/summary", "query": [ "tenant" ], "description": "Answer-log headline for a tenant: total grounded answers kept and a per-model tally, ordered by count descending." }
+  ],
+  "ui": [
+    {
+      "id": "brain.answers",
+      "title": "Brain Answers",
+      "route": "/brain/answers",
+      "component": "brain/Answers",
+      "icon": "message-circle",
+      "requiredPermission": "brain.view",
+      "navSection": "AI",
+      "order": 21
+    }
+  ]
+}

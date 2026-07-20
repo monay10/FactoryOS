@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\FactoryOS.Application\FactoryOS.Application.csproj" />
+    <ProjectReference Include="..\FactoryOS.Gateway\FactoryOS.Gateway.csproj" />
+    <ProjectReference Include="..\FactoryOS.Infrastructure\FactoryOS.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>

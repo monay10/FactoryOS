@@ -1,0 +1,6 @@
+{
+  "module": "production",
+  "options": {
+    "allowOverProduction": true
+  }
+}

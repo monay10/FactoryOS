@@ -1,0 +1,50 @@
+# FactoryOS Enterprise — Git attributes
+# Normalize line endings so the same source builds identically on every platform.
+
+# Auto-detect text files and normalize to LF in the repository.
+* text=auto eol=lf
+
+# Explicit text files (LF in the repo, checked out as-is).
+*.cs        text diff=csharp
+*.csproj    text
+*.slnx      text
+*.sln       text eol=crlf
+*.props     text
+*.targets   text
+*.json      text
+*.jsonc     text
+*.xml       text
+*.config    text
+*.md        text
+*.yml       text
+*.yaml      text
+*.ts        text
+*.tsx       text
+*.js        text
+*.jsx       text
+*.css       text
+*.html      text
+*.editorconfig text
+*.sh        text eol=lf
+*.ps1       text eol=crlf
+
+# Binary files — never diff or normalize.
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.svg       text
+*.pdf       binary
+*.zip       binary
+*.gz        binary
+*.dll       binary
+*.exe       binary
+*.snk       binary
+*.woff      binary
+*.woff2     binary
+
+# Language statistics: keep vendored/generated output out of the language bar.
+web/dist/**       linguist-generated=true
+**/bin/**         linguist-generated=true
+**/obj/**         linguist-generated=true

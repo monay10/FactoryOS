@@ -1,0 +1,16 @@
+{
+  "sourceSystem": "REST",
+  "entities": [
+    {
+      "sourceEntity": "Product",
+      "targetEntity": "InventoryItem",
+      "naturalKey": [ "Sku" ],
+      "fields": [
+        { "target": "Sku", "source": "code", "transform": "upper", "required": true },
+        { "target": "Name", "source": "title", "transform": "trim", "required": true },
+        { "target": "Quantity", "source": "stock", "transform": "decimal", "default": 0 },
+        { "target": "Unit", "source": "unit", "transform": "lower" }
+      ]
+    }
+  ]
+}

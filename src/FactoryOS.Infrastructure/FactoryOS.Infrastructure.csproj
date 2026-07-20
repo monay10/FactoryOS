@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\FactoryOS.Application\FactoryOS.Application.csproj" />
+    <ProjectReference Include="..\FactoryOS.Persistence\FactoryOS.Persistence.csproj" />
+    <ProjectReference Include="..\FactoryOS.Identity\FactoryOS.Identity.csproj" />
+    <ProjectReference Include="..\FactoryOS.EventBus\FactoryOS.EventBus.csproj" />
+    <ProjectReference Include="..\FactoryOS.Configuration\FactoryOS.Configuration.csproj" />
+    <ProjectReference Include="..\FactoryOS.Ai\FactoryOS.Ai.csproj" />
+    <ProjectReference Include="..\FactoryOS.Core\FactoryOS.Core.csproj" />
+    <ProjectReference Include="..\FactoryOS.Plugin\FactoryOS.Plugin.csproj" />
+    <ProjectReference Include="..\FactoryOS.Contracts\FactoryOS.Contracts.csproj" />
+    <ProjectReference Include="..\FactoryOS.Shared\FactoryOS.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.10" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.10" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,11 @@
+{
+  "agent": "insight",
+  "//triggers": "Reacts to SafetyStandDownTriggered, QualityAlertRaised and RuleTriggered (any fired rule, incl. OEE degradation); one prompt serves every trigger.",
+  "//feed": "Generated insights are also folded into a per-tenant, bounded read model served over the gateway at GET /m/insight/feed and /m/insight/summary (tenant via the X-FactoryOS-Tenant header).",
+  "options": {
+    "model": "reasoning",
+    "systemPrompt": "You are a factory operations advisor. Given an alert or a fired automation rule, respond with a concise root-cause hypothesis and one recommended action. Be specific and under 80 words.",
+    "temperature": 0.2,
+    "maxTokens": 256
+  }
+}

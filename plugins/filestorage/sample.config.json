@@ -1,0 +1,6 @@
+{
+  "module": "filestorage",
+  "options": {
+    "maxObjectSizeBytes": 26214400
+  }
+}

@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="NetArchTest.Rules" Version="1.3.2" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FactoryOS.Domain\FactoryOS.Domain.csproj" />
+    <ProjectReference Include="..\..\src\FactoryOS.Contracts\FactoryOS.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\FactoryOS.Shared\FactoryOS.Shared.csproj" />
+    <ProjectReference Include="..\..\src\FactoryOS.Application\FactoryOS.Application.csproj" />
+    <ProjectReference Include="..\..\src\FactoryOS.EventBus\FactoryOS.EventBus.csproj" />
+    <ProjectReference Include="..\..\src\FactoryOS.Persistence\FactoryOS.Persistence.csproj" />
+    <ProjectReference Include="..\..\src\FactoryOS.Identity\FactoryOS.Identity.csproj" />
+    <ProjectReference Include="..\..\src\FactoryOS.Plugin\FactoryOS.Plugin.csproj" />
+    <ProjectReference Include="..\..\src\FactoryOS.Core\FactoryOS.Core.csproj" />
+    <ProjectReference Include="..\..\src\FactoryOS.Infrastructure\FactoryOS.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\FactoryOS.Configuration\FactoryOS.Configuration.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,11 @@
+{
+  "connector": "oracle",
+  "sourceSystem": "Oracle",
+  "options": {
+    "provider": "Oracle.ManagedDataAccess",
+    "connectionString": "Data Source=oracle-ebs;User Id=factoryos;Password=${secret:ORACLE_DB_PASSWORD}"
+  },
+  "schedule": {
+    "cron": "*/30 * * * *"
+  }
+}

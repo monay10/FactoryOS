@@ -1,0 +1,28 @@
+{
+  "key": "deliveryhealth",
+  "name": "Delivery Health",
+  "version": "1.0.0",
+  "description": "Observability read model over notification delivery: folds NotificationDelivered outcomes into per-tenant, per-transport tallies (attempts, delivered, failed) plus a bounded recent-failure list, closing the notification audit trail on the read side.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.DeliveryHealth.dll",
+  "entryType": "FactoryOS.Plugins.DeliveryHealth.DeliveryHealthPlugin",
+  "dependencies": [],
+  "provides": [ "deliveryhealth.store", "deliveryhealth.api" ],
+  "consumes": [ "NotificationDelivered" ],
+  "emits": [ "DeliveryHealthDegraded" ],
+  "api": [
+    { "method": "GET", "path": "/m/deliveryhealth/health", "query": [ "tenant" ], "description": "Per-transport delivery tallies for a tenant." },
+    { "method": "GET", "path": "/m/deliveryhealth/failures", "query": [ "tenant", "max" ], "description": "A tenant's most recent failed deliveries, newest first." }
+  ],
+  "ui": [
+    {
+      "id": "deliveryhealth.store",
+      "title": "Delivery Health",
+      "route": "/delivery-health",
+      "component": "deliveryhealth/Health",
+      "icon": "activity",
+      "navSection": "Platform",
+      "order": 30
+    }
+  ]
+}

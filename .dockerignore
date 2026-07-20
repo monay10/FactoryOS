@@ -1,0 +1,13 @@
+**/bin/
+**/obj/
+**/out/
+.git/
+.vs/
+.idea/
+.vscode/
+**/*.user
+**/TestResults/
+coverage/
+*.md
+!README.md
+.env

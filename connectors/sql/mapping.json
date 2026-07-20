@@ -1,0 +1,16 @@
+{
+  "sourceSystem": "SQL",
+  "entities": [
+    {
+      "sourceEntity": "stock",
+      "targetEntity": "InventoryItem",
+      "naturalKey": [ "Sku" ],
+      "fields": [
+        { "target": "Sku", "source": "sku", "transform": "upper", "required": true },
+        { "target": "Name", "source": "name", "transform": "trim", "required": true },
+        { "target": "Quantity", "source": "quantity", "transform": "decimal", "default": 0 },
+        { "target": "Unit", "source": "unit", "transform": "lower" }
+      ]
+    }
+  ]
+}

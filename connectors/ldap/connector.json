@@ -1,0 +1,8 @@
+{
+  "key": "ldap",
+  "name": "LDAP Directory Connector",
+  "sourceSystem": "LDAP",
+  "description": "Reads users and groups from a generic LDAP directory, normalized into the Standard Model.",
+  "provides": [ "DirectoryUser", "DirectoryGroup" ],
+  "mapping": "mapping.json"
+}

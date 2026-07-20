@@ -1,0 +1,13 @@
+{
+  "module": "brain",
+  "options": {
+    "logCapacity": 100
+  },
+  "//readmodel": "This module keeps a per-tenant, newest-first log of grounded answers, fed exclusively by BrainAnswered events on the bus. The Brain Query agent (agent.brain) produces those answers via RAG + the LLM Gateway over HTTP; this module never touches the AI layer.",
+  "api": {
+    "//tenant": "The tenant is resolved by the gateway from the 'X-FactoryOS-Tenant' header (preferred) or the 'tenant' query fallback shown below; a request with no resolvable tenant is rejected with 400.",
+    "ask": "POST /m/brain/ask   body: { \"question\": \"Why did press-1 spike last night?\", \"askedBy\": \"user:mehmet\" }   (header X-FactoryOS-Tenant: <tenant>)  ->  202 { tenant, questionId, question }",
+    "answers": "GET /m/brain/answers?max=50   (header X-FactoryOS-Tenant: <tenant>)  |  GET /m/brain/answers?tenant=<tenant>&max=50",
+    "summary": "GET /m/brain/summary   (header X-FactoryOS-Tenant: <tenant>)  ->  { tenant, total, byModel: [ { model, count }, ... ] } — a per-model tally for an at-a-glance strip."
+  }
+}

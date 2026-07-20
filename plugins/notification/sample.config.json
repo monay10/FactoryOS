@@ -1,0 +1,24 @@
+{
+  "module": "notification",
+  "options": {
+    "channelTransports": {
+      "ops": "sms",
+      "quality": "email",
+      "procurement": "email",
+      "hr": "email",
+      "reports": "email",
+      "assistant": "chat"
+    },
+    "defaultTransport": "log",
+    "reportNotificationChannel": "reports",
+    "reportNotificationPriority": "Normal",
+    "reportNotificationAction": "Notify",
+    "assistantNotificationChannel": "assistant",
+    "assistantNotificationPriority": "Normal",
+    "assistantNotificationAction": "Notify"
+  },
+  "api": {
+    "//tenant": "The tenant is resolved by the gateway from the 'X-FactoryOS-Tenant' header (preferred) or the 'tenant' query fallback shown below; a request with no resolvable tenant is rejected with 400.",
+    "outbox": "GET /m/notification/outbox?max=50   (header X-FactoryOS-Tenant: <tenant>)  |  GET /m/notification/outbox?tenant=<tenant>&max=50"
+  }
+}

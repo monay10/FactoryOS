@@ -1,0 +1,13 @@
+{
+  "connector": "sample-logo",
+  "sourceSystem": "Logo",
+  "connection": {
+    "host": "logo-db.internal",
+    "database": "LOGODB",
+    "user": "factoryos",
+    "password": "${secret:LOGO_DB_PASSWORD}"
+  },
+  "schedule": {
+    "cron": "*/15 * * * *"
+  }
+}

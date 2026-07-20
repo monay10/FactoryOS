@@ -1,0 +1,6 @@
+{
+  "sample": {
+    "greetingPrefix": "Hello",
+    "enabled": true
+  }
+}

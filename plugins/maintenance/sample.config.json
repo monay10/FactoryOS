@@ -1,0 +1,15 @@
+{
+  "module": "maintenance",
+  "options": {
+    "spikeWorkOrderDueInHours": 24,
+    "spikeWorkOrderPrefix": "WO",
+    "ruleWorkOrderDueInHours": 24,
+    "ruleWorkOrderPrefix": "WOR",
+    "ruleActions": [ "RaiseMaintenanceAlert" ]
+  },
+  "api": {
+    "//tenant": "The tenant is resolved by the gateway from the 'X-FactoryOS-Tenant' header (preferred) or the 'tenant' query fallback shown below; a request with no resolvable tenant is rejected with 400.",
+    "workOrders": "GET /m/maintenance/workorders[?status=Open]   (header X-FactoryOS-Tenant: <tenant>)  |  GET /m/maintenance/workorders?tenant=<tenant>&status=Open   — soonest-due first; optional case-insensitive status filter",
+    "summary": "GET /m/maintenance/summary   (header X-FactoryOS-Tenant: <tenant>)  |  GET /m/maintenance/summary?tenant=<tenant>   — total work orders and per-status counts"
+  }
+}

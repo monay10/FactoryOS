@@ -1,0 +1,8 @@
+{
+  "agent": "brain",
+  "options": {
+    "chatModel": "fast",
+    "embeddingModel": "embed",
+    "topK": 4
+  }
+}

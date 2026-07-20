@@ -1,0 +1,8 @@
+{
+  "key": "oracle",
+  "name": "Oracle Connector",
+  "sourceSystem": "Oracle",
+  "description": "Reads the Oracle EBS item master with on-hand quantities, normalized into the Standard Model.",
+  "provides": [ "InventoryItem" ],
+  "mapping": "mapping.json"
+}

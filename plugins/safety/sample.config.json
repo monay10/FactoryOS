@@ -1,0 +1,8 @@
+{
+  "module": "safety",
+  "options": {
+    "standDownSeverity": 4,
+    "frequencyThreshold": 3,
+    "windowSize": 10
+  }
+}

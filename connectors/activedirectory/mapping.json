@@ -1,0 +1,26 @@
+{
+  "sourceSystem": "ActiveDirectory",
+  "entities": [
+    {
+      "sourceEntity": "USERS",
+      "targetEntity": "DirectoryUser",
+      "naturalKey": [ "Username" ],
+      "fields": [
+        { "target": "Username", "source": "sAMAccountName", "transform": "lower", "required": true },
+        { "target": "DisplayName", "source": "displayName", "transform": "trim", "required": true },
+        { "target": "Email", "source": "mail", "transform": "lower" },
+        { "target": "Enabled", "source": "enabled", "default": true }
+      ]
+    },
+    {
+      "sourceEntity": "GROUPS",
+      "targetEntity": "DirectoryGroup",
+      "naturalKey": [ "GroupName" ],
+      "fields": [
+        { "target": "GroupName", "source": "sAMAccountName", "transform": "trim", "required": true },
+        { "target": "DisplayName", "source": "displayName", "transform": "trim", "required": true },
+        { "target": "Description", "source": "description", "transform": "trim" }
+      ]
+    }
+  ]
+}

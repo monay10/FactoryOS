@@ -1,0 +1,28 @@
+{
+  "//": "Sample response of GET /store/plugins — the marketplace view of everything installed on this host (active, disabled or failed), built purely from manifests. For each declared dependency, 'satisfied' reports whether an ACTIVE plugin with that key is installed at a version >= minimumVersion; disabled or failed plugins satisfy nothing. This is the read foundation of the Store (Phase 5), the counterpart to /modules that adds package metadata and dependency health.",
+  "plugins": [
+    {
+      "key": "maintenance",
+      "name": "Maintenance",
+      "version": "1.0.0",
+      "description": "Predictive and preventive maintenance work orders.",
+      "author": "FactoryOS",
+      "state": "Started",
+      "provides": [ "maintenance.workorders" ],
+      "dependencies": [
+        { "pluginKey": "oee", "minimumVersion": "1.0.0", "satisfied": true },
+        { "pluginKey": "legacy-scada", "minimumVersion": "2.0.0", "satisfied": false }
+      ]
+    },
+    {
+      "key": "oee",
+      "name": "OEE",
+      "version": "1.2.0",
+      "description": "Overall Equipment Effectiveness read model.",
+      "author": "FactoryOS",
+      "state": "Started",
+      "provides": [ "oee.readmodel" ],
+      "dependencies": []
+    }
+  ]
+}

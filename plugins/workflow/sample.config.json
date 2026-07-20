@@ -1,0 +1,14 @@
+{
+  "module": "workflow",
+  "options": {
+    "rules": [
+      { "trigger": "SafetyStandDownTriggered", "action": "Notify", "priority": "Critical", "channel": "ops" },
+      { "trigger": "QualityAlertRaised", "action": "Notify", "priority": "High", "channel": "quality" },
+      { "trigger": "LowStockDetected", "action": "Escalate", "priority": "Normal", "channel": "procurement" },
+      { "trigger": "CertificationGapDetected", "action": "Notify", "priority": "High", "channel": "hr" },
+      { "trigger": "WorkOrderCreated", "action": "Notify", "priority": "High", "channel": "maintenance" },
+      { "trigger": "RuleTriggered", "action": "Notify", "priority": "High", "channel": "ops" },
+      { "trigger": "PurchaseRequisitionRaised", "action": "Notify", "priority": "Normal", "channel": "procurement" }
+    ]
+  }
+}

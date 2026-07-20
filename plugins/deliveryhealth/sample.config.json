@@ -1,0 +1,12 @@
+{
+  "module": "deliveryhealth",
+  "options": {
+    "recentFailureCapacity": 50,
+    "failureThreshold": 3
+  },
+  "api": {
+    "//tenant": "The tenant is resolved by the gateway from the 'X-FactoryOS-Tenant' header (preferred) or the 'tenant' query fallback shown below; a request with no resolvable tenant is rejected with 400.",
+    "health": "GET /m/deliveryhealth/health   (header X-FactoryOS-Tenant: <tenant>)  |  GET /m/deliveryhealth/health?tenant=<tenant>",
+    "failures": "GET /m/deliveryhealth/failures?max=20   (header X-FactoryOS-Tenant: <tenant>)  |  GET /m/deliveryhealth/failures?tenant=<tenant>&max=20"
+  }
+}

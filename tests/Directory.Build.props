@@ -1,0 +1,21 @@
+<Project>
+
+  <!-- Inherit all root build settings (target framework, nullable, warnings-as-errors). -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <!--
+    Test projects do not require XML documentation on their test classes; the rest of the
+    FactoryOS Constitution (SOLID, nullable, warnings-as-errors) still applies.
+  -->
+  <PropertyGroup>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!--
+      CS1591: no XML docs on tests. CA1707: underscore-style test method names are idiomatic.
+      CA1859: tests intentionally use interface-typed variables to exercise the abstraction.
+    -->
+    <NoWarn>$(NoWarn);CS1591;CA1707;CA1859</NoWarn>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+</Project>

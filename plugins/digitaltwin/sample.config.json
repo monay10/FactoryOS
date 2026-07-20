@@ -1,0 +1,6 @@
+{
+  "module": "digitaltwin",
+  "options": {
+    "degradedOeeThreshold": 0.60
+  }
+}

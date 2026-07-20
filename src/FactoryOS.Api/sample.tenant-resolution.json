@@ -1,0 +1,11 @@
+{
+  "//": "Sample gateway tenant-resolution configuration. Merge the 'Gateway' section into appsettings.json (or an environment override) to change how the API host resolves the tenant of each request. Both keys are optional; the values below are the defaults. Nothing here is customer-specific — the tenant itself always arrives on the request, never in this file.",
+  "Gateway": {
+    "TenantResolution": {
+      "//": "Primary source: the request header carrying the tenant of the authenticated session.",
+      "HeaderName": "X-FactoryOS-Tenant",
+      "//queryFallback": "Fallback source used when the header is absent (handy for links, tools and tests).",
+      "QueryFallbackKey": "tenant"
+    }
+  }
+}

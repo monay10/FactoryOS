@@ -1,0 +1,33 @@
+<Project>
+
+  <!--
+    FactoryOS Enterprise — Central Package Management (CPM) anchor.
+
+    This file is the single, repository-wide home for NuGet package versions. It is
+    present as part of the solution foundation, but Central Package Management is
+    intentionally kept OFF for now: the existing projects still declare their versions
+    inline on each <PackageReference>. Flipping ManagePackageVersionsCentrally to true
+    requires migrating every project to versionless PackageReference in the same change,
+    which is a dedicated migration — not a foundation task — so it is deferred to keep
+    the build green.
+
+    When the migration sprint runs:
+      1. Set ManagePackageVersionsCentrally to true below.
+      2. Move each version into a <PackageVersion Include="..." Version="..." /> here.
+      3. Strip the Version attribute from every <PackageReference> across the solution.
+  -->
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+
+  <!--
+    Package versions will be centralized here (as <PackageVersion .../> items) when CPM
+    is enabled. Kept empty by design while CPM is off, so this file has no effect on the
+    current inline-versioned build.
+  -->
+  <ItemGroup>
+  </ItemGroup>
+
+</Project>

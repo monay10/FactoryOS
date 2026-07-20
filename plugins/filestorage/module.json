@@ -1,0 +1,13 @@
+{
+  "key": "filestorage",
+  "name": "File Storage",
+  "version": "1.0.0",
+  "description": "Platform-layer object store: a tenant-scoped blob storage capability (put/get/exists/list) abstracting MinIO/S3, for modules to persist reports, attachments and exports without a direct storage dependency.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.FileStorage.dll",
+  "entryType": "FactoryOS.Plugins.FileStorage.FileStoragePlugin",
+  "dependencies": [],
+  "provides": [ "filestorage.objects" ],
+  "consumes": [],
+  "emits": []
+}

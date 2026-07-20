@@ -1,0 +1,24 @@
+{
+  "key": "hr",
+  "name": "HR",
+  "version": "1.0.0",
+  "description": "Checks workers staffed on certification-required shifts against their recorded certifications and raises a gap when one is missing or expired.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.Hr.dll",
+  "entryType": "FactoryOS.Plugins.Hr.HrPlugin",
+  "dependencies": [],
+  "provides": [ "hr.certifications" ],
+  "consumes": [ "WorkerCertificationRecorded", "ShiftStaffed" ],
+  "emits": [ "CertificationGapDetected" ],
+  "ui": [
+    {
+      "id": "hr.dashboard",
+      "title": "HR",
+      "route": "/hr",
+      "component": "hr/Dashboard",
+      "icon": "users",
+      "navSection": "People",
+      "order": 45
+    }
+  ]
+}

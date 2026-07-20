@@ -1,0 +1,29 @@
+{
+  "tenantId": "tenant_001",
+  "name": "Demo Factory",
+  "environment": "Production",
+  "branding": {
+    "displayName": "Demo Factory",
+    "primaryColor": "#0F62FE",
+    "logoUrl": "https://cdn.example.com/tenant_001/logo.svg"
+  },
+  "localization": {
+    "language": "tr",
+    "timeZone": "Europe/Istanbul",
+    "units": "Metric"
+  },
+  "modules": [
+    { "key": "energy", "enabled": true, "settings": { "sampleIntervalSeconds": "60" } },
+    { "key": "maintenance", "enabled": true, "settings": {} },
+    { "key": "quality", "enabled": false, "settings": {} }
+  ],
+  "plugins": [
+    {
+      "key": "logo",
+      "enabled": true,
+      "settings": {
+        "connectionString": "Server=erp;Database=logo;User Id=svc;Password=${secret:LOGO_DB_PASSWORD};"
+      }
+    }
+  ]
+}

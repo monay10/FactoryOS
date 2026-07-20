@@ -1,0 +1,11 @@
+{
+  "module": "warehouse",
+  "options": {
+    "defaultReorderPoint": 0
+  },
+  "api": {
+    "//tenant": "The tenant is resolved by the gateway from the 'X-FactoryOS-Tenant' header (preferred) or the 'tenant' query fallback shown below; a request with no resolvable tenant is rejected with 400.",
+    "stock": "GET /m/warehouse/stock[?belowReorder=true]   (header X-FactoryOS-Tenant: <tenant>)  |  GET /m/warehouse/stock?tenant=<tenant>&belowReorder=true   — on-hand levels; optional filter to only items at/below their reorder point",
+    "summary": "GET /m/warehouse/summary   (header X-FactoryOS-Tenant: <tenant>)  |  GET /m/warehouse/summary?tenant=<tenant>   — tracked item count and how many are at/below reorder"
+  }
+}

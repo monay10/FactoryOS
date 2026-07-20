@@ -1,0 +1,11 @@
+{
+  "module": "oee",
+  "options": {
+    "targetOee": 0.85
+  },
+  "api": {
+    "//tenant": "The tenant is resolved by the gateway from the 'X-FactoryOS-Tenant' header (preferred) or the 'tenant' query fallback shown below; a request with no resolvable tenant is rejected with 400.",
+    "snapshots": "GET /m/oee/snapshots   (header X-FactoryOS-Tenant: <tenant>)  |  GET /m/oee/snapshots?tenant=<tenant>",
+    "summary": "GET /m/oee/summary   (header X-FactoryOS-Tenant: <tenant>)  |  GET /m/oee/summary?tenant=<tenant>   — factory-wide rollup: snapshot count, average OEE, how many fall below targetOee"
+  }
+}

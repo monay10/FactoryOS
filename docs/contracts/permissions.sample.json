@@ -1,0 +1,24 @@
+{
+  "//": "The permission surface. Each first-party module screen declares a requiredPermission in its module.json (resource.action). The gateway filters /modules/ui/nav and /shell to the screens the caller's permissions grant, honoring the wildcard convention: '*' grants everything, 'resource.*' grants every action on a module, and an exact 'resource.action' grants only itself. Write actions are authorized at the API boundary with RequirePermission (403 when the caller lacks it) — hiding a screen is not authorization. Permissions arrive from a validated Identity token's factoryos:permission claims (preferred) or the X-FactoryOS-Permissions header (dev/tools).",
+  "writeActions": [
+    { "module": "maintenance", "method": "POST", "path": "/m/maintenance/workorders/{number}/close", "requiredPermission": "maintenance.close" },
+    { "module": "quality", "method": "POST", "path": "/m/quality/lines/{lineId}/quarantine", "requiredPermission": "quality.quarantine" }
+  ],
+  "screens": [
+    { "module": "dashboard", "component": "dashboard/OperationsBoard", "requiredPermission": "dashboard.view" },
+    { "module": "activity", "component": "activity/Feed", "requiredPermission": "activity.view" },
+    { "module": "brain", "component": "brain/Answers", "requiredPermission": "brain.view" },
+    { "module": "oee", "component": "oee/Dashboard", "requiredPermission": "oee.view" },
+    { "module": "energy", "component": "energy/Dashboard", "requiredPermission": "energy.view" },
+    { "module": "maintenance", "component": "maintenance/WorkOrders", "requiredPermission": "maintenance.view" },
+    { "module": "quality", "component": "quality/Dashboard", "requiredPermission": "quality.view" },
+    { "module": "warehouse", "component": "warehouse/Dashboard", "requiredPermission": "warehouse.view" }
+  ],
+  "exampleRoles": {
+    "Administrator": [ "*" ],
+    "PlantSupervisor": [ "dashboard.view", "oee.view", "energy.view", "maintenance.view", "quality.view", "warehouse.view", "activity.view", "brain.view" ],
+    "EnergyOperator": [ "dashboard.view", "energy.*", "activity.view" ],
+    "QualityInspector": [ "dashboard.view", "quality.*" ],
+    "MaintenanceTechnician": [ "dashboard.view", "maintenance.view", "maintenance.close", "activity.view" ]
+  }
+}

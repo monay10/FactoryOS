@@ -1,0 +1,24 @@
+{
+  "key": "workflow",
+  "name": "Workflow",
+  "version": "1.0.0",
+  "description": "Configuration-driven automation: matches alert events from any module against declarative rules and requests the mapped action.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.Workflow.dll",
+  "entryType": "FactoryOS.Plugins.Workflow.WorkflowPlugin",
+  "dependencies": [],
+  "provides": [ "workflow.automation" ],
+  "consumes": [ "SafetyStandDownTriggered", "QualityAlertRaised", "LowStockDetected", "CertificationGapDetected", "WorkOrderCreated", "RuleTriggered", "PurchaseRequisitionRaised" ],
+  "emits": [ "WorkflowActionRequested" ],
+  "ui": [
+    {
+      "id": "workflow.dashboard",
+      "title": "Workflow",
+      "route": "/workflow",
+      "component": "workflow/Dashboard",
+      "icon": "workflow",
+      "navSection": "Automation",
+      "order": 50
+    }
+  ]
+}

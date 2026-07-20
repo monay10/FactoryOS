@@ -1,0 +1,46 @@
+{
+  "key": "maintenance",
+  "name": "Maintenance",
+  "version": "1.0.0",
+  "description": "Raises and tracks work orders, including corrective work orders triggered by energy spikes and by fired rules.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.Maintenance.dll",
+  "entryType": "FactoryOS.Plugins.Maintenance.MaintenancePlugin",
+  "dependencies": [],
+  "provides": [ "maintenance.workorders" ],
+  "consumes": [ "EnergySpikeDetected", "RuleTriggered" ],
+  "emits": [ "WorkOrderCreated", "WorkOrderClosed" ],
+  "api": [
+    {
+      "method": "GET",
+      "path": "/m/maintenance/workorders",
+      "query": [ "tenant", "status" ],
+      "description": "A tenant's work orders, soonest-due first; an optional status filter narrows the list."
+    },
+    {
+      "method": "GET",
+      "path": "/m/maintenance/summary",
+      "query": [ "tenant" ],
+      "description": "A tenant's work-order rollup: the total and a breakdown by status."
+    },
+    {
+      "method": "POST",
+      "path": "/m/maintenance/workorders/{number}/close",
+      "query": [ "tenant" ],
+      "requiredPermission": "maintenance.close",
+      "description": "Closes a work order and announces WorkOrderClosed on a real transition. Requires the 'maintenance.close' permission."
+    }
+  ],
+  "ui": [
+    {
+      "id": "maintenance.workorders",
+      "title": "Work Orders",
+      "route": "/maintenance/work-orders",
+      "component": "maintenance/WorkOrders",
+      "icon": "wrench",
+      "requiredPermission": "maintenance.view",
+      "navSection": "Operations",
+      "order": 40
+    }
+  ]
+}

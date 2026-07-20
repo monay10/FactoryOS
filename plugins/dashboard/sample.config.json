@@ -1,0 +1,12 @@
+{
+  "module": "dashboard",
+  "options": {
+    "recentAlertCapacity": 50
+  },
+  "//feed": "The alert feed is fed purely from the bus, in the Standard Model — SafetyStandDownTriggered is Critical; QualityAlertRaised, LowStockDetected, EnergySpikeDetected and DeliveryHealthDegraded are Warnings. The board references those events (shared vocabulary), never the modules that raise them.",
+  "api": {
+    "//tenant": "The tenant is resolved by the gateway from the 'X-FactoryOS-Tenant' header (preferred) or the 'tenant' query fallback shown below; a request with no resolvable tenant is rejected with 400.",
+    "board": "GET /m/dashboard/board[?level=Critical][&kind=EnergySpikeDetected]   (header X-FactoryOS-Tenant: <tenant>)  |  GET /m/dashboard/board?tenant=<tenant>&level=Warning&kind=LowStockDetected   — the live operations board: latest OEE per machine and the recent alert feed (newest first); optional level and/or kind filters narrow the feed (composable) while the critical count stays a whole-board headline",
+    "summary": "GET /m/dashboard/summary   (header X-FactoryOS-Tenant: <tenant>)  |  GET /m/dashboard/summary?tenant=<tenant>   — at-a-glance counts: machines tracked, machines below target, recent alerts, critical alerts, and alertsByKind [ { kind, count }, ... ] ordered by count descending (ties by kind name)"
+  }
+}

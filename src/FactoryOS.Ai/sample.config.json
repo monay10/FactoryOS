@@ -1,0 +1,27 @@
+{
+  "Ai": {
+    "Llm": {
+      "Models": {
+        "fast": { "Provider": "openai", "UpstreamModel": "gpt-4o-mini" },
+        "reasoning": { "Provider": "openai", "UpstreamModel": "gpt-4o" },
+        "local": { "Provider": "ollama", "UpstreamModel": "llama3" }
+      }
+    },
+    "Embeddings": {
+      "Models": {
+        "embed": { "Provider": "openai", "UpstreamModel": "text-embedding-3-small" },
+        "embed-large": { "Provider": "openai", "UpstreamModel": "text-embedding-3-large" },
+        "embed-local": { "Provider": "ollama", "UpstreamModel": "nomic-embed-text" }
+      }
+    },
+    "Providers": {
+      "OpenAi": {
+        "BaseUrl": "https://api.openai.com",
+        "ApiKey": "${secret:OPENAI_API_KEY}"
+      },
+      "Ollama": {
+        "BaseUrl": "http://ollama:11434"
+      }
+    }
+  }
+}

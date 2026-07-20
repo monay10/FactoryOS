@@ -1,0 +1,17 @@
+{
+  "sourceSystem": "Logo",
+  "entities": [
+    {
+      "sourceEntity": "LG_STLINE",
+      "targetEntity": "InventoryItem",
+      "naturalKey": [ "Sku" ],
+      "fields": [
+        { "target": "Sku", "source": "STOKKODU", "transform": "upper", "required": true },
+        { "target": "Name", "source": "STOKADI", "transform": "trim", "required": true },
+        { "target": "Quantity", "source": "MIKTAR", "transform": "decimal", "default": 0 },
+        { "target": "Unit", "source": "BIRIM", "transform": "lower" },
+        { "target": "Location", "source": "DEPO" }
+      ]
+    }
+  ]
+}

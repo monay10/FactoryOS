@@ -1,0 +1,26 @@
+{
+  "sourceSystem": "EntraID",
+  "entities": [
+    {
+      "sourceEntity": "USERS",
+      "targetEntity": "DirectoryUser",
+      "naturalKey": [ "Username" ],
+      "fields": [
+        { "target": "Username", "source": "userPrincipalName", "transform": "lower", "required": true },
+        { "target": "DisplayName", "source": "displayName", "transform": "trim", "required": true },
+        { "target": "Email", "source": "mail", "transform": "lower" },
+        { "target": "Enabled", "source": "accountEnabled", "default": true }
+      ]
+    },
+    {
+      "sourceEntity": "GROUPS",
+      "targetEntity": "DirectoryGroup",
+      "naturalKey": [ "GroupName" ],
+      "fields": [
+        { "target": "GroupName", "source": "displayName", "transform": "trim", "required": true },
+        { "target": "DisplayName", "source": "displayName", "transform": "trim", "required": true },
+        { "target": "Description", "source": "description", "transform": "trim" }
+      ]
+    }
+  ]
+}

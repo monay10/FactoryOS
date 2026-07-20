@@ -1,0 +1,24 @@
+{
+  "key": "scheduler",
+  "name": "Scheduler",
+  "version": "1.0.0",
+  "description": "Platform-layer scheduling: evaluates configured fixed-interval schedules against a host clock pulse and emits ScheduledTaskDue for due schedules, for connectors and modules to do periodic work.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.Scheduler.dll",
+  "entryType": "FactoryOS.Plugins.Scheduler.SchedulerPlugin",
+  "dependencies": [],
+  "provides": [ "scheduler.schedules" ],
+  "consumes": [ "SchedulerTick" ],
+  "emits": [ "ScheduledTaskDue" ],
+  "ui": [
+    {
+      "id": "scheduler.schedules",
+      "title": "Schedules",
+      "route": "/schedules",
+      "component": "scheduler/Schedules",
+      "icon": "clock",
+      "navSection": "Platform",
+      "order": 30
+    }
+  ]
+}

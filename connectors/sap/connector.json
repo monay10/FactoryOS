@@ -1,0 +1,8 @@
+{
+  "key": "sap",
+  "name": "SAP Connector",
+  "sourceSystem": "SAP",
+  "description": "Reads the SAP material master with description and unrestricted stock, normalized into the Standard Model.",
+  "provides": [ "InventoryItem" ],
+  "mapping": "mapping.json"
+}

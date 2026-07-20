@@ -1,0 +1,8 @@
+{
+  "key": "sql",
+  "name": "SQL Connector",
+  "sourceSystem": "SQL",
+  "description": "Generic connector that runs a SQL query, one Standard Model record per result row.",
+  "provides": [ "InventoryItem" ],
+  "mapping": "mapping.json"
+}

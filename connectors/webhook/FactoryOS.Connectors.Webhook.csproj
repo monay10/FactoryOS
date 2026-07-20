@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FactoryOS.Contracts\FactoryOS.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="connector.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="sample.config.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

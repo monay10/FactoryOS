@@ -1,0 +1,13 @@
+{
+  "connector": "logo",
+  "sourceSystem": "Logo",
+  "options": {
+    "provider": "Npgsql",
+    "connectionString": "Host=logo-db;Database=LOGODB;Username=factoryos;Password=${secret:LOGO_DB_PASSWORD}",
+    "firmNumber": 1,
+    "periodNumber": 1
+  },
+  "schedule": {
+    "cron": "*/20 * * * *"
+  }
+}

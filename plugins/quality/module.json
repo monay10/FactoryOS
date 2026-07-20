@@ -1,0 +1,46 @@
+{
+  "key": "quality",
+  "name": "Quality",
+  "version": "1.0.0",
+  "description": "Tracks a rolling per-line, per-product defect rate from inspections and raises an alert when it breaches the configured threshold.",
+  "author": "FactoryOS",
+  "assembly": "FactoryOS.Plugins.Quality.dll",
+  "entryType": "FactoryOS.Plugins.Quality.QualityPlugin",
+  "dependencies": [],
+  "provides": [ "quality.monitoring" ],
+  "consumes": [ "QualityInspectionRecorded" ],
+  "emits": [ "QualityAlertRaised", "QualityLineQuarantined" ],
+  "api": [
+    {
+      "method": "GET",
+      "path": "/m/quality/lines",
+      "query": [ "tenant", "breaching" ],
+      "description": "A tenant's current per-line defect rate, each flagged against the threshold and whether it is under quarantine; an optional filter narrows to only breaching lines."
+    },
+    {
+      "method": "GET",
+      "path": "/m/quality/summary",
+      "query": [ "tenant" ],
+      "description": "A tenant's quality rollup: the threshold, tracked line count and how many currently breach."
+    },
+    {
+      "method": "POST",
+      "path": "/m/quality/lines/{lineId}/quarantine",
+      "query": [ "tenant" ],
+      "requiredPermission": "quality.quarantine",
+      "description": "Places a line under quarantine and announces QualityLineQuarantined on a real transition. Requires the 'quality.quarantine' permission."
+    }
+  ],
+  "ui": [
+    {
+      "id": "quality.dashboard",
+      "title": "Quality",
+      "route": "/quality",
+      "component": "quality/Dashboard",
+      "icon": "check-badge",
+      "requiredPermission": "quality.view",
+      "navSection": "Operations",
+      "order": 36
+    }
+  ]
+}

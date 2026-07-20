@@ -1,0 +1,12 @@
+{
+  "connector": "sap",
+  "sourceSystem": "SAP",
+  "options": {
+    "provider": "Ngpsql",
+    "connectionString": "Host=sap-hana;Database=SAPDB;Username=factoryos;Password=${secret:SAP_DB_PASSWORD}",
+    "language": "E"
+  },
+  "schedule": {
+    "cron": "*/30 * * * *"
+  }
+}
