@@ -7,6 +7,44 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0005 — Infrastructure foundation (2026-07-20)
+
+Added
+- **`FactoryOS.Infrastructure`** — concrete implementations of the Application-layer abstractions (the project
+  previously held only its `AddInfrastructure` composition root). All new; only the Infrastructure project and the
+  unit-test project changed; no duplicate abstractions; `.NET 10`:
+  - **Configuration**: `InfrastructureConstants`, `InfrastructureOptions` (bindable), `InfrastructureContext` — the
+    scoped, ambient execution/security context populated once at the composition edge.
+  - **Clock**: `SystemClock` implements `IApplicationClock` (single UTC source for `UtcNow` and `Today`).
+  - **Current context**: `CurrentUser`, `CurrentTenant`, `CurrentFactory`, `CurrentPlant`, `CurrentWorkCenter` read
+    from `InfrastructureContext`; `CurrentUser.HasPermission` honors the `resource.action` wildcard convention.
+  - **Identifiers**: `IGuidGenerator`/`GuidGenerator` (random + version-7 sequential), `ICorrelationIdAccessor`/
+    `CorrelationIdAccessor` (reads the ambient `IRequestContext`).
+  - **Serialization**: `IJsonSerializer`/`JsonSerializer` over `System.Text.Json`, sharing the canonical `JsonOptions`.
+  - **Caching**: `CacheKeyGenerator`, `MemoryCacheProvider` (over `IMemoryCache`), `CacheService` (typed JSON facade,
+    default TTL from options, `ILogger<CacheService>` diagnostics).
+  - **File storage**: `LocalFileProvider` (read) and `FileStorage` (read/write) over the local file system, with
+    directory-traversal protection beneath the configured root.
+  - **Localization**: `LocalizationProvider` implements `ILocalizationService` with a culture→key catalog and
+    key-as-fallback semantics.
+  - **Transactions**: `Transaction` + `TransactionManager` bound to the shared-kernel `IUnitOfWork` (commit flushes,
+    rollback leaves the scoped unit of work unflushed).
+  - **DI**: `AddInfrastructureFoundation(configuration)` registers all of the above (`TryAdd` throughout, options
+    pattern, `AddMemoryCache`); wired into the existing `AddInfrastructure`. Added `Microsoft.Extensions.Caching.Memory`,
+    `Options`, `Options.ConfigurationExtensions`, `Configuration.Binder`, `Logging.Abstractions`; a scoped `.editorconfig`
+    disables CA1848/CA1873 (readability-first infrastructure logging).
+- **Tests** — 52 unit tests in `FactoryOS.Tests/Infrastructure/` (DI registration + resolution; clock; GUID/correlation
+  generators; cache key/provider/service; file storage round-trip + traversal rejection; localization fallback/format;
+  transaction commit/rollback; current-context + wildcard permissions). `FactoryOS.Tests` references
+  `FactoryOS.Infrastructure`.
+
+Notes
+- **Not duplicated**: `SystemClock` implements the Application `IApplicationClock` (Domain's `IDateTimeProvider` and
+  `SystemDateTimeProvider` are left untouched); the transaction commits the shared-kernel `IUnitOfWork`; the wildcard
+  matcher mirrors the convention each layer already matches independently (Gateway/Identity).
+- Architecture impact: none to existing layers — only the Infrastructure project (plus the unit-test project) changed.
+  Build green (0/0); .NET tests 860 → 912.
+
 ### Commit 0004 — Application foundation (2026-07-20)
 
 Added

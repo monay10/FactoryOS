@@ -1,0 +1,9 @@
+# Scoped analyzer configuration for the Infrastructure layer.
+#
+# Infrastructure services emit cross-cutting diagnostics (cache misses, file operations, localization
+# fallbacks). The high-performance LoggerMessage source-generator pattern (CA1848) and its companion
+# argument-evaluation rule (CA1873) are not warranted for these low-frequency, readability-first log
+# statements, so they are disabled for this project only.
+[*.cs]
+dotnet_diagnostic.CA1848.severity = none
+dotnet_diagnostic.CA1873.severity = none

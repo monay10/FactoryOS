@@ -23,6 +23,7 @@ public static class InfrastructureServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
+        services.AddInfrastructureFoundation(configuration);
         services.AddFactoryConfiguration(configuration);
         services.AddPersistence(configuration);
         services.AddIdentityModule(configuration);

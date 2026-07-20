@@ -1,0 +1,8 @@
+{
+  "//": "Sample configuration for the FactoryOS Infrastructure foundation. Bind under the 'Infrastructure' section of appsettings; every value is optional and falls back to the documented default. Never place real secrets here — use ${secret:...} placeholders resolved by the configuration layer.",
+  "Infrastructure": {
+    "FileStorageRootPath": "storage",
+    "DefaultCacheTimeToLive": "00:05:00",
+    "DefaultCulture": "en"
+  }
+}
