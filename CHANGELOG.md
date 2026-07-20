@@ -7,6 +7,39 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0003 — Shared Kernel primitives (2026-07-20)
+
+Added
+- **`FactoryOS.Shared`** — the genuinely-missing, self-contained shared-kernel primitives (the project was previously
+  an empty marker). Reconciled with the existing architecture: primitives already living in `FactoryOS.Domain`
+  (`Result`, `Error`, `ValueObject`, `Entity`, `AggregateRoot`, `Specification`, `IRepository`, `IDateTimeProvider`)
+  were **not** duplicated. Added:
+  - **Value objects** (self-contained records): `Money`, `Percentage`, `DateRange`, `Period`, `EmailAddress`,
+    `PhoneNumber`, `Address`, `GeoLocation`.
+  - **Pagination**: `SortDirection`, `PageRequest`, `PaginationMetadata`, `PagedResult<T>` (+ factory).
+  - **Primitives**: `Enumeration` (smart-enum base).
+  - **Identifiers** (`readonly record struct`): `CorrelationId`, `TenantId`, `UserId`, `MachineId`, `FactoryId`,
+    `OrganizationId`, `PlantId`, `LineId`, `WorkCenterId`, `LocalizationKey`, `ErrorCode`.
+  - **Auditing**: `AuditInfo`, `IAuditable`, `ISoftDelete`, `IHasConcurrencyToken`.
+  - **Exceptions**: `DomainException` base + `BusinessException`, `ValidationException`, `NotFoundException`,
+    `ConflictException`, `UnauthorizedException`, `ForbiddenException`.
+  - **Guards**: `Guard` (argument guards), `Ensure` (invariants), `Throw` (terminal helpers).
+  - **Extensions**: `String`, `DateTime`, `Enumerable`, `Collection`, `Object`, `Json`.
+  - **Constants**: `RegexPatterns` (source-generated matchers), `HeaderNames`, `ClaimTypeNames`, `RoleNames`,
+    `PermissionNames`, `PolicyNames`, `ErrorCodes`, `CacheKeys`, `LocalizationKeys` — grounded in the real system.
+  - **Abstractions**: `IUnitOfWork`.
+- **Tests** — 39 unit tests in `FactoryOS.Tests/Shared/` (value-object equality & validation, Money arithmetic,
+  DateRange, Guard, Pagination, Enumeration, strongly-typed IDs, extensions). `FactoryOS.Tests` gained a reference to
+  `FactoryOS.Shared`.
+
+Notes
+- **Not duplicated** (already in `FactoryOS.Domain`, per "use the existing architecture exactly as it is"): `Result`,
+  `Error`, `ValueObject`, `Entity`, `AggregateRoot`, `Specification`, `IRepository`, `IDateTimeProvider`.
+- **Omitted deliberately**: empty marker interfaces `IEntity`/`IAggregateRoot`/`IValueObject`/`IDomainService`/
+  `IApplicationService` and a parallel `IClock`/`IGuidGenerator`/`IDomainEvent` — they would either violate CA1040
+  (empty interfaces) under the repo's analyzer policy or duplicate/shadow the Domain kernel. Kept on **.NET 10**.
+- Build green (0 warnings / 0 errors under `latest-recommended` analyzers + warnings-as-errors); .NET tests 807 → 846.
+
 ### Commit 0001 — Repository foundation structure (2026-07-20)
 
 Added
