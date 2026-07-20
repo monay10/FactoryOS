@@ -7,6 +7,24 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0001 — Repository foundation structure (2026-07-20)
+
+Added
+- Standard repository scaffolding folders, added **without overwriting or deleting** anything, each empty leaf kept in
+  git with a `.gitkeep`:
+  - Root: `build/`, `deploy/`, `scripts/`, `tools/`, `samples/`, `assets/` (`src/`, `tests/`, `docs/` already existed).
+  - `docs/`: `api/`, `modules/`, `connectors/`, `ai/`, `iot/`, `security/`, `deployment/`, `testing/`, `releases/`
+    (`architecture/` and `contracts/` already existed).
+  - `build/`: `docker/`, `github/`, `pipelines/`, `templates/`.
+  - `deploy/`: `docker/`, `kubernetes/`, `sql/`.
+  - `scripts/`: `setup/`, `build/`, `test/`, `release/`.
+  - `tools/`: `codegen/`, `analyzers/`, `migrations/`.
+
+Notes
+- Structure only — no solution, projects, source, NuGet references, Dockerfile, compose, CI or configuration were
+  created, per scope. All 13 root files already exist and were left untouched. `.gitignore` gained frontend ignores
+  (`node_modules/`, `dist/`, `web/.env`) so the first push excluded build artifacts.
+
 ### Sprint 1A — Solution foundation, reconciled onto the existing repo (2026-07-20)
 
 Added
