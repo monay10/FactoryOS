@@ -1,0 +1,28 @@
+{
+  "//": "Sample configuration for the FactoryOS plugin framework. Bind the 'Plugins' section into appsettings. Discovery scans RootPath's immediate subfolders for module.json manifests; the catalog projects plugin metadata and health; Health governs heartbeat/failure detection. Per-plugin settings live under 'Plugins:Configuration:<key>', where the 'Enabled' key toggles the plugin (default true). No secrets belong here.",
+  "Plugins": {
+    "AutoStart": true,
+    "Discovery": {
+      "Enabled": true,
+      "RootPath": "plugins"
+    },
+    "Catalog": {
+      "Enabled": true,
+      "AdditionalSources": []
+    },
+    "Health": {
+      "HeartbeatIntervalSeconds": 30,
+      "UnhealthyAfterMissedHeartbeats": 3,
+      "FailureThreshold": 3
+    },
+    "Configuration": {
+      "energy": {
+        "Enabled": true,
+        "Region": "eu-west"
+      },
+      "oee": {
+        "Enabled": false
+      }
+    }
+  }
+}

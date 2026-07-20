@@ -52,6 +52,9 @@ public sealed class PluginDescriptor
     /// <summary>Marks the plugin as started.</summary>
     public void MarkStarted() => State = PluginState.Started;
 
+    /// <summary>Returns a started plugin to the loaded state after it stops (its instance stays attached).</summary>
+    public void MarkStopped() => State = PluginState.Loaded;
+
     /// <summary>Marks the plugin as disabled, so the host skips it.</summary>
     public void MarkDisabled() => State = PluginState.Disabled;
 

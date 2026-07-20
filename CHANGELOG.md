@@ -7,6 +7,42 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0010 — Plugin framework (2026-07-20)
+
+Added
+- **`FactoryOS.Plugin`** — completed the plugin framework on top of the substantial framework that already existed
+  (`IPlugin`/`PluginBase`, `PluginManifest`/`PluginVersion`/`PluginDependency`/`PluginState`, `PluginDescriptor`,
+  `PluginRegistry`, `PluginDiscovery`, `ModuleLoader`, `PluginHost`, `PluginAdmin`, `PluginManifestReader`,
+  `PluginDependencyResolver`, `PluginLoadContext`). Only the Plugin project changed. Existing abstractions were
+  **reused, not duplicated**: the spec's `IPluginLoader`/`PluginLoader` are the existing `IModuleLoader`/`ModuleLoader`,
+  and the registry, host, discovery, descriptor, dependency resolver and version are unchanged. New additions:
+  - **Configuration** (`Configuration/`): `PluginConstants`, `PluginOptions` with nested `PluginDiscoveryOptions`,
+    `PluginCatalogOptions` and `PluginHealthOptions` (bound from `Plugins`, `Plugins:Discovery`, `Plugins:Catalog`);
+    `PluginConfiguration` + `IPluginConfigurationProvider`/`PluginConfigurationProvider` reading
+    `Plugins:Configuration:<key>` (with an `Enabled` toggle).
+  - **Runtime models** (`Runtime/`): `PluginMetadata` (manifest projection), `PluginCapability` +
+    `PluginCapabilityValidator` (capability validation over the manifest `provides` surface),
+    `IPluginContext`/`PluginContext`.
+  - **Lifecycle** (`Lifecycle/IPluginLifecycle.cs`): the optional `InitializeAsync`/`UnloadAsync` extension to the core
+    `IPlugin` start/stop contract.
+  - **Activation** (`Activation/`): `IPluginActivator`/`PluginActivator` (in-process type activation with key
+    verification — no external DLL loading).
+  - **Health** (`Health/`): `PluginHealthStatus`, `PluginHealth`, `IPluginHealthCheck`,
+    `IPluginHealthService`/`PluginHealthService` (heartbeat, failure detection via staleness and a failure counter,
+    and a `Recovered` notification).
+  - **Management** (`Management/`): `IPluginManager`/`PluginManager` driving Initialize → Start → Stop → Unload →
+    Reload over the registry descriptors (in-process; Reload is stop-then-start).
+  - **Catalog** (`Catalog/`): `IPluginCatalog`/`PluginCatalog` projecting metadata, a capability index and health.
+  - **DI** (`DependencyInjection.cs`): `AddPluginFramework()` now also registers the activator, configuration provider,
+    health service, catalog and manager; a new `AddPluginFramework(IConfiguration)` overload binds `PluginOptions`.
+    Added `PluginDescriptor.MarkStopped()` (started → loaded). The Plugin csproj gained the configuration/options
+    packages.
+- **Tests** — 11 unit tests (`FactoryOS.Tests/Plugins/PluginFrameworkFoundationTests.cs`: options defaults,
+  per-plugin configuration, metadata projection, capability validation, activation + key enforcement, health
+  heartbeat/failure/recovery/staleness, full manager lifecycle, unknown/unloaded handling, catalog projection, DI
+  resolution) and 2 integration tests (`FactoryOS.IntegrationTests/Plugins/`: multiple plugins start/reload/stop
+  through the manager with catalog + health, and per-plugin configuration read from the host).
+
 ### Commit 0009 — Authorization foundation (2026-07-20)
 
 Added
