@@ -7,6 +7,40 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0009 — Authorization foundation (2026-07-20)
+
+Added
+- **`FactoryOS.Identity` (Authorization component)** — completed the authorization foundation. There is no standalone
+  Authorization project; the authorization surface lives in `FactoryOS.Identity.Authorization` (the existing
+  `Permission`, `AuthorizationPolicy` and `PermissionAuthorizer`), so the foundation was built there, **reusing** the
+  existing `Permission` and `AuthorizationPolicy` models rather than duplicating them and without introducing a new
+  project (which would change the architecture):
+  - **Configuration** (`Authorization/Configuration/`): `AuthorizationConstants`, `AuthorizationOptions`
+    (`EnableRoleInheritance`), `PermissionCacheOptions`, `PolicySettings` — bound from `Authorization`,
+    `Authorization:PermissionCache` and `Authorization:Policies`.
+  - **Models** (`Authorization/Model/`): `PermissionGroup`, `PermissionDefinition`, `PermissionAssignment` +
+    `RolePermission`/`UserPermission`, the `AuthorizationRequirement` hierarchy
+    (`PermissionRequirement`/`RoleRequirement`/`PolicyRequirement`) and `AuthorizationResult`.
+  - **Context** (`Authorization/Context/`): `AuthorizationContext` (user/tenant/roles/permissions),
+    `IAuthorizationContextAccessor`/`AuthorizationContextAccessor` mapping the scoped `IdentityContext`'s claims.
+  - **Evaluation** (`Authorization/Evaluation/`): `IPermissionEvaluator`/`PermissionEvaluator` with wildcard
+    (`*`, `energy.*`) and hierarchical (`energy` grants `energy.read`) matching.
+  - **Services** (`Authorization/Services/`): `IRoleService`/`RoleService` (cycle-safe transitive role inheritance),
+    `IPermissionService`/`PermissionService` (catalog, role/user grants and denials, effective-permission resolution),
+    `IPolicyProvider`/`PolicyProvider` (config-seeded + runtime policies), and `IAuthorizationService`/
+    `AuthorizationService` (handler dispatch).
+  - **Handlers** (`Authorization/Handlers/`): `IAuthorizationHandler` + `PermissionAuthorizationHandler`,
+    `RoleAuthorizationHandler`, `PolicyAuthorizationHandler`.
+  - **Caching** (`Authorization/Caching/`): `IAuthorizationCache`/`InMemoryAuthorizationCache` (TTL-bounded, shared by
+    the permission, role and policy services; bypassed when disabled).
+  - **DI** (`Authorization/Foundation/AuthorizationFoundation.cs`): `AddAuthorizationFoundation()` binds the section and
+    registers the cache, evaluator, role/permission/policy services, the three handlers (`TryAddEnumerable`), the
+    authorization service and the context accessor.
+- **Tests** — 21 unit tests (`FactoryOS.Tests/Authorization/`: wildcard + hierarchical evaluation, transitive/cycle-safe
+  role inheritance, cache TTL/disable/invalidate, permission resolution with denials, policy seeding, each handler,
+  service dispatch, DI resolution) and 2 integration tests (`FactoryOS.IntegrationTests/Authorization/`: claims →
+  context mapping enforcing permissions/policies/roles end-to-end, and an anonymous principal).
+
 ### Commit 0008 — Identity foundation (2026-07-20)
 
 Added

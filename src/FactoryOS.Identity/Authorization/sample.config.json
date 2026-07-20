@@ -1,0 +1,20 @@
+{
+  "//": "Sample configuration for the FactoryOS authorization foundation. Bind the 'Authorization' section into appsettings. Permissions use the resource.action hierarchy; '*' is super-admin, 'energy.*' grants every energy action, and a shorter key ('energy') hierarchically grants its descendants. Policies are permission requirements evaluated against the caller's granted permissions; RequireAll=false means any one permission suffices. No secrets belong here.",
+  "Authorization": {
+    "EnableRoleInheritance": true,
+    "PermissionCache": {
+      "Enabled": true,
+      "TtlSeconds": 300
+    },
+    "Policies": {
+      "EnergyRead": {
+        "RequireAll": true,
+        "Permissions": [ "energy.read" ]
+      },
+      "EnergyOperate": {
+        "RequireAll": false,
+        "Permissions": [ "energy.*", "*" ]
+      }
+    }
+  }
+}
