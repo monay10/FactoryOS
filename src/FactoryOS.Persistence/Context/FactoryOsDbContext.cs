@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using FactoryOS.Domain.Abstractions;
+using FactoryOS.Persistence.Conventions;
 using FactoryOS.Persistence.Multitenancy;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,6 +27,17 @@ public abstract class FactoryOsDbContext : DbContext
     {
         ArgumentNullException.ThrowIfNull(schemaProvider);
         _schemaProvider = schemaProvider;
+    }
+
+    /// <inheritdoc />
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        ArgumentNullException.ThrowIfNull(configurationBuilder);
+        base.ConfigureConventions(configurationBuilder);
+
+        // Platform-wide, additive conventions (UTC datetimes, decimal precision, strongly-typed identifiers).
+        // Explicit entity configuration always overrides these, so module models are unaffected.
+        FactoryOsConventions.Apply(configurationBuilder);
     }
 
     /// <inheritdoc />

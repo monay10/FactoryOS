@@ -1,10 +1,13 @@
-using FactoryOS.Domain.Abstractions;
 using Microsoft.EntityFrameworkCore;
 
 namespace FactoryOS.Persistence.UnitOfWork;
 
-/// <summary>An Entity Framework Core <see cref="IUnitOfWork"/> that commits a context's pending changes.</summary>
-public sealed class EfUnitOfWork : IUnitOfWork
+/// <summary>
+/// An Entity Framework Core unit of work that commits a context's pending changes. It satisfies both the domain and
+/// the shared-kernel <c>IUnitOfWork</c> contracts (identical <see cref="SaveChangesAsync"/> signature) so either
+/// abstraction resolves to the same implementation.
+/// </summary>
+public sealed class EfUnitOfWork : FactoryOS.Domain.Abstractions.IUnitOfWork, FactoryOS.Shared.Abstractions.IUnitOfWork
 {
     private readonly DbContext _context;
 

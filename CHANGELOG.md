@@ -7,6 +7,50 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0007 — Persistence foundation (2026-07-20)
+
+Added
+- **`FactoryOS.Persistence`** — completed the persistence foundation, reconciling with the substantial layer that
+  already existed (write repository, combined auditing interceptor, abstract context, unit of work, initializer,
+  providers) rather than duplicating it. Only the Persistence project (production) changed. Provider reconciliation:
+  **PostgreSQL** (production, per the Constitution) + **SQLite** (development/tests) — SQL Server was not adopted
+  (it would break the locked stack and is unavailable offline):
+  - **Configuration** (`Configuration/PersistenceOptions.cs`): `PersistenceConstants`, `PersistenceOptions`
+    (`Provider`, connection string, command timeout, retry, migrations assembly, dev flags).
+  - **Value converters** (`ValueConversion/`): `MoneyConverter`, `PercentageConverter`, `DateRangeConverter`,
+    `PeriodConverter`, `EnumerationConverter<T>`, `UtcDateTimeConverter`, and a converter per strongly-typed identifier
+    (`TenantId`, `UserId`, `MachineId`, `FactoryId`, `OrganizationId`, `PlantId`, `LineId`, `WorkCenterId`,
+    `CorrelationId`).
+  - **Conventions** (`Conventions/FactoryOsConventions.cs`, applied by `FactoryOsDbContext.ConfigureConventions`):
+    UTC `DateTime`, `decimal(18,2)` precision, and the strongly-typed-id conversions — all additive and override-able,
+    so existing module models are unaffected.
+  - **Configurations** (`Configuration/`): `BaseEntityConfiguration<TEntity,TId>` (key + audit-column lengths + hook),
+    `BaseValueObjectConfiguration<T>`, and `EntityConfigurationDiscovery` (`ApplyConfigurationsFrom<TMarker>`/assembly).
+  - **Read side** (`Repositories/ReadRepository.cs`): `IReadRepository<TAggregate,TId>` + `ReadRepository` (tracking-free
+    `GetById`/`List`/`Count`/`Any`), complementing the existing write `EfRepository`.
+  - **Migrations** (`Migrations/DatabaseMigrator.cs`): `MigrationAssemblyResolver`, `IDatabaseMigrator`/`DatabaseMigrator`.
+  - **DI** (`PersistenceRegistration.cs`): `AddFactoryOsDbContext<TContext>` (registers the context, the base-`DbContext`
+    bridge, generic `IRepository`/`IReadRepository`/`IUnitOfWork`, and the auditing interceptor) and
+    `UseFactoryOsDatabase<TContext>` (SQLite/PostgreSQL selection, timeout, migrations assembly + history table, retry,
+    dev diagnostics). `AddPersistence` now binds `PersistenceOptions` and registers `IDatabaseMigrator`.
+- **Tests** — 11 unit tests (`FactoryOS.Tests/Persistence/`: value-converter round-trips, options defaults, migration
+  resolver) and 7 integration tests (`FactoryOS.IntegrationTests/Persistence/`: value objects + strongly-typed id
+  round-trip on SQLite, tracking-free reads, convention model checks, provider selection, `AddFactoryOsDbContext`
+  composition + CRUD).
+
+Changed
+- **`EfUnitOfWork`** now implements both the domain and shared-kernel `IUnitOfWork` (identical signature), so either
+  abstraction — including the Commit 0006 `TransactionManager` — resolves to it once a context is registered.
+- **`FactoryOsDbContext`** gained a `ConfigureConventions` override applying the platform conventions.
+
+Notes
+- **Not duplicated**: audit, soft-delete and concurrency remain in the existing `AuditingSaveChangesInterceptor`
+  (one cohesive interceptor); the write repository and unit of work were reused, not re-created. Value-object
+  converters (Money/DateRange/…) are opt-in per entity — not global conventions — to avoid disturbing modules that map
+  them differently.
+- Architecture impact: only the Persistence project (plus the two test projects) changed. Build green (0/0); .NET
+  tests 933 → 951. SQLite provider, database initialization and CRUD verified in integration tests.
+
 ### Commit 0006 — ASP.NET Core host foundation (2026-07-20)
 
 Added

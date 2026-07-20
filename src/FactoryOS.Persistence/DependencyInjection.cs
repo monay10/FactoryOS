@@ -1,7 +1,9 @@
 using FactoryOS.Domain.Abstractions;
 using FactoryOS.Domain.Time;
 using FactoryOS.Persistence.Auditing;
+using FactoryOS.Persistence.Configuration;
 using FactoryOS.Persistence.Initialization;
+using FactoryOS.Persistence.Migrations;
 using FactoryOS.Persistence.Multitenancy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -30,11 +32,15 @@ public static class PersistenceServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
+        services.AddOptions<PersistenceOptions>()
+            .Bind(configuration.GetSection(PersistenceConstants.ConfigurationSection));
+
         services.TryAddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
         services.TryAddSingleton<ICurrentActorProvider, SystemActorProvider>();
         services.TryAddSingleton<ITenantSchemaProvider>(_ => new FixedTenantSchemaProvider("public"));
         services.TryAddScoped<AuditingSaveChangesInterceptor>();
         services.TryAddScoped<IDatabaseInitializer, RelationalDatabaseInitializer>();
+        services.TryAddSingleton<IDatabaseMigrator, DatabaseMigrator>();
 
         return services;
     }

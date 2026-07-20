@@ -1,0 +1,21 @@
+{
+  "//": "Sample configuration for the FactoryOS persistence foundation. Bind under the 'Persistence' section of appsettings. Development uses SQLite; production uses PostgreSQL (per the FactoryOS Constitution). Never place real credentials here — supply the connection string via environment, user-secrets or a ${secret:...} placeholder resolved by the configuration layer.",
+  "Persistence": {
+    "Provider": "Sqlite",
+    "ConnectionString": "Data Source=factoryos.db",
+    "CommandTimeoutSeconds": 30,
+    "MaxRetryCount": 3,
+    "MigrationsAssembly": null,
+    "ApplyMigrationsOnStartup": false,
+    "EnableDetailedErrors": true,
+    "EnableSensitiveDataLogging": false
+  },
+  "//production": {
+    "Persistence": {
+      "Provider": "PostgreSql",
+      "ConnectionString": "${secret:Persistence:ConnectionString}",
+      "ApplyMigrationsOnStartup": true,
+      "EnableDetailedErrors": false
+    }
+  }
+}
