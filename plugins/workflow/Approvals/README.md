@@ -74,7 +74,10 @@ await approvalEngine.ApproveAsync(approval.Id, "manager", "u-alice");   // advan
 ## Notes
 
 - **Reject and expiry route to the rejection branch** (`approved = false`); an approval routes to the approval
-  branch (`approved = true`). The workflow's decision node branches on the `approved` outcome variable.
+  branch (`approved = true`). The workflow's decision node branches on the `approved` outcome variable — but the
+  typed **`approvalResolution`** (`Approved` / `Rejected` / `Cancelled` / `Expired`) travels alongside it and is
+  stamped on the instance (`ApprovalInstance.Resolution`) and the `ApprovalCompleted` event, so a rejection, a
+  cancellation and a deadline breach stay separable for SLA reports and KPIs even though all are "not approved".
 - **Escalation gives a new lease** — an escalated approval is reassigned and does not auto-expire.
 - **Permissions** — the active approver implicitly holds view/approve/reject/comment; other rights come from
   the definition's grants (`ApprovalPermissionEvaluator`).

@@ -71,9 +71,15 @@ public sealed record ApprovalCancelled(Guid ApprovalId, string Tenant, DateTimeO
 /// <param name="Tenant">The tenant.</param>
 /// <param name="OccurredOnUtc">When it occurred.</param>
 /// <param name="DefinitionKey">The definition.</param>
-/// <param name="Approved">Whether the final outcome was an approval.</param>
+/// <param name="Approved">Whether the final outcome was an approval (a convenience over <paramref name="Resolution"/>).</param>
+/// <param name="Resolution">The terminal disposition, kept distinct for SLA reports and KPIs.</param>
 public sealed record ApprovalCompleted(
-    Guid ApprovalId, string Tenant, DateTimeOffset OccurredOnUtc, string DefinitionKey, bool Approved)
+    Guid ApprovalId,
+    string Tenant,
+    DateTimeOffset OccurredOnUtc,
+    string DefinitionKey,
+    bool Approved,
+    Domain.ApprovalResolution Resolution)
     : ApprovalEvent(ApprovalId, Tenant, OccurredOnUtc, DefinitionKey);
 
 /// <summary>Raised when an approval expires because its deadline passed without a decision.</summary>

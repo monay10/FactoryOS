@@ -348,6 +348,35 @@ public sealed class ApprovalEngineCoreTests
         Assert.Contains(harness.Events.Events, e => e is ApprovalCancelled);
     }
 
+    [Fact]
+    public async Task Each_terminal_disposition_keeps_a_distinct_resolution()
+    {
+        var harness = new Harness();
+
+        static ApprovalDefinition Def(string key) =>
+            ApprovalDefinition.Create(key, key)
+                .AddSingle("m", ApprovalAssignment.User("u1"))
+                .WithDeadline(ApprovalDeadline.In(TimeSpan.FromHours(1)))
+                .Build();
+
+        var approvedApproval = await harness.Engine.StartAsync(Def("a"), ApprovalContext.Default);
+        await harness.Engine.ApproveAsync(approvedApproval.Id, "m", "u1");
+        Assert.Equal(ApprovalResolution.Approved, harness.Engine.GetApproval(approvedApproval.Id)!.Resolution);
+
+        var rejectedApproval = await harness.Engine.StartAsync(Def("r"), ApprovalContext.Default);
+        await harness.Engine.RejectAsync(rejectedApproval.Id, "m", "u1");
+        Assert.Equal(ApprovalResolution.Rejected, harness.Engine.GetApproval(rejectedApproval.Id)!.Resolution);
+
+        var cancelledApproval = await harness.Engine.StartAsync(Def("c"), ApprovalContext.Default);
+        await harness.Engine.CancelAsync(cancelledApproval.Id);
+        Assert.Equal(ApprovalResolution.Cancelled, harness.Engine.GetApproval(cancelledApproval.Id)!.Resolution);
+
+        var expiredApproval = await harness.Engine.StartAsync(Def("e"), ApprovalContext.Default);
+        harness.Clock.Advance(TimeSpan.FromHours(1));
+        await harness.Engine.RunDueAsync();
+        Assert.Equal(ApprovalResolution.Expired, harness.Engine.GetApproval(expiredApproval.Id)!.Resolution);
+    }
+
     // ---- Permissions ----
 
     [Fact]

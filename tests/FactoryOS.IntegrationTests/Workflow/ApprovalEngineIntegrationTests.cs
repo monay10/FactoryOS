@@ -101,6 +101,9 @@ public sealed class ApprovalEngineIntegrationTests
         Assert.Equal(ApprovalStatus.Rejected, approvals.GetApproval(approval.Id)!.Status);
         Assert.Equal(WorkflowStatus.Completed, workflow.GetInstance(run.InstanceId)!.Status);
         Assert.Contains(workflow.GetInstance(run.InstanceId)!.History.Entries, e => e.NodeId == "denied");
+        // The coarse branch flag is false, but the typed resolution survives for SLA / KPI reporting.
+        Assert.Equal(false, workflow.GetInstance(run.InstanceId)!.Variables.Get("approved"));
+        Assert.Equal("Rejected", workflow.GetInstance(run.InstanceId)!.Variables.Get("approvalResolution"));
     }
 
     [Fact]

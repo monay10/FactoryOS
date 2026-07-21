@@ -86,6 +86,14 @@ public sealed class ApprovalInstance
     /// <summary>Gets the decision outcome.</summary>
     public ApprovalOutcome Outcome { get; private set; }
 
+    /// <summary>
+    /// Gets the terminal disposition of the approval (its reportable final outcome). <see cref="ApprovalResolution.None"/>
+    /// while the approval is still running; a distinct value — approved, rejected, cancelled or expired — once it
+    /// finishes, so SLA reports and KPIs can tell them apart even though all non-approvals send <c>approved = false</c>
+    /// to a workflow branch.
+    /// </summary>
+    public ApprovalResolution Resolution { get; private set; } = ApprovalResolution.None;
+
     /// <summary>Gets the level of the currently active stage.</summary>
     public ApprovalLevel CurrentLevel { get; private set; }
 
@@ -214,7 +222,16 @@ public sealed class ApprovalInstance
         }
 
         Outcome = outcome;
-        Status = outcome == ApprovalOutcome.Approved ? ApprovalStatus.Approved : ApprovalStatus.Rejected;
+        if (outcome == ApprovalOutcome.Approved)
+        {
+            Status = ApprovalStatus.Approved;
+            Resolution = ApprovalResolution.Approved;
+        }
+        else
+        {
+            Status = ApprovalStatus.Rejected;
+            Resolution = ApprovalResolution.Rejected;
+        }
     }
 
     /// <summary>Cancels the approval.</summary>
@@ -226,6 +243,7 @@ public sealed class ApprovalInstance
         }
 
         Status = ApprovalStatus.Cancelled;
+        Resolution = ApprovalResolution.Cancelled;
     }
 
     /// <summary>Expires the approval.</summary>
@@ -237,6 +255,7 @@ public sealed class ApprovalInstance
         }
 
         Status = ApprovalStatus.Expired;
+        Resolution = ApprovalResolution.Expired;
     }
 
     /// <summary>Adds a comment.</summary>

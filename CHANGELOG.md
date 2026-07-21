@@ -39,6 +39,11 @@ Added
   - **DI**: `AddApprovalEngine()` (and an `IConfiguration` overload binding `Workflow:Approvals`) registers the runtime,
     its in-memory persistence, the participant resolver, policy evaluator and schedule engines, and the workflow bridge,
     calling `AddWorkflowEngine()` idempotently. Copies `Approvals/sample.config.json`.
+  - **Terminal resolution kept distinct.** A first-class `ApprovalResolution` (Approved / Rejected / Cancelled /
+    Expired) is stamped on the instance and carried to the workflow as the typed `approvalResolution` outcome variable
+    alongside the coarse `approved` flag, and included on the `ApprovalCompleted` event. Several dispositions send
+    `approved = false` to a workflow branch, but each stays separable for SLA reports, KPIs and audit — a rejection is
+    not conflated with a cancellation or a deadline breach. (`ApprovalOutcome` remains the three-value stage tally.)
 - **Tests** — 20 unit tests (`FactoryOS.Tests/Workflow/ApprovalEngineCoreTests.cs`: single, any, all, majority,
   consensus, weighted, percentage, first-response policies; sequential advance and short-circuit; auto-rule; dynamic
   assignment; reminder-fires-once; escalation; expiry; cancel; permissions; history) and 7 integration tests

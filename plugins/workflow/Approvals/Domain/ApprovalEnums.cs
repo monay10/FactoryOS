@@ -22,7 +22,7 @@ public enum ApprovalStatus
     Expired = 5,
 }
 
-/// <summary>The decision result of an approval or one of its stages.</summary>
+/// <summary>The decision result of an approval stage (the eager tally of a stage's votes).</summary>
 public enum ApprovalOutcome
 {
     /// <summary>Not yet decided.</summary>
@@ -33,6 +33,30 @@ public enum ApprovalOutcome
 
     /// <summary>Rejected.</summary>
     Rejected = 2,
+}
+
+/// <summary>
+/// The terminal disposition of a whole approval — its final, reportable outcome. Kept distinct from the
+/// boolean <c>approved</c> flag carried to a workflow branch: several of these values are "not approved" yet
+/// must stay separable for SLA reports, KPIs and audit. A rejection, a cancellation and a deadline breach all
+/// send <c>approved = false</c> to the workflow, but each keeps its own resolution here.
+/// </summary>
+public enum ApprovalResolution
+{
+    /// <summary>Not yet resolved (the approval is still running).</summary>
+    None = 0,
+
+    /// <summary>Granted by the participants.</summary>
+    Approved = 1,
+
+    /// <summary>Declined by a participant vote.</summary>
+    Rejected = 2,
+
+    /// <summary>Withdrawn before a decision was reached.</summary>
+    Cancelled = 3,
+
+    /// <summary>Its deadline passed with no decision (a service-level breach).</summary>
+    Expired = 4,
 }
 
 /// <summary>A single participant's vote.</summary>
