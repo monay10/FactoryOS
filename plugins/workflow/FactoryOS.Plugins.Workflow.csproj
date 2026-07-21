@@ -21,6 +21,7 @@
     <None Update="sample.config.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Forms\sample.config.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Tasks\sample.config.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Approvals\sample.config.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

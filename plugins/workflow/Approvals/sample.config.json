@@ -1,0 +1,43 @@
+{
+  "description": "Sample configuration for the FactoryOS Approval engine (Commit 0015). Binds to Workflow:Approvals. Contains no secrets.",
+  "Workflow": {
+    "Approvals": {
+      "AutoRegisterDefinitions": true,
+      "ExpireOverdueApprovals": true,
+      "DueWorkBatchSize": 100,
+      "DefaultCulture": "en"
+    }
+  },
+  "exampleApproval": {
+    "key": "capex-approval",
+    "name": "Capital Expenditure Approval",
+    "title": "CAPEX Approval",
+    "activityKey": "approve",
+    "rules": [
+      { "condition": "amount < 1000", "outcome": "Approved" }
+    ],
+    "deadline": { "in": "48:00:00" },
+    "reminders": [{ "before": "08:00:00" }],
+    "escalations": [
+      { "after": "01:00:00", "to": { "strategy": "User", "target": "cfo" } }
+    ],
+    "stages": [
+      {
+        "name": "Manager",
+        "policy": { "kind": "Single" },
+        "participants": [
+          { "id": "manager", "assignment": { "strategy": "Role", "target": "line-manager" } }
+        ]
+      },
+      {
+        "name": "Finance Board",
+        "policy": { "kind": "Majority" },
+        "participants": [
+          { "id": "fin1", "assignment": { "strategy": "User", "target": "finance-a" } },
+          { "id": "fin2", "assignment": { "strategy": "User", "target": "finance-b" } },
+          { "id": "fin3", "assignment": { "strategy": "User", "target": "finance-c" } }
+        ]
+      }
+    ]
+  }
+}

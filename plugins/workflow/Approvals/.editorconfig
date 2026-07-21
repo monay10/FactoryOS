@@ -1,0 +1,8 @@
+# The approval engine's stateless collaborators (executor, policy evaluator, participant resolver, deadline/
+# reminder/escalation engines, permission evaluator) are registered, injectable services per the engine
+# contract; that they happen to hold no fields does not mean their public API should be static, so CA1822
+# "mark members static" does not apply. The approval-policy vocabulary (Single, …) is mandated by the spec's
+# policy list, so CA1720 "identifier contains type name" does not apply to those members either.
+[*.cs]
+dotnet_diagnostic.CA1822.severity = none
+dotnet_diagnostic.CA1720.severity = none

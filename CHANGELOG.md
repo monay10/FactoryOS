@@ -7,6 +7,52 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0015 — Approval engine (2026-07-21)
+
+Added
+- **`FactoryOS.Plugins.Workflow`** — added an **enterprise approval runtime** that runs on top of the workflow engine.
+  No new project was created (per the commit's rules): the engine lives inside the existing Workflow project, in the
+  new `FactoryOS.Plugins.Workflow.Approvals.*` namespace (folder `Approvals/`), beside the workflow runtime, the forms
+  engine and the human task engine. Consistent with the engine-layering rule (Commits 0013–0014), the approval engine
+  **references neither the human task engine nor the forms engine** — it only completes/cancels its workflow activity
+  through a one-way bridge and emits events; surfacing approvals as tasks or forms is composed by the orchestration
+  layer. New pieces:
+  - **Domain** (`Approvals/Domain`): `ApprovalStatus`, `ApprovalOutcome`, `ApprovalStructure`, `ApprovalPolicyKind`,
+    `ApprovalDecisionKind`, `ApprovalParticipantStatus`, `ApprovalPermission` (`[Flags]`); `ApprovalLevel`,
+    `ApprovalPolicy`, `ApprovalAssignment` (User/Role/Group/Dynamic), `ApprovalParticipant`, `ApprovalStage`,
+    `ApprovalStep`, `ApprovalDecision`, `ApprovalRule` (auto-decision), `ApprovalComment`, `ApprovalDeadline`,
+    `ApprovalReminder`, `ApprovalEscalation`, `ApprovalHistory`, `ApprovalPermissionGrant`, `ApprovalDefinition`
+    (+ a validating builder) and `ApprovalInstance`.
+  - **Policies** (`Approvals/Policies`): `ApprovalPolicies` — single, any, all, majority, consensus, first response,
+    percentage and weighted-vote shortcuts. Structure (single/sequential/parallel) is derived from the stages.
+  - **Execution** (`Approvals/Execution`): `ApprovalPolicyEvaluator` (eager per-stage tally), `ParticipantResolver`,
+    `ApprovalDeadlineEngine`/`ApprovalReminderEngine`/`ApprovalEscalationEngine`, the pure `ApprovalExecutor`,
+    `ApprovalPermissionEvaluator`, `ApprovalCompletionService` (finish/expire → advance workflow),
+    `ApprovalCancellationService`, `ApprovalDecisionService` (record vote → evaluate → advance stage or finish),
+    `ApprovalRuntime` (start + `RunDueAsync`), the `ApprovalEngine` façade, and the
+    `IApprovalWorkflowBridge`/`ApprovalWorkflowBridge` seam.
+  - **Persistence** (`Approvals/Persistence`): `IApprovalRepository`, `IApprovalStore`, `IApprovalHistoryRepository`
+    with in-memory implementations.
+  - **Events** (`Approvals/Events`): `ApprovalCreated`/`Started`/`Assigned`/`Approved`/`Rejected`/`Cancelled`/
+    `Completed`/`Expired`/`Escalated`/`ReminderSent`, published through `IApprovalEventSink` (the event-bus seam).
+  - **Localization / diagnostics**: `IApprovalLocalizer` (+ in-memory localizer) and `ApprovalMetrics` counters.
+  - **DI**: `AddApprovalEngine()` (and an `IConfiguration` overload binding `Workflow:Approvals`) registers the runtime,
+    its in-memory persistence, the participant resolver, policy evaluator and schedule engines, and the workflow bridge,
+    calling `AddWorkflowEngine()` idempotently. Copies `Approvals/sample.config.json`.
+- **Tests** — 20 unit tests (`FactoryOS.Tests/Workflow/ApprovalEngineCoreTests.cs`: single, any, all, majority,
+  consensus, weighted, percentage, first-response policies; sequential advance and short-circuit; auto-rule; dynamic
+  assignment; reminder-fires-once; escalation; expiry; cancel; permissions; history) and 7 integration tests
+  (`FactoryOS.IntegrationTests/Workflow/ApprovalEngineIntegrationTests.cs`: container composition; approval routes the
+  workflow down the granted branch; rejection down the denied branch; cancel cancels the workflow; human task and forms
+  integration composed at the orchestration layer; persisted state and history).
+- **Docs & config**: `plugins/workflow/Approvals/README.md` and `plugins/workflow/Approvals/sample.config.json` (binds
+  `Workflow:Approvals`; contains no secrets).
+
+Acceptance criteria (all met): a workflow approval activity can be created; single, sequential, parallel, majority and
+consensus approvals work; rejection routes to the correct branch; completing an approval advances the workflow;
+escalation, reminders and history work; the human task engine, forms engine, workflow runtime and reactive workflow
+engine are unaffected; no TODOs, no mocks, no build warnings; all unit and integration tests pass.
+
 ### Commit 0014 — Human task engine (2026-07-21)
 
 Added
