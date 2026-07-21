@@ -1,0 +1,59 @@
+{
+  "description": "Sample configuration for the FactoryOS SLA engine (Commit 0017). Binds to Workflow:Sla. Contains no secrets.",
+  "Workflow": {
+    "Sla": {
+      "AutoRegisterDefinitions": true,
+      "DueWorkBatchSize": 200,
+      "TimeOutOverdueSlas": true,
+      "DefaultCulture": "en"
+    }
+  },
+  "exampleBusinessCalendar": {
+    "key": "factory-tr",
+    "timeZone": { "id": "Europe/Istanbul", "utcOffset": "03:00:00" },
+    "workingHours": [
+      { "day": "Monday", "start": "08:00", "end": "12:00" },
+      { "day": "Monday", "start": "13:00", "end": "17:00" },
+      { "day": "Tuesday", "start": "08:00", "end": "12:00" },
+      { "day": "Tuesday", "start": "13:00", "end": "17:00" },
+      { "day": "Wednesday", "start": "08:00", "end": "12:00" },
+      { "day": "Wednesday", "start": "13:00", "end": "17:00" },
+      { "day": "Thursday", "start": "08:00", "end": "12:00" },
+      { "day": "Thursday", "start": "13:00", "end": "17:00" },
+      { "day": "Friday", "start": "08:00", "end": "12:00" },
+      { "day": "Friday", "start": "13:00", "end": "17:00" }
+    ],
+    "holidayCalendar": {
+      "key": "tr-public",
+      "dates": ["2026-01-01", "2026-04-23", "2026-05-01", "2026-05-19", "2026-08-30", "2026-10-29"]
+    }
+  },
+  "exampleDefinition": {
+    "key": "maintenance-response",
+    "name": "Maintenance Response SLA",
+    "targetKind": "HumanTask",
+    "policy": { "kind": "BusinessCalendar", "calendarKey": "factory-tr", "allowPause": true },
+    "deadline": "04:00:00",
+    "reminders": [{ "before": "01:00:00" }],
+    "escalations": [
+      { "after": "01:00:00", "assignee": "role:shift-supervisor" },
+      { "after": "04:00:00", "assignee": "role:plant-manager" }
+    ],
+    "timeout": { "after": "24:00:00" },
+    "grants": [
+      { "principal": "role:shift-supervisor", "permission": "View, Override" },
+      { "principal": "role:plant-manager", "permission": "View, Create, Cancel, Override" }
+    ]
+  },
+  "exampleStagedDefinition": {
+    "key": "incident-resolution",
+    "name": "Incident Resolution SLA",
+    "targetKind": "WorkflowActivity",
+    "policy": { "kind": "Continuous" },
+    "stages": [
+      { "key": "triage", "name": "Triage", "duration": "00:30:00" },
+      { "key": "repair", "name": "Repair", "duration": "04:00:00" },
+      { "key": "verify", "name": "Verification", "duration": "01:00:00" }
+    ]
+  }
+}

@@ -7,6 +7,68 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0017 — SLA engine (2026-07-21)
+
+Added
+- **`FactoryOS.Plugins.Workflow`** — added the shared **service-level-agreement infrastructure** the workflow,
+  human task and approval engines' work can be tracked against. No new project was created (per the commit's
+  rules): the engine lives inside the existing Workflow project, in the new `FactoryOS.Plugins.Workflow.SLA.*`
+  namespace (folder `SLA/`). **This is the SLA engine deferred from Commit 0015**, where `TimedOut` was
+  deliberately *not* added to `ApprovalResolution` because nothing produced it — it now has a real trigger here,
+  in the engine that owns the concept, and the approval engine is untouched.
+  New pieces:
+  - **Domain** (`SLA/Domain`): `SlaStatus`, `SlaOutcome`, `SlaTargetKind`, `SlaCalendarKind`, `SlaPermission`
+    (`[Flags]`), `SlaHistoryAction`; `SlaTarget` (+ factories for workflow activity / human task / approval /
+    form submission), `SlaPolicy` (24x7 or a named business calendar, pause allowed or not), `SlaDeadline`,
+    `SlaReminder`, `SlaEscalation`, `SlaTimeout`, `SlaStage` (+ `SlaStageState`), `PauseReason`/`ResumeReason`,
+    `SlaPermissionGrant`, `WorkingHours`, `HolidayCalendar`, `BusinessCalendar`, `TimeZoneDefinition`,
+    `SlaCalendar`, `SlaDefinition` (+ a validating builder), `SlaInstance` and `SlaHistoryEntry`.
+  - **Execution** (`SLA/Execution`): `BusinessTimeCalculator` (working windows, shift breaks, weekends,
+    holidays, fixed-offset zones; a continuous calendar short-circuits), `CalendarEngine`, `SlaScheduler`
+    (business-time budgets → wall-clock instants, and the post-pause shift), `DeadlineEngine`, `ReminderEngine`,
+    `EscalationEngine`, `TimeoutEngine`, the pure `SlaEvaluator`, `SlaPermissionEvaluator`, `SlaRuntime`
+    (start / pause / resume / advance stage / complete / cancel / `RunDueAsync`) and the `SlaEngine` façade.
+  - **Persistence** (`SLA/Persistence`): `ISlaRepository`, `ISlaStore`, `ISlaHistoryRepository`,
+    `ISlaCalendarRepository` with in-memory implementations.
+  - **Events** (`SLA/Events`): `SlaStarted`/`Paused`/`Resumed`/`ReminderTriggered`/`Escalated`/`Expired`/
+    `TimedOut`/`Completed`/`Cancelled`, published through `ISlaEventSink`. Unlike the other engines' single-sink
+    seams this one **fans out to every registered sink**, so a recorder and a bridge can observe the same stream.
+  - **Integration** (`SLA/Integration`): the opt-in `SlaNotificationBridge`, which forwards only the events that
+    need a human — reminder, escalation, breach, timeout — to the notification engine through its existing
+    `GenericEventSubscriber` seam. It lives on the SLA side and is registered only by
+    `AddSlaNotificationIntegration()`, so the SLA core has **no** dependency on notifications.
+  - **Localization / diagnostics**: `ISlaLocalizer` (+ in-memory localizer) and `SlaMetrics` counters.
+  - **DI**: `AddSlaEngine()` (and an `IConfiguration` overload binding `Workflow:Sla`) registers the runtime, its
+    in-memory persistence and calendar repository, the business-time calculator, scheduler and the four timer
+    engines. Copies `SLA/sample.config.json`.
+  - **Expired and timed out are separate dispositions.** A missed deadline raises `SlaExpired`, moves the SLA to
+    `Breached` and keeps it running so escalations continue; the hard timeout raises `SlaTimedOut` and *ends* it
+    with outcome `TimedOut`. A late finish, a give-up and a cancellation never collapse into one number.
+  - **An SLA is attached, not inferred.** The engine holds only a target reference: it does not subscribe to,
+    call into or modify the workflow, human task, approval, forms or notification engines. (The other engines'
+    single-sink event seams are already claimed by the notification engine, and an SLA is a contract someone
+    signs up for rather than something guessed from an event; attaching explicitly also lets one target carry
+    several SLAs.)
+- **Tests** — 26 unit tests (`FactoryOS.Tests/Workflow/SlaEngineCoreTests.cs`: business time within a day,
+  spilling across days, skipping weekends, holidays and shift breaks, before-opening and after-closing starts,
+  elapsed business time, continuous calendars, empty-calendar misconfiguration; deadlines in business time,
+  breach-without-ending, met vs breached completion; reminders firing once; escalation with assignee; hard
+  timeout; **expired vs timed-out staying distinct**; pause owing nothing and resume shifting the schedule;
+  pause forbidden by policy; staged deadlines; cancel; permissions; history; lookup by target) and 6 integration
+  tests (`FactoryOS.IntegrationTests/Workflow/SlaEngineIntegrationTests.cs`: container composition without
+  pulling in notifications; a workflow-activity SLA breaching while the activity stays pending; a human-task SLA
+  reminding then closing as met; an approval SLA escalating on a business calendar; an escalation reaching the
+  notification engine through the opt-in bridge; persisted state and history across a pause).
+- **Docs & config**: `plugins/workflow/SLA/README.md` and `plugins/workflow/SLA/sample.config.json` (binds
+  `Workflow:Sla`; contains no secrets).
+
+Acceptance criteria (all met): workflow-activity, human-task and approval SLAs work; working hours are
+calculated; the holiday calendar is honoured; pause/resume are supported and give the time back; reminders,
+escalation and timeout work; `Expired` and `TimedOut` are separate; the notification engine receives SLA events
+through the opt-in bridge; the workflow runtime, human task engine, approval engine, forms engine, notification
+engine and reactive workflow engine are unaffected (verified: no other engine references the SLA namespace);
+no TODOs, no mocks, no build warnings; all unit and integration tests pass.
+
 ### Commit 0016 — Notification engine (2026-07-21)
 
 Added
