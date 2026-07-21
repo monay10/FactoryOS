@@ -7,6 +7,45 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0011 — Connector framework (2026-07-21)
+
+Added
+- **`FactoryOS.Connectors`** — completed the connector platform on top of the existing normalize/dedup ingestion
+  pipeline (binder, deduplicator, normalizer, transforms, `ConnectorManifestReader`). Only the Connectors project
+  changed. Existing abstractions were **reused, not duplicated**: the connector code contract `IConnector` and the
+  `ConnectorManifest` (both in `FactoryOS.Contracts`) are reused as-is — no parallel connector interface was created —
+  and `AddConnectorFramework()` was extended rather than replaced. New additions (under `Framework/`):
+  - **Configuration**: `ConnectorConstants`, `ConnectorOptions` with nested `ConnectorDiscoveryOptions`,
+    `ConnectorHealthOptions` and `ConnectorSecurityOptions` (bound from `Connectors`, `Connectors:Discovery`,
+    `Connectors:Health`, `Connectors:Security`); `ConnectorConfiguration` + `IConnectorConfigurationProvider`/
+    `ConnectorConfigurationProvider` reading `Connectors:Configuration:<key>` (with an `Enabled` toggle and on-demand
+    secret decryption); `IConnectorSecretProtector` with an AES-GCM implementation (`enc:` prefixed) and a
+    development passthrough — the encryption key is supplied out-of-band, never committed.
+  - **Runtime models**: `ConnectorVersion` (ordered semver), `ConnectorCapability` (a `[Flags]` capability surface —
+    Read, Write, Events, Commands, Files, Streaming — with `Supports`/`Parse`), `ConnectorState`,
+    `ConnectorDescriptor` (reusing the contract manifest plus a declared version/capabilities), `ConnectorMetadata`,
+    `IConnectorContext`/`ConnectorContext`.
+  - **Lifecycle** (`Lifecycle/IConnectorLifecycle.cs`): the optional `InitializeAsync`/`ConnectAsync`/`DisconnectAsync`
+    plus `IAsyncDisposable` extension to the `IConnector` read contract.
+  - **Activation**: `IConnectorActivator`/`ConnectorActivator` (in-process type activation with key verification).
+  - **Health**: `ConnectorHealthStatus`, `ConnectorHealth`, `IConnectorHealthCheck`,
+    `IConnectorHealthService`/`ConnectorHealthService` (heartbeat, failure detection via staleness and a counter,
+    recovery detection).
+  - **Registry/Catalog/Management/Hosting**: `IConnectorRegistry`/`ConnectorRegistry`,
+    `IConnectorCatalog`/`ConnectorCatalog` (metadata, capability index, health), `IConnectorManager`/`ConnectorManager`
+    driving Initialize → Connect → Disconnect → Reconnect → Dispose, and `IConnectorHost`/`ConnectorHost` bulk
+    connect/disconnect over enabled connectors.
+  - **DI** (`DependencyInjection.cs`): `AddConnectorFramework()` now also registers the registry, activator,
+    configuration provider, secret protector (AES when a key is configured, otherwise passthrough), health service,
+    catalog, manager and host; a new `AddConnectorFramework(IConfiguration)` overload binds `ConnectorOptions`. The
+    csproj gained the configuration/options packages.
+- **Tests** — 12 unit tests (`FactoryOS.Tests/Connectors/ConnectorFrameworkFoundationTests.cs`: version ordering,
+  capability flags, manifest→descriptor→metadata reuse, AES round-trip + passthrough + configuration secret
+  decryption, activation + key enforcement, health heartbeat/failure/recovery/staleness, full connection lifecycle,
+  unknown/unattached handling, catalog projection, DI resolution + protector selection) and 2 integration tests
+  (`FactoryOS.IntegrationTests/Connectors/`: multiple connectors connect/reconnect/disconnect through the host with
+  catalog + health, and an encrypted per-connector secret decrypted with the configured key).
+
 ### Commit 0010 — Plugin framework (2026-07-20)
 
 Added

@@ -1,0 +1,28 @@
+{
+  "//": "Sample configuration for the FactoryOS connector platform. Bind the 'Connectors' section into appsettings. Discovery scans RootPath's immediate subfolders for connector.json manifests; Health governs heartbeat/failure detection. Per-connector settings live under 'Connectors:Configuration:<key>' where the 'Enabled' key toggles the connector (default true). Secret settings are prefixed 'enc:' and decrypted with Security.EncryptionKey — the key is a SECRET supplied out-of-band (environment, user-secrets, or a ${secret:...} placeholder), NEVER committed. Without a key, settings are treated as plaintext.",
+  "Connectors": {
+    "AutoConnect": true,
+    "Discovery": {
+      "Enabled": true,
+      "RootPath": "connectors"
+    },
+    "Health": {
+      "HeartbeatIntervalSeconds": 30,
+      "UnhealthyAfterMissedHeartbeats": 3,
+      "FailureThreshold": 3
+    },
+    "Security": {
+      "EncryptionKey": "${secret:Connectors:EncryptionKey}"
+    },
+    "Configuration": {
+      "logo": {
+        "Enabled": true,
+        "Host": "10.0.0.5",
+        "Password": "enc:BASE64_NONCE_TAG_CIPHERTEXT"
+      },
+      "sap": {
+        "Enabled": false
+      }
+    }
+  }
+}
