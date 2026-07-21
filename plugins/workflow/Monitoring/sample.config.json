@@ -1,0 +1,79 @@
+{
+  "description": "Sample configuration for the FactoryOS Monitoring engine (Commit 0019). Binds to Workflow:Monitoring. Contains no secrets.",
+  "Workflow": {
+    "Monitoring": {
+      "PublishCollectionEvents": false,
+      "DefaultWindow": "00:05:00",
+      "DefaultRetention": "7.00:00:00",
+      "MaintenanceBatchSize": 5000,
+      "HealthCheckTimeout": "00:00:05",
+      "HealthWindow": "00:05:00",
+      "DefaultCulture": "en"
+    }
+  },
+  "exampleRetentionPolicies": [
+    { "retainRaw": "7.00:00:00", "action": "Delete" },
+    { "retainRaw": "1.00:00:00", "action": "RollUp", "rollUpBucket": "01:00:00", "rollUpUsing": "Average", "category": "Performance" },
+    { "retainRaw": "30.00:00:00", "action": "RollUp", "rollUpBucket": "01:00:00", "rollUpUsing": "Sum", "metricKey": "workflow.instance.completed" },
+    { "retainRaw": "02:00:00", "action": "Delete", "category": "Runtime" }
+  ],
+  "exampleThresholds": [
+    {
+      "key": "workflow-failure-rate",
+      "metricKey": "workflow.instance.failed",
+      "aggregation": "Sum",
+      "window": "00:15:00",
+      "comparison": "GreaterThan",
+      "warningAt": 5,
+      "criticalAt": 20,
+      "description": "Too many workflow instances are failing."
+    },
+    {
+      "key": "notification-deadletter",
+      "metricKey": "notifications.deadlettered",
+      "aggregation": "Sum",
+      "window": "00:15:00",
+      "comparison": "GreaterThan",
+      "criticalAt": 1,
+      "description": "A notification exhausted its retries."
+    },
+    {
+      "key": "approval-latency",
+      "metricKey": "approvals.duration",
+      "aggregation": "Percentile95",
+      "window": "01:00:00",
+      "comparison": "GreaterThan",
+      "warningAt": 3600000,
+      "criticalAt": 14400000,
+      "description": "Approvals are taking too long to resolve."
+    },
+    {
+      "key": "connector-failure-rate",
+      "metricKey": "connector.failed",
+      "aggregation": "Rate",
+      "window": "00:05:00",
+      "comparison": "GreaterThan",
+      "criticalAt": 1,
+      "description": "A connector is failing more than once a second."
+    }
+  ],
+  "exampleAlertRules": [
+    { "key": "workflow-failing", "thresholdKey": "workflow-failure-rate", "triggersAt": "Critical", "for": "00:05:00", "description": "Workflows have been failing for five minutes." },
+    { "key": "notifications-lost", "thresholdKey": "notification-deadletter", "triggersAt": "Critical", "for": "00:00:00", "description": "A notification was never delivered." },
+    { "key": "approvals-slow", "thresholdKey": "approval-latency", "triggersAt": "Warning", "for": "00:30:00", "description": "Approval turnaround has been slow for half an hour." }
+  ],
+  "examplePermissionGrants": [
+    { "principal": "role:operator", "permission": "ViewMetrics, ViewHealth" },
+    { "principal": "role:plant-manager", "permission": "ViewMetrics, ViewHealth" },
+    { "principal": "role:platform-admin", "permission": "ViewMetrics, ViewHealth, ManageThresholds" }
+  ],
+  "exampleQuery": {
+    "tenant": "acme",
+    "keyPrefix": "workflow.",
+    "category": "Workflow",
+    "aggregation": "Sum",
+    "fromUtc": "2026-07-22T00:00:00Z",
+    "toUtc": "2026-07-22T23:59:59Z",
+    "limit": 500
+  }
+}

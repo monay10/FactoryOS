@@ -7,6 +7,76 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0019 — Monitoring & Metrics engine (2026-07-22)
+
+Added
+- **`FactoryOS.Plugins.Workflow`** — added the platform's **observability layer**: metrics, health, aggregation
+  and alert evaluation over what every engine actually did. No new project was created (per the commit's rules):
+  the engine lives inside the existing Workflow project, in the new
+  `FactoryOS.Plugins.Workflow.Monitoring.*` namespace (folder `Monitoring/`). Monitoring is the outermost layer
+  of the ratified order (Engine → Bridge → Application → SLA → Notification → Audit → Metrics): it consumes what
+  every engine above it publishes and writes nothing back. No engine references the monitoring namespace or
+  holds an `IMonitoringEngine`, `MetricService` or `HealthService`. New pieces:
+  - **Domain** (`Monitoring/Domain`): `MetricCategory` (the thirteen collections), `MetricKind`,
+    `MetricAggregation`, `MetricComparison`, `MetricHealthState`, `HealthStatus`, `MetricRetentionAction`,
+    `MonitoringPermission` (`[Flags]`); `MetricLabel`, `MetricDimension`, `MetricCorrelation`,
+    `MetricDefinition`, `MetricInstance`, `MetricValue`, `MetricSeries`, `MetricSnapshot`,
+    `MetricRetentionPolicy`, `MetricThreshold`, `MetricAlertRule`, `MetricAlert`, `HealthCheck`,
+    `HealthCheckResult` and `HealthReport`.
+  - **Execution** (`Monitoring/Execution`): `MetricCollector`, `MetricSampler`, `MetricAggregator`,
+    `MetricRetentionManager`, `ThresholdEvaluator`, `AlertEvaluator`, `MetricSearchService` (+ `MetricQuery`),
+    `HealthRegistry` (+ `HealthProbe`, `HealthProbeContext`), `HealthCheckExecutor`, `HealthEngine`,
+    `MonitoringDispatcher`, `MonitoringPermissionEvaluator`, `MonitoringRuntime` and the `MonitoringEngine`
+    façade.
+  - **Collections** (`Monitoring/Collections`): the thirteen metric catalogues — workflow, forms, human task,
+    approval, notification, SLA, audit, connector, plugin, API, infrastructure, runtime and performance — plus
+    `MetricCatalog`. The catalogue is identical for every tenant; tenants differ only in the values they
+    produce.
+  - **Bridge** (`Monitoring/Bridge`): `MetricsBridge<T>`, `EventDurationTracker` and the seven bridges that turn
+    each engine's events into measurements.
+  - **Health** (`Monitoring/Health`): `MetricHealthCheck`, `HealthSignal` and the twelve platform checks.
+  - **Persistence** (`Monitoring/Persistence`): `IMetricRepository`, `IMetricStore`, `IHealthRepository` and
+    `IHealthStore`, with in-memory implementations. Every store operation names a tenant and none spans them.
+  - **Events** (`Monitoring/Events`): `MetricCollected`, `MetricAggregated`, `ThresholdExceeded`,
+    `HealthCheckCompleted`, `HealthStatusChanged`, `MetricRetentionExpired`, `AlertTriggered`, `AlertResolved`,
+    and the fan-out `IMonitoringEventSink`.
+  - **Configuration / Diagnostics / Localization**: `MonitoringEngineOptions` (binds `Workflow:Monitoring`),
+    `MonitoringMetrics` (the engine's own counters, so the observability layer is itself observable) and
+    `IMonitoringLocalizer`.
+  - **DI**: `AddMonitoringEngine()` and `AddMonitoringEngine(IConfiguration)`, registering the whole catalogue
+    and all twelve health checks as the engine is built.
+  - **Docs and sample config**: `plugins/workflow/Monitoring/README.md` and
+    `plugins/workflow/Monitoring/sample.config.json` (thresholds, alert rules, retention policies and permission
+    grants; no secrets).
+- **Tests** — `MonitoringEngineCoreTests` (46 unit tests: collection, sampling, aggregation, retention and
+  roll-up, thresholds, alerts, health, search, correlation, permissions, engine counters) and
+  `MonitoringEngineIntegrationTests` (14 integration tests: the engine composed through a real container,
+  measuring all seven engines and proving their existing consumers are still fed).
+
+Notes
+- **Windows are `(from, to]`** — exclusive start, inclusive end. With an exclusive end, a measurement taken
+  "now" would be invisible to a window ending "now", leaving every dashboard one tick behind what it watches;
+  an exclusive start keeps consecutive windows a clean partition in exchange.
+- **Sampling is deterministic and kind-aware.** One in every N per series rather than dice, so the same traffic
+  always produces the same series. A kept *counter* measurement carries the weight of the run it stands for, so
+  a series sampled at 1-in-10 still reports the true total — sampling costs resolution, never correctness.
+- **A silent metric does not resolve an open alert.** A series that stops producing has not recovered; treating
+  silence as recovery would close an alert at exactly the moment it matters most. Likewise a component with no
+  signal is reported `Unknown`, never `Healthy`.
+- **Alerts are derived, not stored.** They are what the retained series say now; after a restart the evaluator
+  re-derives what is still true, and consumers deduplicate by alert key as at-least-once delivery already
+  requires.
+- **Being observed cannot fail the observed.** A bridge forwards to the prior consumer first, and contains any
+  recording failure — counting it in `MonitoringMetrics.BridgeFaults` rather than throwing it back into a
+  workflow transition.
+- **The single-consumer seams were wrapped once more, not modified.** Five sinks now resolve to a metrics
+  bridge wrapping the audit composite wrapping the notification subscriber; every prior consumer is unchanged
+  and still fed, proven by integration test. This is the third layer to need the same fan-out — the standing
+  plan to replace all of it with the Constitution's MassTransit/RabbitMQ event bus remains.
+- **Out of scope, as specified:** no Grafana/Kibana dashboards, no Prometheus or OpenTelemetry exporter, no
+  live monitoring, reporting or alarm-management screens. The event seam is deliberately the shape an exporter
+  will plug into.
+
 ### Commit 0018 — Audit engine (2026-07-21)
 
 Added
