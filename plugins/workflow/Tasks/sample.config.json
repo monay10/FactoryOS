@@ -15,7 +15,11 @@
     "category": "Approval",
     "priority": "High",
     "activityKey": "approve",
-    "formKey": "purchase-request",
+    "metadata": {
+      "//": "Opaque hints for the orchestration layer; the task engine never interprets these.",
+      "form": "purchase-request",
+      "inbox": "purchasing"
+    },
     "assignment": { "strategy": "Role", "target": "purchasing-manager" },
     "permissions": [
       { "kind": "Role", "principal": "purchasing-manager", "permission": "Complete, Reject" },

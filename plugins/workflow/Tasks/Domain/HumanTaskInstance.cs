@@ -111,8 +111,12 @@ public sealed class HumanTaskInstance
     /// <summary>Gets how many times the task has escalated.</summary>
     public int EscalationLevel { get; private set; }
 
-    /// <summary>Gets the form key the task presents, if any.</summary>
-    public string? FormKey { get; private set; }
+    /// <summary>
+    /// Gets the opaque metadata carried from the definition for the orchestration layer to interpret. The task
+    /// engine never reads it.
+    /// </summary>
+    public IReadOnlyDictionary<string, string> Metadata { get; private set; } =
+        new Dictionary<string, string>(StringComparer.Ordinal);
 
     /// <summary>Gets the linked workflow instance id, when created from a workflow activity.</summary>
     public Guid? WorkflowInstanceId { get; private set; }
@@ -165,9 +169,13 @@ public sealed class HumanTaskInstance
         WorkflowActivityNodeId = activityNodeId;
     }
 
-    /// <summary>Sets the form the task presents.</summary>
-    /// <param name="formKey">The form key.</param>
-    public void SetForm(string? formKey) => FormKey = formKey;
+    /// <summary>Sets the opaque orchestration metadata carried from the definition.</summary>
+    /// <param name="metadata">The metadata.</param>
+    public void SetMetadata(IReadOnlyDictionary<string, string> metadata)
+    {
+        ArgumentNullException.ThrowIfNull(metadata);
+        Metadata = metadata;
+    }
 
     /// <summary>Records the candidate pool.</summary>
     /// <param name="candidates">The candidates.</param>

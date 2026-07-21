@@ -126,7 +126,9 @@ public sealed class HumanTaskEngineIntegrationTests
         var run = await workflow.StartAsync(ApprovalWorkflow(), WorkflowContext.Default);
         var task = await tasks.CreateForActivityAsync(ApprovalTask(), HumanTaskContext.Default, run.InstanceId, "approve");
 
-        // The task presents a standalone form (not itself workflow-bound); its values feed the task outcome.
+        // This test plays the ORCHESTRATION layer: it opens a form (a standalone, non-workflow-bound form) and
+        // feeds the submitted values into the task's completion decision. The task engine never references the
+        // forms engine — it only knows tasks; the wiring lives here, above both engines.
         var form = FormDefinition.Create("approve-form", "Approve")
             .AddSection(new FormSection("s", "Decision",
             [

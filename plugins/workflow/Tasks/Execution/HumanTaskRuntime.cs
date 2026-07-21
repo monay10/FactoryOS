@@ -115,7 +115,7 @@ public sealed class HumanTaskRuntime
         var now = _clock.UtcNow;
         var instance = HumanTaskInstance.Create(
             Guid.NewGuid(), definition.Key, context.Tenant, definition.Title, definition.Category, definition.Priority);
-        instance.SetForm(definition.FormKey);
+        instance.SetMetadata(definition.Metadata);
         if (workflowInstanceId is Guid workflowId && activityNodeId is not null)
         {
             instance.BindToWorkflow(workflowId, activityNodeId);

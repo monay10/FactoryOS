@@ -23,6 +23,12 @@ Added
     `HumanTaskDecision`, `HumanTaskPermissionGrant`, `HumanTaskHistory`, `HumanTaskDefinition` (+ builder),
     `HumanTaskInstance` (status, assignee/candidates, comments, attachments, reminder/escalation state, workflow link,
     history) and the `HumanTask` summary projection.
+  - **Layering — the task engine knows only tasks.** It emits lifecycle events and has **no knowledge of forms,
+    notifications, inboxes, calendars or SLAs**, and no bridge to any of them (only the one-way workflow bridge). The
+    application / orchestration layer subscribes to the task events and drives those engines. Anything task-specific
+    that the orchestrator needs travels as an opaque `Metadata` bag on the definition (e.g. a `"form"` entry); the task
+    engine never interprets it. This deliberately keeps the task engine from turning into an orchestrator as new
+    channels are added.
   - **Execution** (`Tasks/Execution`): `AssignmentResolver` (+ `IHumanTaskDirectory` for role/group expansion),
     `DeadlineEngine`, `ReminderEngine`, `EscalationEngine`, the pure `HumanTaskExecutor` state machine,
     `HumanTaskPermissionEvaluator`, `TaskCompletionService` (complete/reject → advance workflow),

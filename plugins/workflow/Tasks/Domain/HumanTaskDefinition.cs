@@ -18,7 +18,7 @@ public sealed class HumanTaskDefinition
         HumanTaskDeadline? deadline,
         IReadOnlyList<HumanTaskReminder> reminders,
         IReadOnlyList<HumanTaskEscalation> escalations,
-        string? formKey,
+        IReadOnlyDictionary<string, string> metadata,
         string? activityKey)
     {
         Key = key;
@@ -31,7 +31,7 @@ public sealed class HumanTaskDefinition
         Deadline = deadline;
         Reminders = reminders;
         Escalations = escalations;
-        FormKey = formKey;
+        Metadata = metadata;
         ActivityKey = activityKey;
     }
 
@@ -65,8 +65,12 @@ public sealed class HumanTaskDefinition
     /// <summary>Gets the escalation policies.</summary>
     public IReadOnlyList<HumanTaskEscalation> Escalations { get; }
 
-    /// <summary>Gets the key of the form this task presents, if any.</summary>
-    public string? FormKey { get; }
+    /// <summary>
+    /// Gets opaque metadata carried with the task for the orchestration layer to interpret. The task engine
+    /// never reads it — it knows nothing of forms, notifications or inboxes; a subscriber to the task's events
+    /// decides what a given key means (for example a <c>"form"</c> entry naming a form to open).
+    /// </summary>
+    public IReadOnlyDictionary<string, string> Metadata { get; }
 
     /// <summary>Gets the workflow activity key this task satisfies, if any.</summary>
     public string? ActivityKey { get; }
@@ -89,11 +93,11 @@ public sealed class HumanTaskDefinitionBuilder
     private readonly List<HumanTaskPermissionGrant> _permissions = [];
     private readonly List<HumanTaskReminder> _reminders = [];
     private readonly List<HumanTaskEscalation> _escalations = [];
+    private readonly Dictionary<string, string> _metadata = new(StringComparer.Ordinal);
     private string? _title;
     private HumanTaskCategory _category = HumanTaskCategory.General;
     private HumanTaskPriority _priority = HumanTaskPriority.Normal;
     private HumanTaskDeadline? _deadline;
-    private string? _formKey;
     private string? _activityKey;
 
     /// <summary>Initializes a new instance of the <see cref="HumanTaskDefinitionBuilder"/> class.</summary>
@@ -178,13 +182,18 @@ public sealed class HumanTaskDefinitionBuilder
         return this;
     }
 
-    /// <summary>Binds a form the task presents.</summary>
-    /// <param name="formKey">The form key.</param>
+    /// <summary>
+    /// Adds an opaque metadata entry for the orchestration layer. The task engine never interprets it; a
+    /// subscriber to the task's events decides what the key means (e.g. <c>"form"</c> naming a form to open).
+    /// </summary>
+    /// <param name="key">The metadata key.</param>
+    /// <param name="value">The metadata value.</param>
     /// <returns>The same builder.</returns>
-    public HumanTaskDefinitionBuilder WithForm(string formKey)
+    public HumanTaskDefinitionBuilder WithMetadata(string key, string value)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(formKey);
-        _formKey = formKey;
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+        ArgumentNullException.ThrowIfNull(value);
+        _metadata[key] = value;
         return this;
     }
 
@@ -215,6 +224,6 @@ public sealed class HumanTaskDefinitionBuilder
 
         return new HumanTaskDefinition(
             _key, _name, _title ?? _name, _category, _priority, _assignment, _permissions,
-            _deadline, _reminders, _escalations, _formKey, _activityKey);
+            _deadline, _reminders, _escalations, _metadata, _activityKey);
     }
 }

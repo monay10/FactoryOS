@@ -11,11 +11,31 @@ permissions, comments, attachments and a full audit history.
 > engine are all **untouched**; the only link is a one-way bridge (`IHumanTaskWorkflowBridge`) that calls the
 > existing `WorkflowEngine.CompleteActivityAsync` / `CancelAsync`.
 
+> **The task engine knows nothing but tasks.** It creates, assigns and tracks tasks and emits lifecycle
+> **events** (`HumanTaskCreated`/`Completed`/`Rejected`/…). It has **no knowledge of forms, notifications,
+> inboxes, calendars or SLAs** — no bridge to any of them. The **application / orchestration layer** subscribes
+> to the task events and drives those engines:
+>
+> ```
+> Workflow Runtime → Activity → Human Task → HumanTaskCreated event
+>                                                   │
+>                                        Orchestrator / Application Service
+>                                        ├──► Forms Engine        (opens metadata["form"], if any)
+>                                        ├──► Notification Engine
+>                                        ├──► Inbox / Calendar / SLA …
+>                                                   │
+>                                        (user acts) → Complete/Reject → bridge → Workflow continues
+> ```
+>
+> Anything task-specific the orchestrator needs travels as **opaque `Metadata`** on the definition (e.g. a
+> `"form"` entry); the task engine never interprets it. This keeps the task engine from slowly turning into an
+> orchestrator as new channels (Teams, mobile, mail, …) are added.
+
 ## Model
 
 - **Definition** — `HumanTaskDefinition` (built by `HumanTaskDefinition.Create(key, name, assignment)…Build()`):
   category, priority, assignment strategy, permission grants, an optional deadline with reminders and
-  escalations, an optional `FormKey`, and the optional workflow `ActivityKey` it satisfies.
+  escalations, opaque orchestration `Metadata`, and the optional workflow `ActivityKey` it satisfies.
 - **Assignment** — `HumanTaskAssignment`: `ToUser`, `ToRole`, `ToGroup`, `ToExpression` (dynamic),
   `RoundRobin` and `LoadBalanced`. Resolved by `AssignmentResolver` against an `IHumanTaskDirectory`
   (roles/groups → members) and the task store (load-balancing).
