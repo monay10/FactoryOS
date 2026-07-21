@@ -1,0 +1,36 @@
+{
+  "description": "Sample configuration for the FactoryOS Audit engine (Commit 0018). Binds to Workflow:Audit. Contains no secrets.",
+  "Workflow": {
+    "Audit": {
+      "MinimumSeverity": "Info",
+      "ExcludedCategories": [],
+      "MaintenanceBatchSize": 500,
+      "AuditOwnOperations": true,
+      "DefaultCulture": "en"
+    }
+  },
+  "exampleArchivePolicies": [
+    { "archiveAfter": "90.00:00:00" },
+    { "archiveAfter": "30.00:00:00", "category": "Notification" }
+  ],
+  "exampleRetentionPolicies": [
+    { "retainFor": "365.00:00:00", "action": "Delete" },
+    { "retainFor": "2555.00:00:00", "action": "Archive", "category": "Authentication" },
+    { "retainFor": "2555.00:00:00", "action": "Archive", "category": "Authorization" },
+    { "retainFor": "90.00:00:00", "action": "Delete", "category": "Notification" }
+  ],
+  "examplePermissionGrants": [
+    { "principal": "role:auditor", "permission": "ViewAudit, ExportAudit" },
+    { "principal": "role:compliance-officer", "permission": "ViewAudit, ExportAudit, ArchiveAudit, RestoreAudit" }
+  ],
+  "exampleQuery": {
+    "tenant": "acme",
+    "category": "Approval",
+    "minimumSeverity": "Notice",
+    "correlationId": "b3f1c2d4-0000-0000-0000-000000000000",
+    "fromUtc": "2026-07-01T00:00:00Z",
+    "toUtc": "2026-07-31T23:59:59Z",
+    "includeArchived": true,
+    "limit": 500
+  }
+}

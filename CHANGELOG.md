@@ -7,6 +7,68 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0018 — Audit engine (2026-07-21)
+
+Added
+- **`FactoryOS.Plugins.Workflow`** — added the platform's **immutable, hash-chained audit trail**. No new project
+  was created (per the commit's rules): the engine lives inside the existing Workflow project, in the new
+  `FactoryOS.Plugins.Workflow.Audit.*` namespace (folder `Audit/`). Audit sits at the bottom of the ratified
+  layer order (Engine → Bridge → Application → SLA → Notification → Audit → Metrics): it consumes what every
+  engine above it publishes and writes nothing back. New pieces:
+  - **Domain** (`Audit/Domain`): `AuditAction` (a small stable verb vocabulary; the precise source event name is
+    kept separately on `EventType`), `AuditCategory`, `AuditSeverity`, `AuditResult`, `AuditTargetType`,
+    `AuditActorKind`, `AuditRetentionAction`, `AuditPermission` (`[Flags]`); `AuditActor`, `AuditTarget`,
+    `AuditScope`, `AuditCorrelation`, `AuditSnapshot`, `AuditTag`, `AuditEntry` (+ the `AuditEntries` factories
+    for sources with no event seam), the sealed `AuditRecord`, `AuditRetentionPolicy`, `AuditArchivePolicy`,
+    `AuditSession` and `AuditChainVerification`.
+  - **Execution** (`Audit/Execution`): `AuditRecorder` (per-tenant sequencing and chaining, serialised per
+    tenant), `AuditChainVerifier`, `AuditFilter`, `AuditPolicyEvaluator`, `AuditArchiveManager`,
+    `AuditRetentionManager`, `AuditSearchService` (+ `AuditQuery`), `AuditExportService` (CSV and JSON),
+    `AuditDispatcher`, `AuditPermissionEvaluator`, `AuditRuntime` and the `AuditEngine` façade.
+  - **Sources** (`Audit/Sources`): subscribers for workflow, forms, human task, approval, notification and SLA
+    events, plus the composite event sinks described below.
+  - **Persistence** (`Audit/Persistence`): `IAuditRepository` (policies), `IAuditStore` (the append-only hot
+    trail — it deliberately exposes **no update operation**) and `IAuditArchiveRepository`, with in-memory
+    implementations.
+  - **Events** (`Audit/Events`): `AuditRecorded`/`Archived`/`RetentionExpired`/`Exported`/`Restored`, published
+    through `IAuditEventSink`, which fans out to every registered sink.
+  - **Localization / diagnostics**: `IAuditLocalizer` (localization applies to display only, never to stored or
+    hashed content) and `AuditMetrics` counters.
+  - **DI**: `AddAuditEngine()` (and an `IConfiguration` overload binding `Workflow:Audit`). Copies
+    `Audit/sample.config.json`.
+  - **Immutability is enforced twice over.** `AuditRecord` is sealed with get-only properties and no mutator, and
+    the store has no update path; on top of that each record carries its per-tenant `Sequence`, the
+    `PreviousHash` of its predecessor and a SHA-256 `Hash` over its own canonical content. Records are created
+    only by `Seal` (computes the hash) or `Rehydrate` (trusts the stored hash), so `RecomputeHash()` exposes a
+    tampered row rather than silently repairing it. Verification distinguishes an edited field, a forged record
+    and a reordering, and chains are **per tenant** so nothing crosses tenants even in the trail.
+  - **Reaching six event streams without touching any engine.** The SLA seam already fans out, so audit joins it.
+    The other five (`IWorkflowEventSink`, `IFormEventSink`, `IHumanTaskEventSink`, `IApprovalEventSink`,
+    `INotificationEventSink`) accept a single consumer, and notifications already held four of them — so
+    `AddAuditEngine()` **wraps whatever is registered in a composite and appends the audit subscriber**. Every
+    prior consumer keeps receiving exactly what it did before; an integration test asserts notifications are
+    still delivered. This is the fan-out the platform event bus will eventually provide for everyone.
+- **Tests** — 29 unit tests (`FactoryOS.Tests/Workflow/AuditEngineCoreTests.cs`: chain opening, linking and
+  per-tenant independence; the record type exposing no way to change it; detection of an altered record, a
+  forged link and a removal; filtering by severity and category; verbatim correlation preservation and
+  correlation-based retrieval; combined search filters and tenant isolation; session projection; CSV/JSON export
+  carrying hashes; export being itself audited; archiving, archived-stretch verification, retention by delete and
+  by archive, category-specific policy precedence, restore; change snapshots; denied access severity;
+  permissions; metrics) and 9 integration tests
+  (`FactoryOS.IntegrationTests/Workflow/AuditEngineIntegrationTests.cs`: every seam wrapped without displacing
+  its prior consumer; workflow, forms, human task, approval, notification and SLA activity all recorded;
+  notifications still delivered; the whole platform's activity forming one verifiable chain; survival across
+  archive and restore).
+- **Docs & config**: `plugins/workflow/Audit/README.md` and `plugins/workflow/Audit/sample.config.json` (binds
+  `Workflow:Audit`; contains no secrets).
+
+Acceptance criteria (all met): audit records are created from every engine; records are immutable; the hash chain
+verifies; tamper detection works for edits, forgeries and removals; `CorrelationId` and `TraceId` are preserved;
+archive, retention, search and export work; the workflow runtime, forms engine, human task engine, approval
+engine, notification engine, SLA engine and reactive workflow engine are unaffected (verified: no engine
+references the audit namespace, and the notification engine still receives and delivers everything it did
+before); no TODOs, no mocks, no build warnings; all unit and integration tests pass.
+
 ### Commit 0017 — SLA engine (2026-07-21)
 
 Added
