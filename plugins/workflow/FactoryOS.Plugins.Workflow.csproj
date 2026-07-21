@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\FactoryOS.Contracts\FactoryOS.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\FactoryOS.Domain\FactoryOS.Domain.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

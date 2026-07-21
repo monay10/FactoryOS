@@ -1,0 +1,7 @@
+# The workflow engine's expression evaluator returns polymorphic values by design, so the CA1859
+# "use a concrete return type" hint does not apply to its intentionally-abstract nodes. The executor is a
+# registered, injectable service (per the engine contract) that happens to be stateless, so CA1822
+# "mark members static" does not apply to its instance API either.
+[*.cs]
+dotnet_diagnostic.CA1859.severity = none
+dotnet_diagnostic.CA1822.severity = none

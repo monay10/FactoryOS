@@ -7,6 +7,39 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0012 — Workflow engine core (2026-07-21)
+
+Added
+- **`FactoryOS.Plugins.Workflow`** — added a stateful workflow **process runtime** alongside the existing reactive
+  rule engine (alert → action). Only the Workflow project changed. To avoid duplicating or colliding with the existing
+  `WorkflowEngine`/`WorkflowOptions`/`WorkflowRule` concepts, the runtime lives entirely in the new
+  `FactoryOS.Plugins.Workflow.Engine.*` namespace (folder `Engine/`); the reactive engine is untouched. The runtime
+  reuses the domain clock (`IDateTimeProvider`) rather than inventing one. New pieces:
+  - **Expressions** (`Engine/Expressions`): `WorkflowExpression`, a compiled, side-effect-free evaluator (literals,
+    variables, arithmetic, comparison, logic, parentheses) driving transition conditions and script assignments.
+  - **Domain** (`Engine/Domain`): `WorkflowStatus`, `WorkflowState`, `WorkflowNodeKind`, `WorkflowVersion`,
+    `WorkflowVariable`/`WorkflowVariables`, `WorkflowHistory`, `WorkflowDefinition` (+ a validating builder) and
+    `WorkflowInstance` (token-based active nodes, variables, pending activities/timers, history).
+  - **Nodes** (`Engine/Nodes`): `StartNode`, `EndNode`, `ActivityNode`, `DecisionNode`, `ParallelNode`, `MergeNode`,
+    `TimerNode`, `WaitNode`, `ScriptNode`, `ServiceNode`.
+  - **Transitions & assignments**: `WorkflowTransition` (optional guard expression); `WorkflowAssignment` with
+    `UserAssignment`, `RoleAssignment`, `GroupAssignment` and `DynamicAssignment`.
+  - **Execution** (`Engine/Execution`): `WorkflowExecutionContext`/`ExecutionScope`/`ExecutionResult`;
+    `WorkflowExecutor` (token stepper: start, decision, AND-split/join, script, service, end, and activity/timer/signal
+    waits with resume); `WorkflowRuntime` (persistence + events around one instance); the `WorkflowEngine` façade
+    (start/complete-activity/signal/cancel); `WorkflowScheduler` (fires due timers); and the `IWorkflowService`
+    registry for service nodes.
+  - **Persistence** (`Engine/Persistence`): `IWorkflowRepository`/`IWorkflowStore` with in-memory implementations.
+  - **Events** (`Engine/Events`): `WorkflowStarted`/`Completed`/`Cancelled`/`Failed` and
+    `ActivityStarted`/`Completed`/`Failed`, published through `IWorkflowEventSink`.
+  - **DI**: `AddWorkflowEngine()` registers the repository, store, event sink, service registry, executor, runtime,
+    engine and scheduler (with the system clock by default). The csproj gained a Domain reference for the clock.
+- **Tests** — 18 unit tests (`FactoryOS.Tests/Workflow/WorkflowEngineCoreTests.cs`: expression evaluation, version
+  ordering, definition validation, assignment resolution, activity lifecycle, decision, parallel split/join, service
+  node + missing-service fault, timer + scheduler, wait signal, cancellation, repository versioning, DI) and 4
+  integration tests (`FactoryOS.IntegrationTests/Workflow/`: sequential, parallel, decision, timer-via-scheduler and
+  cancellation flows through the DI-composed engine with the wired event sink).
+
 ### Commit 0011 — Connector framework (2026-07-21)
 
 Added
