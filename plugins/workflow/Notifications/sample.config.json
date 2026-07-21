@@ -1,0 +1,62 @@
+{
+  "description": "Sample configuration for the FactoryOS Notification engine (Commit 0016). Binds to Workflow:Notifications. Contains no secrets — provider credentials are referenced via ${secret:...} placeholders resolved at runtime.",
+  "Workflow": {
+    "Notifications": {
+      "DefaultMaxAttempts": 3,
+      "RetryBackoff": "00:01:00",
+      "DueWorkBatchSize": 200,
+      "SubscribeToEngineEvents": true,
+      "DefaultCulture": "en"
+    }
+  },
+  "exampleChannels": {
+    "email": { "host": "smtp.example.com", "port": 587, "user": "${secret:smtp-user}", "password": "${secret:smtp-password}" },
+    "sms": { "endpoint": "https://sms.example.com/send", "apiKey": "${secret:sms-api-key}" },
+    "push": { "endpoint": "https://push.example.com/fcm", "serverKey": "${secret:fcm-server-key}" },
+    "teams": { "webhook": "${secret:teams-webhook-url}" },
+    "slack": { "webhook": "${secret:slack-webhook-url}" },
+    "webhook": { "signingSecret": "${secret:webhook-signing-secret}" }
+  },
+  "exampleDefinition": {
+    "key": "approval-requested",
+    "name": "Approval Requested",
+    "category": "Approval",
+    "priority": "High",
+    "template": "approval-requested",
+    "channels": ["InApp", "Email"],
+    "deliveryPolicy": "Immediate",
+    "retry": { "maxAttempts": 3, "backoff": "00:01:00" },
+    "recipients": [
+      { "kind": "Role", "target": "approver" }
+    ],
+    "rules": [
+      { "condition": "amount > 100000", "priority": "Critical" }
+    ]
+  },
+  "exampleTemplates": [
+    {
+      "key": "approval-requested",
+      "channel": "Email",
+      "culture": "en",
+      "subject": "Approval requested: {{title}}",
+      "body": "Hello {{approver}}, approval '{{title}}' for {{amount}} awaits your decision."
+    },
+    {
+      "key": "approval-requested",
+      "channel": "InApp",
+      "culture": "en",
+      "body": "Approval '{{title}}' awaits your decision."
+    }
+  ],
+  "examplePreference": {
+    "userId": "u-alice",
+    "allowedChannels": ["InApp", "Email"],
+    "mutedCategories": ["Digest"],
+    "quietHours": { "start": "22:00", "end": "07:00" }
+  },
+  "exampleSubscription": {
+    "userId": "u-ops",
+    "category": "Workflow",
+    "channels": ["InApp"]
+  }
+}

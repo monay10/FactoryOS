@@ -7,6 +7,67 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0016 — Notification engine (2026-07-21)
+
+Added
+- **`FactoryOS.Plugins.Workflow`** — added an **enterprise notification infrastructure** that turns the events raised
+  by the workflow runtime, the human task engine, the approval engine and the forms engine into queued, retried,
+  multi-channel deliveries. No new project was created (per the commit's rules): the engine lives inside the existing
+  Workflow project, in the new `FactoryOS.Plugins.Workflow.Notifications.*` namespace (folder `Notifications/`),
+  beside the workflow runtime, the forms engine, the human task engine and the approval engine.
+  **The dependency runs one way and only through events**: the notification engine references the source engines'
+  *event contracts* and nothing else, **no source engine references the notification engine**, and none of them was
+  modified — exactly the orchestration-layer composition the engine-layering rule (Commits 0013–0015) calls for.
+  New pieces:
+  - **Domain** (`Notifications/Domain`): `NotificationChannel`, `NotificationPriority`, `NotificationCategory`,
+    `NotificationStatus`, `NotificationDeliveryPolicy`, `NotificationRecipientKind`, `NotificationFailureReason`,
+    `NotificationHistoryAction`; `Notification` (the instance and its lifecycle), `NotificationDefinition`
+    (+ a fluent builder), `NotificationTemplate`/`RenderedMessage`, `NotificationAssignment` (User/Role/Group/Dynamic),
+    `NotificationRecipient`, `NotificationRule`, `NotificationPreference` (allow-list, mute, quiet hours),
+    `NotificationSubscription`, `NotificationAttachment`, `NotificationRetryPolicy`, `NotificationDelivery`,
+    `NotificationFailure`, `NotificationBatch` and `NotificationHistoryEntry`.
+  - **Channels** (`Notifications/Channels`): `INotificationChannelSender` + `NotificationChannelSenderBase` and the
+    eight senders — `Email`, `Sms`, `Push`, `Teams`, `Slack`, `Webhook`, `InApp`, `SignalR` — each validating the
+    address shape for its channel and recording to the `INotificationOutbox` provider seam.
+  - **Execution** (`Notifications/Execution`): `NotificationTemplateEngine` (`{{token}}` substitution),
+    `RecipientResolver` (+ `INotificationDirectory`), `PreferenceResolver` (+ preference and subscription stores),
+    `NotificationRouter` (recipients × channels, rules, definition-default merge, per-channel rendering),
+    `NotificationDispatcher`, `NotificationQueue` and `DeadLetterQueue`, `NotificationRetryService` (linear back-off
+    then dead-letter), `NotificationQueueProcessor` (batched due-work pass with time-to-live expiry),
+    `NotificationRuntime` (`Notify` / `NotifyAsync` / `ProcessDueAsync` / `FlushDigestsAsync` / read / cancel) and the
+    `NotificationEngine` façade.
+  - **Integration** (`Notifications/Integration`): `WorkflowNotificationSubscriber`, `HumanTaskNotificationSubscriber`,
+    `ApprovalNotificationSubscriber`, `FormsNotificationSubscriber` and `GenericEventSubscriber`. Each stands in as the
+    corresponding engine's existing `I…EventSink`, which is how the events flow in **without touching those engines**.
+  - **Persistence** (`Notifications/Persistence`): `INotificationRepository`, `INotificationStore`,
+    `INotificationHistoryRepository`, `INotificationTemplateRepository` with in-memory implementations.
+  - **Events** (`Notifications/Events`): `NotificationQueued`/`Sending`/`Sent`/`Delivered`/`Read`/`Failed`/`Retried`/
+    `Cancelled`/`Expired`/`Suppressed`, published through `INotificationEventSink` (the event-bus seam). The final
+    failure carries `DeadLettered: true` rather than adding an eleventh event nothing else would raise.
+  - **Localization / diagnostics**: `INotificationLocalizer` (+ in-memory localizer) and `NotificationMetrics` counters.
+  - **DI**: `AddNotificationEngine()` (and an `IConfiguration` overload binding `Workflow:Notifications`) registers the
+    runtime, its in-memory persistence and stores, the eight channel senders, the queue/dispatcher/retry pipeline and
+    the integration subscribers — registering the subscribers as the source engines' event sinks *before* composing
+    those engines (`AddApprovalEngine`, `AddHumanTaskEngine`, `AddFormsEngine`, all idempotent) so their events flow
+    into notifications. Copies `Notifications/sample.config.json`.
+  - **Delivery policies**: `Immediate`, `Scheduled`, `Delayed`, plus `Digest`/`Batch`, which are held out of the normal
+    due-work scan and folded into a single message per recipient and channel by `FlushDigestsAsync`.
+- **Tests** — 20 unit tests (`FactoryOS.Tests/Workflow/NotificationEngineCoreTests.cs`: template rendering; recipient
+  resolution by role, dynamic expression and unknown user; routing across recipients × channels; rule-driven priority;
+  muted category, channel allow-list and critical bypass; subscriptions incl. source scoping; queue scheduling; retry
+  with back-off then delivery; dead-lettering and requeue; missing-address failure; history; read; cancel; digest fold)
+  and 7 integration tests (`FactoryOS.IntegrationTests/Workflow/NotificationEngineIntegrationTests.cs`: container
+  composition and event-sink wiring; a completed workflow, a created human task, a started approval and a submitted
+  form each producing notifications; scheduled queue processing; persisted state and history).
+- **Docs & config**: `plugins/workflow/Notifications/README.md` and `plugins/workflow/Notifications/sample.config.json`
+  (binds `Workflow:Notifications`; provider credentials only as `${secret:...}` placeholders — no secrets).
+
+Acceptance criteria (all met): events are consumed over the event-bus seam; a completed workflow, a created human task
+and a started approval each produce notifications; retry, the queue, the dead-letter queue, the template engine and the
+recipient resolver work; delivery history is kept; the workflow runtime, human task engine, approval engine, forms
+engine and reactive workflow engine are unaffected (verified: no source engine references the notification namespace);
+no TODOs, no mocks, no build warnings; all unit and integration tests pass.
+
 ### Commit 0015 — Approval engine (2026-07-21)
 
 Added

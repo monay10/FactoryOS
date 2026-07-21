@@ -1,0 +1,10 @@
+# The notification engine's stateless collaborators (template engine, recipient/preference resolvers, router,
+# channel senders' address validators) are registered, injectable services per the engine contract; that some
+# hold no fields does not mean their public API should be static, so CA1822 "mark members static" does not
+# apply. CA1859 "use concrete types for improved performance" does not apply to the resolver/router seams that
+# deliberately return interface and enumerable abstractions. The channel vocabulary (Sms, Push, …) is mandated
+# by the spec's channel list, so CA1720 "identifier contains type name" does not apply either.
+[*.cs]
+dotnet_diagnostic.CA1822.severity = none
+dotnet_diagnostic.CA1859.severity = none
+dotnet_diagnostic.CA1720.severity = none
