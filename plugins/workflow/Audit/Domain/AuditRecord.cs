@@ -21,8 +21,6 @@ public sealed class AuditRecord
     /// <summary>The <see cref="PreviousHash"/> of the first record in a tenant's chain.</summary>
     public const string GenesisHash = "GENESIS";
 
-    private readonly Dictionary<string, string> _metadata;
-
     private AuditRecord(
         Guid id,
         long sequence,
@@ -49,7 +47,7 @@ public sealed class AuditRecord
         RecordedOnUtc = recordedOnUtc;
         PreviousHash = previousHash;
         Hash = hash;
-        _metadata = new Dictionary<string, string>(entry.Metadata, StringComparer.Ordinal);
+        Metadata = entry.Metadata;
         Tags = [.. entry.Tags];
     }
 
@@ -102,7 +100,7 @@ public sealed class AuditRecord
     public DateTimeOffset RecordedOnUtc { get; }
 
     /// <summary>Gets additional key-value context.</summary>
-    public IReadOnlyDictionary<string, string> Metadata => _metadata;
+    public AuditMetadata Metadata { get; }
 
     /// <summary>Gets the labels used to slice the trail.</summary>
     public IReadOnlyList<AuditTag> Tags { get; }
@@ -175,7 +173,7 @@ public sealed class AuditRecord
             EventType = EventType,
             Message = Message,
             Snapshot = Snapshot,
-            Metadata = _metadata,
+            Metadata = Metadata,
             Tags = Tags,
         },
         OccurredOnUtc,
@@ -205,12 +203,8 @@ public sealed class AuditRecord
             .Append(entry.EventType).Append('|')
             .Append(entry.Message).Append('|');
 
-        foreach (var pair in entry.Metadata.OrderBy(pair => pair.Key, StringComparer.Ordinal))
-        {
-            builder.Append(pair.Key).Append('=').Append(pair.Value).Append(';');
-        }
-
-        builder.Append('|');
+        // Metadata and snapshots render themselves, so the hash and the value object can never disagree.
+        builder.Append(entry.Metadata.ToCanonicalString()).Append('|');
         foreach (var tag in entry.Tags.Select(tag => tag.Name).OrderBy(name => name, StringComparer.Ordinal))
         {
             builder.Append(tag).Append(';');

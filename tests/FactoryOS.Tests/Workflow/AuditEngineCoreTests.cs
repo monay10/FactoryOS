@@ -436,6 +436,52 @@ public sealed class AuditEngineCoreTests
     // ---- Snapshot, permissions, metrics -----------------------------------------------------------------------
 
     [Fact]
+    public void Metadata_is_an_immutable_value_object_that_renders_in_a_stable_order()
+    {
+        var original = new AuditMetadata(new Dictionary<string, string> { ["line"] = "3" });
+
+        var extended = original.With("shift", "night");
+
+        // With returns a copy; the original is untouched, so metadata on a sealed record cannot drift.
+        Assert.Equal(1, original.Count);
+        Assert.Equal(2, extended.Count);
+        Assert.Equal("night", extended["shift"]);
+        Assert.Null(original["shift"]);
+
+        // The rendering is ordinal-ordered, so the same content always hashes identically.
+        Assert.Equal("line=3;shift=night;", extended.ToCanonicalString());
+        Assert.Equal(
+            extended.ToCanonicalString(),
+            new AuditMetadata(new Dictionary<string, string> { ["shift"] = "night", ["line"] = "3" })
+                .ToCanonicalString());
+    }
+
+    [Fact]
+    public void Metadata_is_covered_by_the_hash()
+    {
+        var harness = Harness.Create(Now);
+        var record = harness.Engine.Record(Entry("acme", AuditAction.Created) with
+        {
+            Metadata = new AuditMetadata(new Dictionary<string, string> { ["asset"] = "PUMP-7" }),
+        })!;
+
+        Assert.Equal("PUMP-7", record.Metadata["asset"]);
+        Assert.Equal(record.RecomputeHash(), record.Hash);
+
+        // Editing metadata in storage is as detectable as editing any other field.
+        var tampered = AuditRecord.Rehydrate(
+            record.Id,
+            record.Sequence,
+            EntryFrom(record) with { Metadata = new AuditMetadata(new Dictionary<string, string> { ["asset"] = "PUMP-9" }) },
+            record.OccurredOnUtc,
+            record.RecordedOnUtc,
+            record.PreviousHash,
+            record.Hash);
+
+        Assert.False(new AuditChainVerifier().Verify([tampered]).IsValid);
+    }
+
+    [Fact]
     public void A_change_snapshot_reports_the_fields_that_differ()
     {
         var snapshot = new AuditSnapshot(

@@ -141,6 +141,57 @@ public sealed class AuditSnapshot
         map.TryGetValue(field, out var value) ? value : null;
 }
 
+/// <summary>
+/// The additional key-value context carried on an audit record — the details that matter for one kind of event
+/// but do not deserve a column of their own. It is an immutable value object: <see cref="With"/> returns a new
+/// instance rather than changing this one, so metadata attached to a sealed record can never drift from the
+/// hash that covers it. Its canonical rendering lives here, beside the data it describes, so the hash and the
+/// content can never disagree about what was hashed.
+/// </summary>
+public sealed class AuditMetadata
+{
+    private readonly Dictionary<string, string> _values;
+
+    /// <summary>Initializes a new instance of the <see cref="AuditMetadata"/> class.</summary>
+    /// <param name="values">The key-value context.</param>
+    public AuditMetadata(IReadOnlyDictionary<string, string>? values = null) =>
+        _values = values is null
+            ? new Dictionary<string, string>(StringComparer.Ordinal)
+            : new Dictionary<string, string>(values, StringComparer.Ordinal);
+
+    /// <summary>Metadata carrying nothing.</summary>
+    public static AuditMetadata Empty { get; } = new();
+
+    /// <summary>Gets the key-value context.</summary>
+    public IReadOnlyDictionary<string, string> Values => _values;
+
+    /// <summary>Gets how many entries the metadata carries.</summary>
+    public int Count => _values.Count;
+
+    /// <summary>Gets the value for a key, or <see langword="null"/> when it is not present.</summary>
+    /// <param name="key">The key.</param>
+    /// <returns>The value, or <see langword="null"/>.</returns>
+    public string? this[string key] => _values.TryGetValue(key, out var value) ? value : null;
+
+    /// <summary>Returns a copy carrying an additional key-value pair.</summary>
+    /// <param name="key">The key.</param>
+    /// <param name="value">The value.</param>
+    /// <returns>A new instance; this one is unchanged.</returns>
+    public AuditMetadata With(string key, string value)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+        ArgumentNullException.ThrowIfNull(value);
+        var copy = new Dictionary<string, string>(_values, StringComparer.Ordinal) { [key] = value };
+        return new AuditMetadata(copy);
+    }
+
+    /// <summary>Renders the metadata into the stable text the hash chain covers.</summary>
+    /// <returns>The canonical text, with keys in ordinal order so the rendering never varies.</returns>
+    public string ToCanonicalString() => string.Concat(
+        _values.OrderBy(pair => pair.Key, StringComparer.Ordinal)
+            .Select(pair => $"{pair.Key}={pair.Value};"));
+}
+
 /// <summary>A free-form label attached to an audit record, used to slice the trail in searches and reports.</summary>
 /// <param name="Name">The tag name.</param>
 public sealed record AuditTag(string Name)

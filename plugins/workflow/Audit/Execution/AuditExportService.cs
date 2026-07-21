@@ -55,7 +55,7 @@ public sealed class AuditExportService
             record.Correlation.RequestId,
             record.EventType,
             record.Message,
-            record.Metadata,
+            Metadata = record.Metadata.Values,
             Tags = record.Tags.Select(tag => tag.Name),
             record.PreviousHash,
             record.Hash,

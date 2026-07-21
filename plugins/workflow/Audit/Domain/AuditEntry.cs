@@ -42,8 +42,7 @@ public sealed record AuditEntry
     public AuditSnapshot? Snapshot { get; init; }
 
     /// <summary>Gets additional key-value context.</summary>
-    public IReadOnlyDictionary<string, string> Metadata { get; init; } =
-        new Dictionary<string, string>(StringComparer.Ordinal);
+    public AuditMetadata Metadata { get; init; } = AuditMetadata.Empty;
 
     /// <summary>Gets the labels used to slice the trail.</summary>
     public IReadOnlyList<AuditTag> Tags { get; init; } = [];
