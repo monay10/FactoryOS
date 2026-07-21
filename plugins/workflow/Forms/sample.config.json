@@ -1,0 +1,67 @@
+{
+  "$schema": "./sample.config.schema.json",
+  "description": "Sample configuration for the FactoryOS Forms engine (Commit 0013). Binds to Forms:Engine. Contains no secrets; forms carry no credentials.",
+  "Forms": {
+    "Engine": {
+      "AutoRegisterDefinitions": true,
+      "TrackDraftState": true,
+      "DefaultCulture": "en"
+    }
+  },
+  "exampleForm": {
+    "key": "maintenance-inspection",
+    "name": "Maintenance Inspection",
+    "title": "Machine Inspection",
+    "activityKey": "inspect",
+    "layout": { "kind": "Grid", "columns": 2 },
+    "assignment": { "kind": "Role", "target": "maintenance-technician" },
+    "permissions": [
+      { "kind": "Role", "principal": "maintenance-technician", "access": "Submit" },
+      { "kind": "Role", "principal": "maintenance-supervisor", "access": "Approve" }
+    ],
+    "sections": [
+      {
+        "key": "readings",
+        "title": "Readings",
+        "groups": [
+          {
+            "key": "meters",
+            "title": "Meter values",
+            "fields": [
+              {
+                "field": {
+                  "key": "temperature",
+                  "label": "Temperature (°C)",
+                  "type": "Decimal",
+                  "validation": { "required": true, "min": -20, "max": 200 }
+                },
+                "columnSpan": 1
+              },
+              {
+                "field": {
+                  "key": "vibration",
+                  "label": "Vibration (mm/s)",
+                  "type": "Decimal",
+                  "validation": { "required": true, "min": 0 }
+                },
+                "columnSpan": 1
+              },
+              {
+                "field": {
+                  "key": "faultDetails",
+                  "label": "Fault details",
+                  "type": "Textarea",
+                  "rules": [
+                    { "kind": "Required", "when": "vibration > 10" },
+                    { "kind": "Visible", "when": "vibration > 10" }
+                  ]
+                },
+                "columnSpan": 2
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

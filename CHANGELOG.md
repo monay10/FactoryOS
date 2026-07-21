@@ -7,6 +7,50 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0013 — Forms engine core (2026-07-21)
+
+Added
+- **`FactoryOS.Plugins.Workflow`** — added a dynamic **form runtime** that runs on top of the workflow engine. No new
+  project was created (per the commit's rules): the forms engine lives inside the existing Workflow project, in the new
+  `FactoryOS.Plugins.Forms.Engine.*` namespace (folder `Forms/`), alongside the workflow runtime. The reactive workflow
+  engine and the workflow process runtime are both untouched — the only coupling is a one-way bridge that advances a
+  workflow when a bound form is submitted. New pieces:
+  - **Domain** (`Forms/Domain`): `FormStatus`, `FormInstanceState`, `FieldType` (Text, Textarea, Number, Decimal,
+    Currency, Email, Phone, Date, DateTime, Time, Checkbox, Radio, Dropdown, MultiSelect, Lookup, Autocomplete, File,
+    Image, Signature, Label, Separator, Hidden), `FormLayoutKind`, `FieldRuleKind`, `FormPrincipalKind`, `FormAccess`;
+    `FormVersion`; `FieldOption`, `FieldValidation`, `FieldCondition`, `FieldRule`, `FieldVisibility`,
+    `FieldDefinition`, `FormField`; `FormGroup`, `FormSection`, `FormLayout`; `FormPermission`, `FormAssignment`
+    (User/Role/Group/Dynamic); `FormDefinition` (+ a validating builder); `FormHistory`; `FormInstance`/`FormValues`;
+    `FormSubmission`.
+  - **Execution** (`Forms/Execution`): `RuleEvaluator` (conditional visibility/enablement/required + calculated
+    fields), `ValidationEngine` (required, type, numeric bounds, length, regex; skips hidden fields), `FormExecutor`
+    (pure open/draft/submit state machine), `DraftService`, `SubmissionService` (validates and only then submits,
+    captures a snapshot and — when workflow-bound — completes the activity), `FormRuntime` (register/version/open/
+    approve/reject/cancel), the `FormEngine` façade, `FormPermissionEvaluator`, and the `IFormWorkflowBridge` /
+    `WorkflowFormBridge` seam onto the existing `WorkflowEngine`.
+  - **Rendering** (`Forms/Rendering`): `LayoutEngine`/grid arrangement, `FieldRenderer`/`GroupRenderer`/
+    `SectionRenderer`, `FormRenderer` (drops hidden fields, resolves labels via localization), `RenderedForm` read
+    model, and `ValidationSummary`.
+  - **Persistence** (`Forms/Persistence`): `IFormRepository`, `IFormStore`, `IFormVersionRepository`,
+    `IFormSubmissionRepository` with in-memory implementations.
+  - **Events** (`Forms/Events`): `FormCreated`/`Updated`/`Published`/`Opened`/`Saved`/`Submitted`/`Approved`/
+    `Rejected`/`Cancelled`, published through `IFormEventSink` (the event-bus seam).
+  - **Localization / diagnostics**: `IFormLocalizer` (+ in-memory localizer) and `FormMetrics` counters.
+  - **DI**: `AddFormsEngine()` (and an `IConfiguration` overload binding `Forms:Engine`) registers the runtime and its
+    in-memory persistence, calling `AddWorkflowEngine()` idempotently so the workflow bridge resolves. The Workflow
+    csproj gained the configuration-binder packages and copies `Forms/sample.config.json`.
+- **Tests** — 20 unit tests (`FactoryOS.Tests/Forms/FormsEngineCoreTests.cs`: form builder, expression conditions,
+  conditional/calculated rules, validation incl. hidden-field skipping, draft, submission accept/block, approve/cancel,
+  permission hierarchy, rendering, metrics) and 4 integration tests (`FactoryOS.IntegrationTests/Forms/`: container
+  composition; a workflow activity opening a form where an invalid submit is blocked and a valid submit advances the
+  workflow to completion; submission persistence; a workflow-bound definition opened standalone).
+- **Docs & config**: `plugins/workflow/Forms/README.md` and `plugins/workflow/Forms/sample.config.json` (binds
+  `Forms:Engine`; contains no secrets — forms carry no credentials).
+
+Acceptance criteria (all met): a workflow Activity node can open a Form; a draft can be saved; a valid submit resumes
+the workflow; an invalid submit is blocked; all tests pass; the reactive workflow engine and the workflow runtime are
+unaffected; no TODOs, no mocks, no build warnings.
+
 ### Commit 0012 — Workflow engine core (2026-07-21)
 
 Added

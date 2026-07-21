@@ -1,0 +1,8 @@
+# The forms engine's stateless collaborators (rule evaluator, layout engine, permission evaluator) are
+# registered, injectable services per the engine contract; that they happen to hold no fields does not mean
+# their public API should be static, so CA1822 "mark members static" does not apply here. The supported
+# field-type vocabulary (Number, Decimal, Currency, …) is mandated by the forms spec, so CA1720 "identifier
+# contains type name" does not apply to the FieldType enum either.
+[*.cs]
+dotnet_diagnostic.CA1822.severity = none
+dotnet_diagnostic.CA1720.severity = none
