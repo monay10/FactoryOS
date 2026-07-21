@@ -1,0 +1,5 @@
+# The human task engine's stateless collaborators (executor, assignment/deadline/reminder/escalation engines,
+# permission evaluator) are registered, injectable services per the engine contract; that they happen to hold
+# no fields does not mean their public API should be static, so CA1822 "mark members static" does not apply.
+[*.cs]
+dotnet_diagnostic.CA1822.severity = none

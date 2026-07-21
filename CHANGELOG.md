@@ -7,6 +7,49 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0014 — Human task engine (2026-07-21)
+
+Added
+- **`FactoryOS.Plugins.Workflow`** — added a **human task (user task) runtime** that runs on top of the workflow
+  engine. No new project was created (per the commit's rules): the engine lives inside the existing Workflow project,
+  in the new `FactoryOS.Plugins.Workflow.Tasks.*` namespace (folder `Tasks/`), beside the workflow process runtime and
+  the forms engine. The reactive workflow engine, the workflow process runtime **and** the forms engine are all
+  untouched — the only coupling is a one-way bridge that completes or cancels a workflow activity through the existing
+  `WorkflowEngine` public API. New pieces:
+  - **Domain** (`Tasks/Domain`): `HumanTaskStatus`, `HumanTaskPriority`, `HumanTaskCategory`, `AssignmentStrategy`,
+    `CommentVisibility`, `HumanTaskOutcome`, `HumanTaskPermission` (`[Flags]`), `HumanTaskPrincipalKind`;
+    `HumanTaskAssignment` (User/Role/Group/Dynamic/RoundRobin/LoadBalanced), `HumanTaskComment`,
+    `HumanTaskAttachment` (reference-only), `HumanTaskDeadline`, `HumanTaskReminder`, `HumanTaskEscalation`,
+    `HumanTaskDecision`, `HumanTaskPermissionGrant`, `HumanTaskHistory`, `HumanTaskDefinition` (+ builder),
+    `HumanTaskInstance` (status, assignee/candidates, comments, attachments, reminder/escalation state, workflow link,
+    history) and the `HumanTask` summary projection.
+  - **Execution** (`Tasks/Execution`): `AssignmentResolver` (+ `IHumanTaskDirectory` for role/group expansion),
+    `DeadlineEngine`, `ReminderEngine`, `EscalationEngine`, the pure `HumanTaskExecutor` state machine,
+    `HumanTaskPermissionEvaluator`, `TaskCompletionService` (complete/reject → advance workflow),
+    `TaskCancellationService` (cancel → cancel workflow), `HumanTaskRuntime` (create/assign/open/reassign/comment/
+    attach + the `RunDueAsync` reminder/escalation/expiry pass), the `HumanTaskEngine` façade, and the
+    `IHumanTaskWorkflowBridge` / `HumanTaskWorkflowBridge` seam.
+  - **Persistence** (`Tasks/Persistence`): `IHumanTaskRepository`, `IHumanTaskStore`, `IHumanTaskHistoryRepository`
+    with in-memory implementations.
+  - **Events** (`Tasks/Events`): `HumanTaskCreated`/`Assigned`/`Opened`/`Completed`/`Rejected`/`Cancelled`/`Expired`/
+    `Escalated`/`Reassigned`, published through `IHumanTaskEventSink` (the event-bus seam).
+  - **Localization / diagnostics**: `IHumanTaskLocalizer` (+ in-memory localizer) and `HumanTaskMetrics` counters.
+  - **DI**: `AddHumanTaskEngine()` (and an `IConfiguration` overload binding `Workflow:Tasks`) registers the runtime,
+    its in-memory persistence, the assignment/deadline/reminder/escalation engines and the workflow bridge, calling
+    `AddWorkflowEngine()` idempotently. Copies `Tasks/sample.config.json`.
+- **Tests** — 19 unit tests (`FactoryOS.Tests/Workflow/HumanTaskEngineCoreTests.cs`: assignment resolution for every
+  strategy, task lifecycle, reject, cancel, reassign, reminder-fires-once, escalation, expiry, permissions, comments,
+  attachments, history) and 6 integration tests (`FactoryOS.IntegrationTests/Workflow/HumanTaskEngineIntegrationTests.cs`:
+  container composition; a workflow activity creating a waiting task that completes/rejects/cancels the workflow; a form
+  submission feeding a task's completion outcome; persisted history).
+- **Docs & config**: `plugins/workflow/Tasks/README.md` and `plugins/workflow/Tasks/sample.config.json` (binds
+  `Workflow:Tasks`; contains no secrets).
+
+Acceptance criteria (all met): a workflow Activity can open a human task; the task enters a waiting state; Complete
+advances the workflow; Reject and Cancel are supported (reject branches the workflow, cancel cancels the instance);
+escalation, reminders and assignment resolution work; history is kept; the reactive workflow engine, the workflow
+runtime and the forms engine are unaffected; no TODOs, no mocks, no build warnings; all unit and integration tests pass.
+
 ### Commit 0013 — Forms engine core (2026-07-21)
 
 Added

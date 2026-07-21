@@ -1,0 +1,30 @@
+{
+  "description": "Sample configuration for the FactoryOS Human Task engine (Commit 0014). Binds to Workflow:Tasks. Contains no secrets.",
+  "Workflow": {
+    "Tasks": {
+      "AutoRegisterDefinitions": true,
+      "ExpireOverdueTasks": true,
+      "DueWorkBatchSize": 100,
+      "DefaultCulture": "en"
+    }
+  },
+  "exampleTask": {
+    "key": "approve-purchase",
+    "name": "Approve Purchase",
+    "title": "Approve Purchase Request",
+    "category": "Approval",
+    "priority": "High",
+    "activityKey": "approve",
+    "formKey": "purchase-request",
+    "assignment": { "strategy": "Role", "target": "purchasing-manager" },
+    "permissions": [
+      { "kind": "Role", "principal": "purchasing-manager", "permission": "Complete, Reject" },
+      { "kind": "Role", "principal": "finance-director", "permission": "Reassign, Cancel" }
+    ],
+    "deadline": { "in": "24:00:00" },
+    "reminders": [{ "before": "04:00:00" }],
+    "escalations": [
+      { "after": "01:00:00", "to": { "strategy": "User", "target": "finance-director" } }
+    ]
+  }
+}
