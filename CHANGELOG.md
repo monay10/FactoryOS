@@ -7,6 +7,75 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0020 — Security engine (2026-07-22)
+
+Added
+- **`FactoryOS.Plugins.Workflow`** — added the platform's **authorization decision layer**: policies, sessions,
+  token validity, and the violations and incidents that follow from refusals. No new project was created (per
+  the commit's rules): the engine lives inside the existing Workflow project, in the new
+  `FactoryOS.Plugins.Workflow.Security.*` namespace (folder `Security/`). Security is a platform service —
+  `AddSecurityEngine()` depends on no other engine, and no engine references the security namespace. New
+  pieces:
+  - **Domain** (`Security/Domain`): `SecurityEffect`, `SecurityDecisionReason`, `SecurityPolicyKind`,
+    `SecurityViolationKind`, `SecurityRiskLevel`, `SecurityIncidentStatus`, `SessionEndReason`;
+    `SecurityPermission` (+ the `SecurityPermissions` catalogue covering all eleven areas), `SecurityClaim`,
+    `SecurityRole`, `SecurityIdentity`, `SecurityPrincipal`, `SecurityScope`, `SecurityAction`,
+    `SecurityResource`, `SecurityCorrelation`, `SecurityContext`, `SecurityConstraint`,
+    `SecuritySubjectRequirement`, `SecurityRule`, `SecurityPolicy`, `SecurityDecision`, `SecuritySession`,
+    `SecurityToken`, `SecurityViolation`, `SecurityRisk` and `SecurityIncident`.
+  - **Execution** (`Security/Execution`): `RoleResolver`, `ClaimResolver`, `PermissionEvaluator`,
+    `PolicyEvaluator`, `AuthorizationEngine`, `SessionManager`, `TokenValidator`, `SecurityContextBuilder`,
+    `SecurityDispatcher`, `SecurityRuntime` and the `SecurityEngine` façade.
+  - **Policies** (`Security/Policies`): `TimeWindowConstraint`, `IpRangeConstraint`, `AttributeConstraint`,
+    `ClaimMatchesResourceConstraint`, `ResourceOwnerConstraint`, `ScopeConstraint`, and `PolicyLibrary` —
+    builders for all seven styles (role, attribute, claim, resource, tenant, time, network) plus `Prohibition`.
+  - **Persistence** (`Security/Persistence`): `ISecurityRepository`, `ISecurityStore`, `ISessionRepository` and
+    `ITokenRepository`, with in-memory implementations. Grants are keyed by tenant, so a grant made in one
+    tenant cannot be read in another even by a caller that asks wrongly.
+  - **Events** (`Security/Events`): `AuthenticationSucceeded`, `AuthenticationFailed`,
+    `AuthorizationSucceeded`, `AuthorizationFailed`, `PermissionGranted`, `PermissionRevoked`,
+    `SecurityViolationDetected`, `SecurityIncidentCreated`, `SessionCreated`, `SessionExpired`, and the
+    fan-out `ISecurityEventSink`.
+  - **Integration** (`Security/Integration`): `SecurityAuditBridge` and `SecurityMonitoringBridge` (+
+    `SecurityMetricCollection`), both opt-in subscribers.
+  - **Configuration / Diagnostics / Localization**: `SecurityEngineOptions` (binds `Workflow:Security`),
+    `SecurityMetrics` and `ISecurityLocalizer`.
+  - **DI**: `AddSecurityEngine()`, `AddSecurityEngine(IConfiguration)`, `AddSecurityAuditIntegration()` and
+    `AddSecurityMonitoringIntegration()`.
+  - **Docs and sample config**: `plugins/workflow/Security/README.md` and
+    `plugins/workflow/Security/sample.config.json` (roles, all seven policy styles, grants; no secrets —
+    credentials and signing keys belong to the identity layer).
+- **Tests** — `SecurityEngineCoreTests` (57 unit tests) and `SecurityEngineIntegrationTests` (16 integration
+  tests: guarding workflow, forms, human task, approval and connector operations through a real container,
+  persistence, session management, and the audit and monitoring bridges).
+
+Notes
+- **`FactoryOS.Identity` was not rebuilt.** It already provides authentication, JWT signing, user and role
+  storage, the `resource.action` permission grammar and session lifetime semantics. This engine adds the
+  decision layer Identity lacks — ABAC, resource/time/network policy, explainable decisions, violations and
+  incidents — and deliberately mirrors Identity's permission grammar and claim-type names so the two can never
+  disagree about what `energy.*` covers or when a session expires.
+- **The decision order is fixed**: authenticated → same tenant → any deny → any grant → refuse. Cross-tenant is
+  checked **structurally, before any policy runs**, and no rule can grant around it; a single attempt is
+  recorded at `Critical` risk on its own.
+- **Every decision says why.** `SecurityDecision` carries the reason, deciding policy and rule, the failed
+  constraint and the correlation — including the distinction between "nothing grants this to anyone"
+  (`NoMatchingRule`) and "you are not covered by the rules that do" (`MissingPermission`).
+- **A constraint narrows its own rule, not the permission.** A direct grant is not bound by a time window
+  written on another rule; binding everybody is what a deny is for, and a deny always wins.
+- **Tokens are reference tokens, not a second crypto path.** Signature verification stays where the signing key
+  lives; this engine owns lifetime, audience, tenant, session binding and — the property a self-contained token
+  cannot offer — immediate revocation. Revoking a session revokes every token bound to it.
+- **The concurrent-session limit displaces the oldest session rather than refusing the new one**, so filling
+  somebody's quota cannot be used to lock them out.
+- **Two accommodations to leave other engines untouched**, both deliberate: an administrative grant is audited
+  as `AuditAction.Changed` with `EventType = "PermissionGranted"` (the stable-verb pattern from Commit 0018),
+  and security metrics are filed under `MetricCategory.Infrastructure` because adding a `Security` category
+  would have meant editing the monitoring engine. A future commit allowed to touch monitoring should add it.
+- **Out of scope, as specified:** no user/role/IdP management screens, no LDAP or Active Directory connectors,
+  no OAuth or OpenID Connect provider integration, no security dashboards, no SIEM integration. The event seam
+  is deliberately the shape a SIEM forwarder will plug into.
+
 ### Commit 0019 — Monitoring & Metrics engine (2026-07-22)
 
 Added

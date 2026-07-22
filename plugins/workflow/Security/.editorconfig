@@ -1,0 +1,7 @@
+# The security engine's stateless collaborators (authorization engine, evaluators, resolvers, context builder)
+# are registered, injectable services per the engine contract; that some hold no fields does not mean their
+# public API should be static, so CA1822 "mark members static" does not apply. CA1859 "use concrete types for
+# improved performance" does not apply to the repository and store seams that deliberately return interfaces.
+[*.cs]
+dotnet_diagnostic.CA1822.severity = none
+dotnet_diagnostic.CA1859.severity = none

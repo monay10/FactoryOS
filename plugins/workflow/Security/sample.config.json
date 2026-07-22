@@ -1,0 +1,116 @@
+{
+  "description": "Sample configuration for the FactoryOS Security engine (Commit 0020). Binds to Workflow:Security. Contains no secrets — credentials and signing keys belong to the identity layer, never here.",
+  "Workflow": {
+    "Security": {
+      "SessionIdleTimeout": "00:30:00",
+      "SessionAbsoluteLifetime": "12:00:00",
+      "MaxConcurrentSessions": 5,
+      "TokenLifetime": "01:00:00",
+      "DefaultAudience": "factoryos",
+      "ViolationWindow": "00:15:00",
+      "IncidentThreshold": 5,
+      "RecordGrantedDecisions": true,
+      "DefaultCulture": "en"
+    }
+  },
+  "exampleRoles": [
+    {
+      "key": "operator",
+      "name": "Operator",
+      "permissions": ["workflow.read", "workflow.start", "forms.open", "forms.submit", "task.read"]
+    },
+    {
+      "key": "supervisor",
+      "name": "Supervisor",
+      "includes": ["operator"],
+      "permissions": ["task.complete", "approval.read", "approval.decide", "sla.read"]
+    },
+    {
+      "key": "plant-manager",
+      "name": "Plant Manager",
+      "includes": ["supervisor"],
+      "permissions": ["workflow.manage", "monitoring.read", "monitoring.health"]
+    },
+    {
+      "key": "auditor",
+      "name": "Auditor",
+      "permissions": ["audit.read", "audit.export", "monitoring.read"]
+    },
+    {
+      "key": "platform-admin",
+      "name": "Platform Administrator",
+      "permissions": ["admin.read", "admin.manage", "admin.security", "plugin.manage", "connector.manage"]
+    }
+  ],
+  "examplePolicies": [
+    {
+      "key": "starters",
+      "name": "Who may start a workflow",
+      "kind": "RoleBased",
+      "permission": "workflow.start",
+      "roles": ["operator", "supervisor"]
+    },
+    {
+      "key": "own-runs",
+      "name": "Cancel your own run",
+      "kind": "ResourceBased",
+      "permission": "workflow.cancel",
+      "note": "Granted only while the resource's 'owner' attribute matches the principal."
+    },
+    {
+      "key": "own-site-approvals",
+      "name": "Approve only your own site",
+      "kind": "AttributeBased",
+      "permission": "approval.decide",
+      "roles": ["supervisor"],
+      "constraints": [
+        { "type": "ClaimMatchesResource", "claimType": "site", "resourceAttribute": "site" }
+      ]
+    },
+    {
+      "key": "shift-leads",
+      "name": "Shift leads may reassign",
+      "kind": "ClaimBased",
+      "permission": "task.assign",
+      "claimType": "duty",
+      "claimValue": "lead"
+    },
+    {
+      "key": "day-shift-decisions",
+      "name": "Decisions during the day shift",
+      "kind": "TimeBased",
+      "permission": "task.complete",
+      "constraints": [
+        { "type": "TimeWindow", "from": "08:00", "to": "17:00", "utcOffset": "03:00", "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] }
+      ]
+    },
+    {
+      "key": "plant-network-connectors",
+      "name": "Connectors only from the plant network",
+      "kind": "IpBased",
+      "permission": "connector.execute",
+      "constraints": [
+        { "type": "IpRange", "ranges": ["10.4.0.0/16", "192.168.10.0/24"] }
+      ]
+    },
+    {
+      "key": "acme-exports",
+      "name": "Exports in the Acme tenant",
+      "kind": "TenantBased",
+      "tenant": "acme",
+      "permission": "audit.export",
+      "roles": ["auditor"]
+    },
+    {
+      "key": "never-export-offsite",
+      "name": "Audit exports are never permitted off-site",
+      "kind": "Prohibition",
+      "permission": "audit.export",
+      "note": "A deny always wins, whatever a principal holds directly. This is how a rule binds everybody."
+    }
+  ],
+  "exampleGrants": [
+    { "tenant": "acme", "subject": "u-ada", "permission": "workflow.start" },
+    { "tenant": "acme", "subject": "svc-edge-gateway", "permission": "connector.execute" }
+  ]
+}
