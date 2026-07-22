@@ -1,0 +1,125 @@
+{
+  "description": "Sample configuration for the FactoryOS connector runtime (Commit 0021). Binds to Connectors:Runtime, alongside the connector framework's own Connectors section. Contains no secrets: every credential is a ${secret:NAME} reference resolved at invocation time from the platform's secret source.",
+
+  "Connectors": {
+    "AutoConnect": true,
+    "Discovery": {
+      "Enabled": true,
+      "RootPath": "connectors"
+    },
+    "Health": {
+      "HeartbeatIntervalSeconds": 30,
+      "UnhealthyAfterMissedHeartbeats": 3,
+      "FailureThreshold": 3
+    },
+    "Security": {
+      "EncryptionKey": "${secret:CONNECTOR_SECRET_KEY}"
+    },
+
+    "Runtime": {
+      "DefaultTimeout": "00:00:30",
+      "MaxAttempts": 3,
+      "InitialRetryDelay": "00:00:00.200",
+      "RetryBackoffMultiplier": 2.0,
+      "MaxRetryDelay": "00:00:10",
+      "CircuitFailureThreshold": 5,
+      "CircuitBreakDuration": "00:00:30",
+      "RateLimitPermits": 100,
+      "RateLimitWindow": "00:00:01",
+      "CacheTimeToLive": "00:01:00",
+      "CacheCapacity": 1000,
+      "SessionIdleTimeout": "00:15:00",
+      "PublishInvocationEvents": true,
+      "AuditSuccessfulInvocations": true,
+      "DiscoveryRoot": "connectors"
+    }
+  },
+
+  "exampleManifest": {
+    "note": "The runtime fields a connector.json may carry. All four are optional; a manifest written before the runtime existed still loads and gets these defaults.",
+    "key": "logo",
+    "name": "Logo Connector",
+    "sourceSystem": "Logo",
+    "provides": [ "InventoryItem" ],
+    "mapping": "mapping.json",
+    "version": "1.2.0",
+    "capabilities": "Read,Events",
+    "category": "Logo",
+    "operations": [
+      {
+        "name": "read",
+        "capability": "Read",
+        "permission": "connector.read",
+        "description": "Streams the item master and period stock totals.",
+        "idempotent": true,
+        "cacheable": true,
+        "requiredParameters": [ "warehouse" ],
+        "timeoutSeconds": 60
+      }
+    ]
+  },
+
+  "exampleInstances": [
+    {
+      "note": "One factory's activation of the Logo connector. The tenant owns the instance; the definition is shared by every tenant.",
+      "tenant": "acme",
+      "key": "acme-logo",
+      "definition": "logo",
+      "endpoint": { "scheme": "mssql", "address": "logo-db.acme.local:1433/LOGODB" },
+      "credential": {
+        "key": "acme-logo-sql",
+        "kind": "ConnectionString",
+        "identity": "factoryos_reader",
+        "secretReference": "${secret:ACME_LOGO_CONNECTION}"
+      },
+      "minimumVersion": "1.2.0",
+      "settings": { "warehouse": "01", "period": "2026" }
+    },
+    {
+      "note": "A second factory, same connector, different endpoint and credential — and no code path by which either can reach the other's.",
+      "tenant": "borusan",
+      "key": "borusan-logo",
+      "definition": "logo",
+      "endpoint": { "scheme": "mssql", "address": "logo-db.borusan.local:1433/LOGODB" },
+      "credential": {
+        "key": "borusan-logo-sql",
+        "kind": "ConnectionString",
+        "secretReference": "${secret:BORUSAN_LOGO_CONNECTION}"
+      }
+    }
+  ],
+
+  "exampleResilience": {
+    "note": "Resilience is narrowed from the definition down: an operation's policy wins over its instance's, which wins over its definition's.",
+    "retry": {
+      "maxAttempts": 3,
+      "initialDelay": "00:00:00.200",
+      "backoffMultiplier": 2.0,
+      "maxDelay": "00:00:10",
+      "warning": "Only idempotent operations are ever retried. Retrying a non-idempotent write is how one purchase order becomes three."
+    },
+    "circuit": { "enabled": true, "failureThreshold": 5, "breakDuration": "00:00:30" },
+    "rateLimit": { "enabled": true, "permits": 1000, "window": "00:01:00" },
+    "cache": { "enabled": true, "timeToLive": "00:05:00", "capacity": 500 }
+  },
+
+  "exampleSchedules": [
+    {
+      "key": "acme-stock-poll",
+      "tenant": "acme",
+      "instance": "acme-logo",
+      "operation": "read",
+      "interval": "00:10:00",
+      "parameters": { "warehouse": "01" }
+    }
+  ],
+
+  "examplePermissions": [
+    "connector.read",
+    "connector.write",
+    "connector.execute",
+    "connector.manage",
+    "connector.configure",
+    "connector.observe"
+  ]
+}

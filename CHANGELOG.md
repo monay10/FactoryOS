@@ -7,6 +7,79 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0021 — Connector runtime (2026-07-22)
+
+Added
+- **`FactoryOS.Connectors`** — added the **invocation layer** above the existing connector framework: one
+  request, one operation, one answer, with retries, a circuit breaker, a rate limit, a cache, authorization,
+  a credential, an audit line and a measurement wrapped around it. No new project was created and the existing
+  framework was not changed (per the commit's rules): the runtime lives inside the existing Connectors project
+  under `Runtime/`, in the new `FactoryOS.Connectors.Runtime.*` namespace. New pieces:
+  - **Domain** (`Runtime/Domain`): `ConnectorType`, `ConnectorCategory` (+ `ConnectorCategories`, the 33
+    categories mapped onto eight families), `ConnectorStatus`, `ConnectorErrorKind`, `CircuitState`,
+    `ConnectorCredentialKind`, `ConnectorHealthAspect`; `ConnectorDefinition`, `ConnectorOperation`,
+    `ConnectorInstance`, `ConnectorEndpoint`, `ConnectorCredential`, `ConnectorSecret`,
+    `ResolvedConnectorCredential`, `ConnectorRequest`, `ConnectorCaller`, `ConnectorCorrelation`,
+    `ConnectorResponse`, `ConnectorError`, `ConnectorRetryPolicy`, `ConnectorCircuitBreaker`,
+    `ConnectorRateLimit`, `ConnectorCachePolicy`, `ConnectorResiliencePolicy`, `ConnectorTelemetry`,
+    `ConnectorMetrics`, `ConnectorSession`, `ConnectorPermission` (+ the `ConnectorPermissions` catalogue) and
+    `ConnectorHealthReport`.
+  - **Execution** (`Runtime/Execution`): `ConnectorInvocation`, `ConnectorPipeline`, `ConnectorInvoker`
+    (+ `IConnectorOperationHandler`), `RetryEngine` (+ `IConnectorDelay`), `CircuitBreakerEngine`,
+    `RateLimiter`, `ConnectorResponseCache`, `ConnectorSessionManager`, `ConnectorDispatcher`,
+    `ConnectorLoader`, `ConnectorInstanceRegistry`, `ConnectorRuntime`, `ConnectorRuntimeHost`,
+    `ConnectorScheduler` and the `ConnectorEngine` façade.
+  - **Adapters** (`Runtime/Execution`): `InboundConnectorOperationHandler` and
+    `OutboundConnectorOperationHandler` — every connector already in `connectors/` became invocable through
+    the runtime **without a line being edited**.
+  - **Pipeline** (`Runtime/Pipeline`): twelve stages ordered by `ConnectorPipelineOrder`, not by registration
+    order — tracing, metrics, monitoring, audit, authorization, validation, authentication, caching, retry,
+    rate limit, circuit breaker and transformation (+ `IConnectorTransform`).
+  - **Discovery** (`Runtime/Discovery`): `ConnectorDiscovery`, `ConnectorRuntimeManifestReader` (reads four
+    optional additions — version, capabilities, category, operations — through the framework's existing
+    manifest reader, so older manifests still load), `CapabilityResolver`, `VersionResolver` and
+    `CompatibilityValidator`.
+  - **Persistence** (`Runtime/Persistence`): `IConnectorRepository`, `IConnectorStore`,
+    `IConnectorConfigurationRepository` and `IConnectorCredentialStore`, with in-memory implementations. Every
+    instance is filed under a tenant-qualified identity, so there is no lookup that could return another
+    tenant's.
+  - **Events** (`Runtime/Events`): `ConnectorRegistered`, `ConnectorLoaded`, `ConnectorStarted`,
+    `ConnectorStopped`, `ConnectorInvoked`, `ConnectorFailed`, `ConnectorRecovered`, `ConnectorHealthChanged`,
+    `ConnectorConfigurationChanged`, and the fan-out `IConnectorRuntimeEventSink`.
+  - **Security** (`Runtime/Security`): `IConnectorAuthorizer` + `PermissionConnectorAuthorizer`, and
+    `ConnectorSecretResolver` with `IConnectorSecretSource` (environment and in-memory sources). Secrets are
+    stored as `${secret:NAME}` references or `enc:` values decrypted by the framework's existing AES-GCM
+    protector — reused, not reimplemented.
+  - **Health** (`Runtime/Health`): `ConnectorHealthEngine`, answering liveness, readiness, dependency, version
+    and credential separately and reporting the worst.
+  - **Integration ports** (`Runtime/Integration`): `IConnectorAuditSink`, `IConnectorMetricSink`,
+    `ConnectorAuditEntry`, `ConnectorMeasurement` and `ConnectorMetricNames`, all fanning out to every
+    registered subscriber. The runtime holds no reference to the audit, monitoring or security engines.
+  - **DI**: `AddConnectorRuntime()` and `AddConnectorRuntime(IConfiguration)` (binds `Connectors:Runtime`).
+  - **Docs and sample config**: `src/FactoryOS.Connectors/Runtime/README.md` and
+    `src/FactoryOS.Connectors/Runtime/sample.config.json` (credentials are `${secret:…}` references, never
+    values).
+- **Tests** — `tests/FactoryOS.Tests/Connectors/ConnectorRuntimeTests.cs` (95) and
+  `tests/FactoryOS.IntegrationTests/Connectors/ConnectorRuntimeIntegrationTests.cs` (21), the latter invoking
+  the CSV and log connectors this repository already ships and wiring the runtime's ports to the platform's
+  real audit, monitoring and security engines.
+
+Notes
+- **The tenant gate lives in the pipeline, not in the authorizer port.** An integration test wiring the real
+  security engine found that an adapter forwarding to a decision layer which only ever sees the *caller*
+  cannot know which tenant the *instance* belongs to. The authorization stage now refuses a cross-tenant
+  request before the port is consulted; a port may decide permissions, it may not decide tenancy.
+- **Retry requires two conditions, not one.** The error must be one a later attempt could survive *and* the
+  operation must be idempotent. `ConnectorOperation.Idempotent` defaults to `false` and
+  `ConnectorRetryPolicy.None` is the default policy, so a connector opts into being retried.
+- **The audit and monitoring engines needed no accommodation this time**: `AuditCategory.Connector` with
+  `AuditEntries.ConnectorOperation`, and `MetricCategory.Connector`, already existed. Neither engine was
+  modified.
+- **Discovery reports the two outbound connector manifests (`log`, `webhook`) as rejected** rather than
+  skipping them: they use the older outbound manifest shape, which carries a transport rather than the source
+  system the manifest contract requires. Outbound connectors are loaded explicitly today; reconciling the two
+  manifest shapes is left to a commit permitted to change them.
+
 ### Commit 0020 — Security engine (2026-07-22)
 
 Added

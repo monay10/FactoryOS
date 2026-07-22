@@ -1,0 +1,10 @@
+# The connector runtime's stateless collaborators (the capability, version and compatibility resolvers, and
+# the retry engine's pure schedule arithmetic) are registered, injectable services per the runtime contract.
+# That some of them hold no fields is an implementation detail today and must not dictate their public API —
+# making them static would prevent a host substituting its own, which is the whole point of the seam. So
+# CA1822 "mark members static" does not apply here. CA1859 "use concrete types for improved performance"
+# likewise does not apply to the repository, store, authorizer and sink seams that deliberately return
+# interfaces.
+[*.cs]
+dotnet_diagnostic.CA1822.severity = none
+dotnet_diagnostic.CA1859.severity = none
