@@ -74,6 +74,7 @@
     <ProjectReference Include="..\..\plugins\quality\FactoryOS.Plugins.Quality.csproj" />
     <ProjectReference Include="..\..\plugins\safety\FactoryOS.Plugins.Safety.csproj" />
     <ProjectReference Include="..\..\plugins\warehouse\FactoryOS.Plugins.Warehouse.csproj" />
+    <ProjectReference Include="..\..\plugins\sample\FactoryOS.Plugins.Sample.csproj" />
     <ProjectReference Include="..\..\plugins\workflow\FactoryOS.Plugins.Workflow.csproj" />
   </ItemGroup>
 

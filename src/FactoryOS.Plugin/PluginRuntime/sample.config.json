@@ -1,0 +1,44 @@
+{
+  "//": "Sample configuration for the FactoryOS plugin runtime (Commit 0022). Bind 'Plugins:Runtime' into appsettings alongside the framework's own 'Plugins' section. These are PLATFORM settings, never per-customer ones: which folder packages are read from, whether a signature is mandatory, how many superseded versions are retained so a rollback has somewhere to go. Which plugins a factory runs, what it grants them and how they are configured is tenant data, held by the runtime — not settings here. NO SIGNING KEY BELONGS IN THIS FILE: keys are resolved through IPluginSigningKeySource, from the environment or a vault.",
+  "Plugins": {
+    "AutoStart": true,
+    "Discovery": {
+      "Enabled": true,
+      "RootPath": "plugins"
+    },
+    "Health": {
+      "HeartbeatIntervalSeconds": 30,
+      "UnhealthyAfterMissedHeartbeats": 3,
+      "FailureThreshold": 3
+    },
+    "Runtime": {
+      "//PlatformVersion": "What packages declare their compatibility against. Configurable so an operator can hold the advertised version back for one release while third-party packages catch up.",
+      "PlatformVersion": "1.0.0",
+
+      "PackageRoot": "plugins",
+      "StorageRoot": "data/plugins",
+
+      "//RequireSignature": "An INVALID signature is always fatal, whatever this says. This switch governs only the ABSENT one: leave it false for a host that runs only first-party packages compiled into the monolith; set it true for any host that installs Store packages.",
+      "RequireSignature": false,
+
+      "//RetainedVersions": "How many superseded package versions are kept. This is what makes a rollback possible; at 0 an update is one-way.",
+      "RetainedVersions": 1,
+
+      "HealthGracePeriod": "00:00:30",
+      "StopTimeout": "00:00:15",
+      "HealthProbeInterval": "00:01:00",
+
+      "PublishLifecycleEvents": true,
+
+      "//AuditLifecycle": "Whether successful transitions are audited. Failures are audited regardless.",
+      "AuditLifecycle": true,
+
+      "//DefaultQuota": "Applied to an instance that does not narrow it further. 0 means unlimited.",
+      "DefaultQuota": {
+        "MaxConcurrentOperations": 0,
+        "MaxMemoryBytes": 0,
+        "MaxStorageBytes": 0
+      }
+    }
+  }
+}

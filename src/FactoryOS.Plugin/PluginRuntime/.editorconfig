@@ -1,0 +1,11 @@
+# The plugin runtime's collaborators are injectable seams, not utility classes.
+#
+# CA1822 (member can be static) and CA1859 (use the concrete type) would both push the validators,
+# resolvers and readers towards static helpers or concrete dependencies. They are deliberately
+# instance types resolved through the container so a host can substitute its own — a signing-key
+# source, a compatibility policy, a version rule — without the runtime being rebuilt. The same
+# exemption is applied in the connector runtime, for the same reason.
+
+[*.cs]
+dotnet_diagnostic.CA1822.severity = none
+dotnet_diagnostic.CA1859.severity = none

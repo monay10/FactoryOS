@@ -7,6 +7,73 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0022 — Plugin runtime (2026-07-22)
+
+Added
+- **`FactoryOS.Plugin`** — added the **tenant-scoped extension layer** above the existing plugin framework:
+  install, load, start, suspend, resume, stop, unload, update, roll back and remove a plugin at run time,
+  signed, isolated and permitted. No new project was created and the existing framework was not changed (per
+  the commit's rules): the runtime lives inside the existing Plugin project under `PluginRuntime/`, in the new
+  `FactoryOS.Plugins.Runtime.*` namespace. The folder is `PluginRuntime/` rather than `Runtime/` because the
+  framework already owns `Runtime/` (`FactoryOS.Plugin.Runtime`). New pieces:
+  - **Domain** (`PluginRuntime/Domain`): `PluginRuntimeStatus`, `PluginLifecyclePhase`,
+    `PluginExtensionPointKind` (+ the closed `PluginExtensionPoints` catalogue of 15 published points),
+    `PluginIsolationMode`, `PluginResourceKind`, `PluginHealthAspect`, `PluginSignatureAlgorithm`,
+    `PluginFailureKind` (+ `PluginFailures.Classify`); `PluginDefinition`, `PluginCompatibility`,
+    `PluginPackage`, `PluginSignature`, `PluginInstance`, `PluginSettings`, `PluginResourceUsage`,
+    `PluginContribution`, `PluginExtension`, `PluginPermission` (+ the `PluginPermissions` catalogue),
+    `PluginRuntimeContext`, `PluginCaller`, `PluginTelemetry`, `PluginMetrics`, `PluginHealthReport`.
+  - **Execution** (`PluginRuntime/Execution`): `PluginInstanceRegistry`, `PluginPackageLoader`,
+    `PluginLifecycleManager` (+ `IPluginLifecycleManager`), `PluginUpdateManager`,
+    `PluginConfigurationManager`, `PluginRuntimeScheduler`, `PluginRuntimeHost`, `PluginRuntimeAnnouncer`,
+    `PluginRuntime` (+ `IPluginRuntime`) and `PluginEngine`.
+  - **Discovery** (`PluginRuntime/Discovery`): `PluginRuntimeManifestReader`, `PluginPackageReader`,
+    `PluginRuntimeDiscovery`, `PluginVersionResolver`, `PluginRuntimeDependencyResolver`,
+    `PluginCompatibilityValidator`, `PluginExtensionPointResolver`.
+  - **Security** (`PluginRuntime/Security`): `PluginSignatureValidator` (+ `IPluginSigningKeySource`),
+    `PluginAuthorizationGate`, `IPluginAuthorizer`/`PermissionPluginAuthorizer`, `PluginManifestValidator`,
+    `PluginPermissionValidator`, `PluginCapabilityRequirementValidator` and `PluginValidationSuite`.
+  - **Isolation** (`PluginRuntime/Isolation`): `PluginIsolationManager`, `PluginIsolationScope`,
+    `PluginSandbox` (+ `PluginSandboxLease`).
+  - **Health** (`PluginRuntime/Health`): `PluginHealthEngine` — liveness, readiness, dependencies, version,
+    permissions and resources, worst answer wins.
+  - **Events** (`PluginRuntime/Events`): the 11 runtime events, `IPluginRuntimeEventSink` and
+    `PluginRuntimePublisher`.
+  - **Persistence** (`PluginRuntime/Persistence`): `IPluginRepository`, `IPluginStore`,
+    `IPluginManifestRepository`, `IPluginPackageStore` and in-memory implementations, all tenant-qualified.
+  - **Integration** (`PluginRuntime/Integration`): `IPluginAuditSink`, `IPluginMetricSink`,
+    `PluginAuditEntry`, `PluginMeasurement`, `PluginMetricNames` and their fan-out publishers.
+  - **DI**: `AddPluginRuntime()` / `AddPluginRuntime(IConfiguration)`, which calls `AddPluginFramework()`
+    first and registers everything through `TryAdd`.
+  - `README.md` and `sample.config.json` (no signing key — keys resolve through `IPluginSigningKeySource`).
+- **Tests** — `tests/FactoryOS.Tests/Plugins/PluginRuntimeTests.cs` (120 unit tests) and
+  `tests/FactoryOS.IntegrationTests/Plugins/PluginRuntimeIntegrationTests.cs` (25 integration tests, which
+  load the repository's real sample plugin assembly from disk and wire the runtime's ports to the platform's
+  real security, audit and monitoring engines).
+
+Notes
+- **The framework can load a plugin but never unload one.** `ModuleLoader` creates a collectible
+  `PluginLoadContext` and lets it go, so nothing can ever ask it to unload. `PluginIsolationManager` keeps
+  that reference per `tenant|plugin`, which is what makes update, rollback and remove possible without
+  restarting the host. Activation is still delegated to the framework's `IPluginActivator`.
+- **The signature is verified before any code is loaded.** Installation always precedes loading, and
+  validation runs manifest → signature → compatibility → capabilities → permissions. An *invalid* signature
+  is always fatal; an *absent* one only when `RequireSignature` is set. The signature covers the manifest's
+  claims (entry type, isolation, contributions, requested permissions), not just the assembly name.
+- **Permissions are a ceiling intersected with a grant**, re-checked at start and not only at install, and a
+  grant cannot be narrowed out from under a running plugin. Contributing to an extension point implies asking
+  to extend it, so a contribution cannot smuggle in ungranted reach.
+- **The tenant gate lives in `PluginAuthorizationGate`, before `IPluginAuthorizer` is consulted** — the same
+  rule established in Commit 0021. A unit test with an allow-everything authorizer and an integration test
+  wiring the real security engine both pin it.
+- **Only a running instance contributes to an extension point.** Stopped, suspended, failed and disabled
+  plugins are withdrawn from the extension surface.
+- No accommodation was needed in the audit or monitoring engines: `AuditCategory.Plugin` +
+  `AuditEntries.PluginOperation` and `MetricCategory.Plugin` already existed.
+- **Known limitation.** The health engine's *readiness* aspect asks the framework's `IPluginHealthService`,
+  which is keyed by plugin key alone and is therefore process-wide rather than per tenant. Every other aspect
+  is per instance. Narrowing it needs a commit permitted to change the framework.
+
 ### Commit 0021 — Connector runtime (2026-07-22)
 
 Added
