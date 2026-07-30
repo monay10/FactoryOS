@@ -70,14 +70,17 @@ public sealed class PlatformCompositionTests
     }
 
     [Fact]
-    public void The_plugin_runtime_ports_are_bound_to_the_platform_engines_not_the_in_memory_defaults()
+    public void The_observability_ports_are_bound_to_the_engines_and_authorization_stays_permission_based()
     {
         using var provider = Build();
 
-        // The engine-backed adapters were registered before AddPluginRuntime, so its in-memory defaults deferred.
-        Assert.IsType<SecurityEnginePluginAuthorizer>(provider.GetRequiredService<IPluginAuthorizer>());
+        // The engine-backed sinks were registered before AddPluginRuntime, so its in-memory defaults deferred.
         Assert.IsType<AuditEnginePluginSink>(provider.GetRequiredService<IPluginAuditSink>());
         Assert.IsType<MonitoringEnginePluginSink>(provider.GetRequiredService<IPluginMetricSink>());
+
+        // Authorization is NOT bound to the (empty) workflow security engine; it stays the runtime's default,
+        // which checks the caller's own permissions — the permissions the /platform endpoints carry from the JWT.
+        Assert.IsType<PermissionPluginAuthorizer>(provider.GetRequiredService<IPluginAuthorizer>());
     }
 
     [Fact]

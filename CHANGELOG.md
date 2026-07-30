@@ -7,6 +7,48 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0025 — Plugin management API (2026-07-30)
+
+Made the composed plugin runtime **operable over HTTP**. Commit 0024 made the platform visible; this adds the
+mutating `/platform` surface so an operator can install a plugin for a tenant and drive its whole lifecycle —
+the capstone of the 0021 → 0022 → 0023 arc — through Swagger or any HTTP client. Package transport stays
+server-side (install from the host's discoverable package root); upload/registry transport is later work.
+
+Added
+- **`FactoryOS.Api/Platform` (management surface)**:
+  - `GET /platform/packages` — the packages discoverable from the host's package root (key, version, signed).
+  - `POST /platform/plugins` — install a discovered package for the tenant with the permissions it is granted.
+  - `POST /platform/plugins/{key}/{load|start|stop|suspend|resume|unload|rollback}` — walk the lifecycle;
+    `suspend` carries a reason for the audit trail.
+  - `POST /platform/plugins/{key}/update` — update to a newer discovered version.
+  - `DELETE /platform/plugins/{key}` — remove the plugin from the tenant (the package is retained).
+  - `POST /platform/plugins/{key}/enabled`, `POST …/grant`, `PUT …/config` — manage enabled state, the
+    permissions the tenant grants the plugin, and its configuration.
+  - `PlatformManagement` — the caller-resolution and error-to-HTTP-status mapping as pure functions:
+    management requires a resolved tenant (else 400) and an authenticated caller (else 401); the caller carries
+    the permissions the gateway parsed from the JWT, which the runtime authorizes each operation against.
+    Runtime authentication/authorization refusals map to 401/403, and the remaining classifications to
+    400/404/409. `PlatformManagementEndpoints.MapPlatformManagement` is the thin wrapper over the runtime.
+- **`Program.cs`** — `app.MapPlatformManagement()` after the observability surface.
+- **Tests** — `tests/FactoryOS.IntegrationTests/Composition/PlatformManagementTests.cs`: no tenant → 400; no
+  identity → 401; an authenticated caller holds its parsed permissions and junk is dropped; errors map to the
+  right status.
+
+Changed
+- **Revised Commit 0023's authorizer binding.** `AddPlatformEngines` no longer binds `IPluginAuthorizer` to the
+  workflow security engine. In the running host the authority over a caller's permissions is the Identity
+  layer / the gateway's JWT — the security engine has no grants here, so binding it would deny every management
+  call. The runtime's default `PermissionPluginAuthorizer` (which checks the caller's own permissions) is that
+  model and is left in place; the `/platform` endpoints build a `PluginCaller` carrying the JWT permissions. The
+  audit and metric sink bindings are unchanged, and `SecurityEnginePluginAuthorizer` stays available for a host
+  that makes the security engine the plugin authority.
+
+Notes
+- **Every management call needs a tenant and an identity.** Reads (Commit 0024) stay open under additive RBAC;
+  mutations refuse an unauthenticated caller and are authorized per operation by the caller's permissions.
+- Out of scope: package upload/registry transport (installs are from the host's discoverable package root), a
+  management UI, and per-engine (non-plugin) management endpoints.
+
 ### Commit 0024 — Platform observability API (2026-07-30)
 
 Made the composed platform **visible over HTTP**. Commit 0023 stood the engines up in the process; this commit

@@ -70,4 +70,8 @@ app.MapModuleGateway();
 // metrics. Mapped after tenant resolution so every read runs on behalf of exactly one factory.
 app.MapPlatformObservability();
 
+// Mutating /platform/* management: install a plugin and walk its lifecycle, manage grants, config and enabled
+// state. Every call runs on behalf of one authenticated caller, authorized by the caller's JWT permissions.
+app.MapPlatformManagement();
+
 app.Run();

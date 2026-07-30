@@ -1,10 +1,7 @@
 using FactoryOS.Api.Composition;
-using FactoryOS.Domain.Abstractions;
 using FactoryOS.Plugins.Runtime.Integration;
-using FactoryOS.Plugins.Runtime.Security;
 using FactoryOS.Plugins.Workflow.Audit.Execution;
 using FactoryOS.Plugins.Workflow.Monitoring.Execution;
-using FactoryOS.Plugins.Workflow.Security.Execution;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -52,16 +49,19 @@ public static class PlatformEnginesServiceCollectionExtensions
         services.AddSecurityMonitoringIntegration();
         services.AddSlaNotificationIntegration();
 
-        // Bind the plugin runtime's ports to the engines. These are registered BEFORE AddPluginRuntime so its
-        // TryAdd defaults (the in-memory authorizer, audit sink and metric sink) defer to these — the runtime
-        // then authorizes through the security engine and writes its trail and metrics to the platform.
-        services.AddSingleton<IPluginAuthorizer>(provider => new SecurityEnginePluginAuthorizer(
-            provider.GetRequiredService<SecurityEngine>(),
-            provider.GetRequiredService<IDateTimeProvider>()));
+        // Bind the plugin runtime's observability ports to the engines. Registered BEFORE AddPluginRuntime so
+        // its in-memory TryAdd defaults defer to these — a plugin's audit trail and metrics flow to the platform.
         services.AddSingleton<IPluginAuditSink>(provider =>
             new AuditEnginePluginSink(provider.GetRequiredService<AuditEngine>()));
         services.AddSingleton<IPluginMetricSink>(provider =>
             new MonitoringEnginePluginSink(provider.GetRequiredService<MonitoringEngine>()));
+
+        // Authorization is deliberately NOT bound to the workflow security engine here. In the running host the
+        // authority over a caller's permissions is the Identity layer / the gateway's JWT, resolved per request
+        // into the PluginCaller the /platform management endpoints build. The runtime's own default
+        // (PermissionPluginAuthorizer, which checks the caller's own permissions) is exactly that model, so it is
+        // left in place. SecurityEnginePluginAuthorizer stays available for a host that makes the security engine
+        // the plugin authority — but that engine has no grants in this host, so binding it would deny everything.
 
         // The two platform runtimes. The plugin runtime binds its options from Plugins:Runtime.
         services.AddConnectorRuntime();

@@ -28,10 +28,15 @@ same container the request pipeline uses. `GET /platform/status` proves it, comp
    is idempotent (`TryAdd`) and backed by in-memory stores, so the host starts without a database.
 2. **Registers the opt-in cross-engine integrations** — security decisions flow into the audit trail and are
    measured; SLA breaches raise notifications — exactly as a deployment would choose them.
-3. **Binds the plugin runtime's ports to the engines** (`PlatformPluginAdapters`): `IPluginAuthorizer` →
-   security engine, `IPluginAuditSink` → audit engine, `IPluginMetricSink` → monitoring engine. These are
-   registered **before** `AddPluginRuntime`, so the runtime's in-memory `TryAdd` defaults defer to them and a
-   plugin's authorization, audit and metrics run through the platform.
+3. **Binds the plugin runtime's observability ports to the engines** (`PlatformPluginAdapters`):
+   `IPluginAuditSink` → audit engine, `IPluginMetricSink` → monitoring engine. These are registered **before**
+   `AddPluginRuntime`, so the runtime's in-memory `TryAdd` defaults defer to them and a plugin's audit trail and
+   metrics run through the platform. **Authorization is deliberately not bound to the workflow security engine**:
+   in the running host the authority over a caller's permissions is the Identity layer / the gateway's JWT,
+   resolved per request into the `PluginCaller` the `/platform` management endpoints build. The runtime's default
+   `PermissionPluginAuthorizer` (which checks the caller's own permissions) is exactly that model and is left in
+   place; the security engine has no grants in this host, so binding it would deny everything.
+   `SecurityEnginePluginAuthorizer` stays available for a host that makes the security engine the authority.
 4. **Registers the two runtimes** (`AddConnectorRuntime`, `AddPluginRuntime`).
 5. **Registers a `platform` readiness check** that resolves every component and reports each up or down.
 
