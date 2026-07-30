@@ -22,4 +22,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- The integration tests exercise the internal /platform read projections against the real composed engines. -->
+    <InternalsVisibleTo Include="FactoryOS.IntegrationTests" />
+  </ItemGroup>
+
 </Project>

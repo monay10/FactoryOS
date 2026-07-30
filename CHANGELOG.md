@@ -7,6 +7,41 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0024 — Platform observability API (2026-07-30)
+
+Made the composed platform **visible over HTTP**. Commit 0023 stood the engines up in the process; this commit
+adds a read-only `/platform/*` surface so an operator can actually see what they are doing — through Swagger or
+any HTTP client — without a UI. Every route is tenant-scoped. Mutating a plugin's lifecycle over HTTP (which
+also needs a package-transport story) is a separate, later surface and is deliberately not here.
+
+Added
+- **`FactoryOS.Api/Platform`** — the read-only observability surface:
+  - `GET /platform/plugins` — the tenant's installed plugins (key, version, previous version, status, enabled,
+    failure reason, started-at).
+  - `GET /platform/plugins/{key}/health` — a plugin's health: the worst answer across the six aspects, and the
+    aspects that are not healthy.
+  - `GET /platform/extensions/{point}` — what currently extends a published extension point for the tenant
+    (unknown point → 404).
+  - `GET /platform/audit` — the tenant's audit trail, newest first, plus the hash-chain verification verdict.
+  - `GET /platform/metrics` — the monitoring engine's own counters and its registered metric definitions.
+  - `PlatformObservability` — the projections behind the endpoints, written as pure tenant-scoped functions over
+    the engines so they are tested against the real composed engines without the HTTP pipeline;
+    `PlatformObservabilityEndpoints.MapPlatformObservability` is the thin wrapper that resolves the request's
+    tenant and delegates. A request that resolved no tenant is refused (400), never defaulted.
+- **`Program.cs`** — `app.MapPlatformObservability()` after the module gateway, so every read runs after tenant
+  resolution.
+- **`FactoryOS.Api.csproj`** — `InternalsVisibleTo` for the integration tests, so they exercise the internal
+  projections directly.
+- **Tests** — `tests/FactoryOS.IntegrationTests/Composition/PlatformObservabilityTests.cs`: an empty tenant lists
+  nothing; the audit trail projects a tenant's records newest-first and verifies; it never reads across tenants;
+  the metrics listing includes the plugin runtime series once the metric sink is live.
+
+Notes
+- **Read-only, tenant-scoped.** Nothing here mutates state; the multi-tenant invariant is enforced by requiring
+  a resolved tenant on every route. Finer per-endpoint RBAC and the mutating lifecycle API come later.
+- Out of scope: installing/starting/stopping/updating a plugin over HTTP (needs package transport, out of scope
+  since Commit 0022), per-engine management endpoints, and the PWA screens.
+
 ### Commit 0023 — Platform composition (2026-07-30)
 
 Wired the platform engines and runtimes into the running API host. Until this commit the engines

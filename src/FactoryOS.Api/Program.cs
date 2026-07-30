@@ -66,4 +66,8 @@ app.UsePermissionResolution();
 // Mounts /modules, /modules/ui and every active module's /m/<key>/* endpoints.
 app.MapModuleGateway();
 
+// Read-only /platform/* observability: the tenant's plugins, their health, extension points, audit trail and
+// metrics. Mapped after tenant resolution so every read runs on behalf of exactly one factory.
+app.MapPlatformObservability();
+
 app.Run();
