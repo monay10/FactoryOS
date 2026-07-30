@@ -4,6 +4,16 @@
     <ProjectReference Include="..\FactoryOS.Application\FactoryOS.Application.csproj" />
     <ProjectReference Include="..\FactoryOS.Gateway\FactoryOS.Gateway.csproj" />
     <ProjectReference Include="..\FactoryOS.Infrastructure\FactoryOS.Infrastructure.csproj" />
+    <!--
+      The composition root references the plugin and connector runtimes it composes, and the workflow
+      assembly that packages the platform engines (Security, Audit, Monitoring, Approval, SLA, Notification,
+      Human Task, Forms, Workflow). This is composition-root wiring — no customer-specific code lives here.
+      The proper long-term home for the platform engines is a dedicated Platform assembly; until that move,
+      the host composes them where they live. See Composition/README.md.
+    -->
+    <ProjectReference Include="..\FactoryOS.Plugin\FactoryOS.Plugin.csproj" />
+    <ProjectReference Include="..\FactoryOS.Connectors\FactoryOS.Connectors.csproj" />
+    <ProjectReference Include="..\..\plugins\workflow\FactoryOS.Plugins.Workflow.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

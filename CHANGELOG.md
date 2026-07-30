@@ -7,6 +7,47 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0023 — Platform composition (2026-07-30)
+
+Wired the platform engines and runtimes into the running API host. Until this commit the engines
+(Security, Audit, Monitoring, Approval, SLA, Notification, Human Task, Forms, Workflow) and the two
+runtimes (Connector, Plugin) existed only as library code, constructed nowhere but in tests; the deployed
+host loaded no plugins and stood none of them up. This is the composition slice — the engines now run in the
+process. HTTP management surfaces and the PWA screens build on it in later commits and are deliberately not
+here.
+
+Added
+- **`FactoryOS.Api/Composition`** — the composition root's platform wiring:
+  - `AddPlatformEngines(configuration)` (`PlatformEnginesServiceCollectionExtensions`) — registers every
+    platform engine (via each engine's own self-contained `Add<Engine>Engine()` extension), the opt-in
+    cross-engine integrations (`AddSecurityAuditIntegration`, `AddSecurityMonitoringIntegration`,
+    `AddSlaNotificationIntegration`), the two runtimes (`AddConnectorRuntime`, `AddPluginRuntime`), and the
+    engine-backed plugin runtime ports. The ports are registered **before** `AddPluginRuntime` so its in-memory
+    `TryAdd` defaults defer to them.
+  - `PlatformPluginAdapters` — the production `IPluginAuthorizer` → security engine, `IPluginAuditSink` → audit
+    engine and `IPluginMetricSink` → monitoring engine adapters, moved out of the integration test into their
+    canonical home. The plugin-runtime integration tests now consume these same production types.
+  - `PlatformStatus`, `PlatformStatusHealthCheck` and `MapPlatformStatus` — a `platform` readiness check (folded
+    into `/health/ready`) and a readable `GET /platform/status` that resolves every engine and runtime from the
+    running container and reports each up/down.
+- **`Program.cs`** — `.AddPlatformEngines(builder.Configuration)` in the composition chain (before the module
+  graph) and `app.MapPlatformStatus()` beside the health probes.
+- **Tests** — `tests/FactoryOS.IntegrationTests/Composition/PlatformCompositionTests.cs`: the composition builds
+  under `ValidateOnBuild`; every engine, both runtimes and the three engine-backed ports resolve; the platform
+  status reports all eleven components live; the health check is Healthy.
+
+Notes
+- **Composition-root wiring, not customer code.** No path added here branches on a tenant. The API host now
+  references the `FactoryOS.Plugins.Workflow` assembly to compose the platform engines it packages; this is a
+  known tension with the modular-monolith ideal (a plugin loaded by manifest), tolerated because those engines
+  are really platform services mispackaged inside a plugin folder. The proper fix — relocating Security/Audit/
+  Monitoring into a dedicated Platform assembly — is a separate, larger refactor and is out of scope here. See
+  `src/FactoryOS.Api/Composition/README.md`.
+- **The engines run in-memory.** Each engine's registration is self-contained (in-memory stores), so the host
+  starts without a database. Binding the engines to Postgres/RabbitMQ/Redis is later work.
+- Out of scope: HTTP management endpoints per engine, PWA management screens, deploying the workflow plugin's
+  automation handlers, and persistence wiring.
+
 ### Commit 0022 — Plugin runtime (2026-07-22)
 
 Added

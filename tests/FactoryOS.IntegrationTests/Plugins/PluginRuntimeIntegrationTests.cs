@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text;
+using FactoryOS.Api.Composition;
 using FactoryOS.Connectors.Framework.Runtime;
 using FactoryOS.Connectors.Runtime.Domain;
 using FactoryOS.Connectors.Runtime.Execution;
@@ -592,110 +593,6 @@ public sealed class PluginRuntimeIntegrationTests
         public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
         public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
-    }
-
-    /// <summary>Maps the plugin runtime's authorization port onto the platform's security engine.</summary>
-    private sealed class SecurityEnginePluginAuthorizer : IPluginAuthorizer
-    {
-        private readonly SecurityEngine _security;
-        private readonly IDateTimeProvider _clock;
-
-        public SecurityEnginePluginAuthorizer(SecurityEngine security, IDateTimeProvider clock)
-        {
-            _security = security;
-            _clock = clock;
-        }
-
-        public PluginAuthorization Authorize(
-            PluginCaller? caller, PluginInstance instance, PluginPermission required)
-        {
-            if (caller is null)
-            {
-                return PluginAuthorization.Deny(
-                    PluginAuthorizationReason.NoCaller, "The request named nobody.");
-            }
-
-            var principal = new SecurityPrincipal(
-                caller.Subject,
-                caller.Tenant,
-                new SecurityIdentity("plugin-runtime", _clock.UtcNow));
-
-            var decision = _security.Authorize(principal, required.ToString());
-            if (decision.IsAllowed)
-            {
-                return PluginAuthorization.Allow();
-            }
-
-            var reason = decision.Reason switch
-            {
-                SecurityDecisionReason.TenantMismatch => PluginAuthorizationReason.TenantMismatch,
-                SecurityDecisionReason.NotAuthenticated => PluginAuthorizationReason.NotAuthenticated,
-                _ => PluginAuthorizationReason.MissingPermission,
-            };
-
-            return PluginAuthorization.Deny(reason, decision.Description);
-        }
-    }
-
-    /// <summary>Maps the plugin runtime's audit port onto the platform's audit engine.</summary>
-    private sealed class AuditEnginePluginSink : IPluginAuditSink
-    {
-        private readonly AuditEngine _audit;
-
-        public AuditEnginePluginSink(AuditEngine audit) => _audit = audit;
-
-        public void Write(PluginAuditEntry entry)
-        {
-            // The audit engine already speaks about plugin lifecycle: AuditCategory.Plugin and a ready-made
-            // entry. Nothing had to be added to it, and nothing was.
-            var outcome = entry.Succeeded ? entry.Phase.ToString() : $"{entry.Phase} refused: {entry.FailureReason}";
-
-            _audit.Record(AuditEntries.PluginOperation(
-                entry.Tenant,
-                entry.PluginKey,
-                outcome,
-                entry.Subject is null ? null : AuditActor.User(entry.Subject)));
-        }
-    }
-
-    /// <summary>Maps the plugin runtime's metric port onto the platform's monitoring engine.</summary>
-    private sealed class MonitoringEnginePluginSink : IPluginMetricSink
-    {
-        private readonly MonitoringEngine _monitoring;
-
-        public MonitoringEnginePluginSink(MonitoringEngine monitoring)
-        {
-            _monitoring = monitoring;
-
-            foreach (var (key, kind, unit) in new[]
-                     {
-                         (PluginMetricNames.Transitions, MetricKind.Counter, "transitions"),
-                         (PluginMetricNames.TransitionDuration, MetricKind.Duration, "ms"),
-                         (PluginMetricNames.Failures, MetricKind.Counter, "transitions"),
-                         (PluginMetricNames.Installs, MetricKind.Counter, "plugins"),
-                         (PluginMetricNames.Starts, MetricKind.Counter, "plugins"),
-                         (PluginMetricNames.Stops, MetricKind.Counter, "plugins"),
-                         (PluginMetricNames.Updates, MetricKind.Counter, "plugins"),
-                         (PluginMetricNames.Rollbacks, MetricKind.Counter, "plugins"),
-                         (PluginMetricNames.SandboxRefusals, MetricKind.Counter, "calls"),
-                     })
-            {
-                _monitoring.Register(new MetricDefinition(
-                    key, MetricCategory.Plugin, kind, unit, $"Plugin runtime: {key}."));
-            }
-        }
-
-        public void Record(PluginMeasurement measurement)
-        {
-            var tenant = measurement.Labels[PluginRuntimeConstants.TenantLabel];
-            var dimension = new MetricDimension(
-                measurement.Labels
-                    .Where(label => label.Key != PluginRuntimeConstants.TenantLabel)
-                    .Select(label => MetricLabel.Of(label.Key, label.Value)));
-
-            _monitoring.Record(
-                tenant, measurement.Name, measurement.Value, dimension, timestampUtc: measurement.OccurredUtc);
-        }
     }
 
     private sealed class Harness : IDisposable

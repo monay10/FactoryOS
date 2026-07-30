@@ -1,4 +1,5 @@
 using FactoryOS.Api;
+using FactoryOS.Api.Composition;
 using FactoryOS.Gateway.Routing;
 using FactoryOS.Gateway.Tenancy;
 using FactoryOS.Identity.Seeding;
@@ -21,6 +22,11 @@ builder.AddApiHostFoundation();
 builder.Services
     .AddApplication()
     .AddInfrastructure(builder.Configuration)
+    // Composition root for the platform engines (Security, Audit, Monitoring, Approval, SLA, Notification,
+    // Human Task, Forms, Workflow) and the two platform runtimes (Connector, Plugin). Registered before the
+    // module graph so the plugin runtime's engine-backed ports are in place before any plugin loads. See
+    // Composition/README.md — this is composition-only; no code path here names a tenant.
+    .AddPlatformEngines(builder.Configuration)
     .AddPluginModules(pluginsRoot)
     .AddModuleGateway()
     .AddTenantResolution(builder.Configuration.GetSection(TenantResolutionOptions.SectionName).Bind);
@@ -41,6 +47,9 @@ if (seedOptions.Enabled)
 
 // Health probes (/health, /health/live, /health/ready), the OpenAPI document and the Swagger UI.
 app.MapApiHostFoundation();
+
+// GET /platform/status — a readable listing of every platform engine and runtime and whether it is live.
+app.MapPlatformStatus();
 
 // Credential login and refresh-token rotation, wired identically for the host and its integration tests.
 app.MapAuthEndpoints();
