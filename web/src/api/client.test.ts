@@ -162,6 +162,19 @@ describe("GatewayClient", () => {
     expect(report.verified).toBe(3);
   });
 
+  it("reads the monitoring engine's counters and definitions", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockImplementation(() => Promise.resolve(jsonResponse({ collected: 12, sampled: 8, bridgeFaults: 0, definitions: [] })));
+    const client = new GatewayClient("acme", fetchMock as unknown as typeof fetch);
+
+    const report = await client.platformMetrics();
+
+    expect(fetchMock.mock.calls[0][0]).toBe("/platform/metrics");
+    expect((fetchMock.mock.calls[0][1].headers as Record<string, string>)[TENANT_HEADER]).toBe("acme");
+    expect(report.collected).toBe(12);
+  });
+
   it("POSTs an install with the key, version and grants as JSON", async () => {
     const fetchMock = vi
       .fn()

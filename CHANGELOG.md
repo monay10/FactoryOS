@@ -7,6 +7,25 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0033 — Surface monitoring metrics in the platform console (2026-07-30)
+
+Completed the platform console's observability triad — **plugins → audit → metrics**. The monitoring engine is
+genuinely live: plugin operations feed its collector through the metric sink wired in the composition root, so its
+counters move as the platform is used. This reads the existing `/platform/metrics` endpoint (Commit 0024), which
+until now had no UI.
+
+Added
+- **`web/src/shell/MetricsPanel.tsx`** — the monitoring engine's panel, rendered inside `PlatformConsole` below the
+  audit trail: a row of stat tiles (Collected, Sampled, Active alerts with a `raised · cleared` hint, Threshold
+  breaches) over a table of the registered metric series (metric · category · kind · unit · description). Bridge
+  faults get their own loud header badge when non-zero — a cross-engine integration misbehaving is worth a look.
+- **`GatewayClient.platformMetrics()`** + `MetricsReport`/`MetricDefinitionView` types — the typed read of
+  `/platform/metrics`.
+
+Tested
+- `client.test.ts` — the metrics read targets `/platform/metrics` with the tenant header and surfaces the counters.
+  43 web tests green (was 42); `tsc --noEmit` and the production build pass.
+
 ### Commit 0032 — Surface the audit trail in the platform console (2026-07-30)
 
 Made the now-durable audit trail **visible**. The last three commits made platform state survive a restart; this

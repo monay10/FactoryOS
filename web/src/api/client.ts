@@ -1,6 +1,7 @@
 import type {
   ActivityFeed,
   AuditReport,
+  MetricsReport,
   BrainAnswers,
   BrainAskAccepted,
   DashboardBoard,
@@ -191,6 +192,11 @@ export class GatewayClient {
   /** The tenant's audit trail (newest first) with the hash-chain verification verdict. */
   platformAudit(): Promise<AuditReport> {
     return this.get<AuditReport>("/platform/audit");
+  }
+
+  /** The monitoring engine's lifetime counters and the metric series registered on the host. */
+  platformMetrics(): Promise<MetricsReport> {
+    return this.get<MetricsReport>("/platform/metrics");
   }
 
   /** Installs a discovered package for the tenant, granting it the given permissions. */

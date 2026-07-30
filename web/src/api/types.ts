@@ -306,3 +306,28 @@ export interface AuditReport {
   verified: number;
   records: AuditRecordView[];
 }
+
+// The monitoring engine's report (the /platform/metrics surface): its own lifetime counters plus the metric
+// series registered on the host. Counters accumulate as the platform runs; bridge faults flag a cross-engine
+// integration that is misbehaving.
+
+export interface MetricDefinitionView {
+  key: string;
+  category: string;
+  kind: string;
+  unit: string;
+  description: string;
+}
+
+export interface MetricsReport {
+  collected: number;
+  sampled: number;
+  aggregations: number;
+  thresholdBreaches: number;
+  alertsTriggered: number;
+  alertsResolved: number;
+  healthChecks: number;
+  expired: number;
+  bridgeFaults: number;
+  definitions: MetricDefinitionView[];
+}
