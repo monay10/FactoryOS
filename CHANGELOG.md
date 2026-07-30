@@ -7,6 +7,35 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0034 — Export the audit trail for auditors (2026-07-30)
+
+Made the durable audit trail **exportable** — CSV for a spreadsheet, JSON for a machine. The `AuditExportService`
+already rendered both and, crucially, keeps every record's hash and previous-hash in the export, so whoever receives
+it can verify the chain themselves rather than trust this system; until now it had no HTTP surface. Full-stack:
+endpoint plus a download control on the trail.
+
+Design decision — **export is a write, not a read.** The audit engine records the export itself (an `AuditExported`
+event, and an attributed "Exported" entry naming the exporter), so it belongs on the authenticated management
+surface, not the open observability read. It resolves the caller through the same `WithCaller` path as every other
+management operation and passes the caller's subject as the exporter; an unauthenticated request is refused (401).
+
+Added
+- **`GET /platform/audit/export?format=csv|json`** (`PlatformManagementEndpoints`) — exports the caller's tenant's
+  trail as a downloadable file (`audit-<tenant>.csv`/`.json`), tenant-scoped through the caller. Anything but an
+  explicit `json` renders CSV, the auditor-friendly default.
+- **`PlatformManagement.ResolveAuditExport(tenant, format)`** — a pure format→(format, content type, file name)
+  helper, unit tested; the endpoint stays thin glue over it and `AuditEngine.Export`.
+- **`GatewayClient.platformAuditExport(format)`** + CSV/JSON download buttons in the `AuditTrail` card header, with
+  their own error line (a refusal explains it needs signing in).
+
+Tested
+- `PlatformManagementTests` — the export defaults to CSV and names the download for the tenant; an explicit `json`
+  is honoured case-insensitively.
+- `PlatformObservabilityTests` — against the real composed engines, the export renders the tenant's trail with the
+  verifiable hashes present and never includes another tenant's records.
+- `client.test.ts` — the export targets `/platform/audit/export?format=…` with the tenant header, and a 401 is
+  reported as needing sign-in. 1653 .NET tests green (was 1649); 45 web tests green (was 43).
+
 ### Commit 0033 — Surface monitoring metrics in the platform console (2026-07-30)
 
 Completed the platform console's observability triad — **plugins → audit → metrics**. The monitoring engine is

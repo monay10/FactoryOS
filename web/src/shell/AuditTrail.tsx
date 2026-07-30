@@ -1,7 +1,18 @@
+import { useState } from "react";
 import { GatewayClient } from "../api/client";
 import { useAsync } from "../lib/useAsync";
 import { auditSeverityTone, timeAgo } from "../lib/format";
 import { Badge, Card, ErrorNote, Loading } from "../components/ui";
+
+/** Saves a blob to the user's downloads as `fileName`, via a transient object URL. */
+function saveBlob(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = fileName;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
 
 /**
  * The tenant's audit trail — the platform's immutable, hash-chained record of what it did, newest first. The
@@ -10,20 +21,53 @@ import { Badge, Card, ErrorNote, Loading } from "../components/ui";
  */
 export default function AuditTrail({ client }: { client: GatewayClient }) {
   const report = useAsync(() => client.platformAudit(), [client]);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
+
+  async function download(format: "csv" | "json") {
+    setBusy(format);
+    setExportError(null);
+    try {
+      saveBlob(await client.platformAuditExport(format), `audit.${format}`);
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(null);
+    }
+  }
 
   if (report.loading) return <Loading label="Reading the audit trail…" />;
   if (report.error) return <ErrorNote message={report.error} />;
   if (!report.data) return null;
 
   const { chainValid, verified, records } = report.data;
-  const verdict = chainValid ? (
-    <Badge tone="ok">Chain verified · {verified}</Badge>
-  ) : (
-    <Badge tone="critical">Chain broken</Badge>
+  const verdict = (
+    <div className="flex items-center gap-2">
+      {chainValid ? (
+        <Badge tone="ok">Chain verified · {verified}</Badge>
+      ) : (
+        <Badge tone="critical">Chain broken</Badge>
+      )}
+      {(["csv", "json"] as const).map((format) => (
+        <button
+          key={format}
+          disabled={busy !== null}
+          onClick={() => download(format)}
+          className="rounded-md border border-slate-300 px-2 py-1 text-xs font-medium text-slate-600 disabled:opacity-50 dark:border-slate-600 dark:text-slate-300"
+        >
+          {busy === format ? "…" : format.toUpperCase()}
+        </button>
+      ))}
+    </div>
   );
 
   return (
     <Card title="Audit trail" actions={verdict}>
+      {exportError && (
+        <div className="mb-3">
+          <ErrorNote message={exportError} />
+        </div>
+      )}
       {records.length === 0 ? (
         <p className="text-sm text-slate-400">Nothing audited yet — install or operate a plugin to see records here.</p>
       ) : (

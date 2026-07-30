@@ -1,6 +1,7 @@
 using FactoryOS.Api.Platform;
 using FactoryOS.Domain.Results;
 using FactoryOS.Plugins.Runtime.Domain;
+using FactoryOS.Plugins.Workflow.Audit.Execution;
 using Xunit;
 
 namespace FactoryOS.IntegrationTests.Composition;
@@ -49,6 +50,28 @@ public sealed class PlatformManagementTests
         Assert.Equal(2, caller.Permissions.Count);
         Assert.True(caller.Holds(PluginPermission.Parse("plugin.install")));
         Assert.True(caller.Holds(PluginPermission.Parse("plugin.start")));
+    }
+
+    [Fact]
+    public void The_audit_export_defaults_to_csv_and_names_the_download_for_the_tenant()
+    {
+        var rendering = PlatformManagement.ResolveAuditExport("acme", format: null);
+
+        Assert.Equal(AuditExportFormat.Csv, rendering.Format);
+        Assert.Equal("text/csv", rendering.ContentType);
+        Assert.Equal("audit-acme.csv", rendering.FileName);
+    }
+
+    [Theory]
+    [InlineData("json")]
+    [InlineData("JSON")]
+    public void The_audit_export_honours_an_explicit_json_format_case_insensitively(string format)
+    {
+        var rendering = PlatformManagement.ResolveAuditExport("acme", format);
+
+        Assert.Equal(AuditExportFormat.Json, rendering.Format);
+        Assert.Equal("application/json", rendering.ContentType);
+        Assert.Equal("audit-acme.json", rendering.FileName);
     }
 
     [Theory]

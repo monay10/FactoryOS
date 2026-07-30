@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using FactoryOS.Api.Platform;
 using FactoryOS.Domain.Results;
@@ -8,6 +9,7 @@ using FactoryOS.Gateway.Tenancy;
 using FactoryOS.Identity.Claims;
 using FactoryOS.Plugins.Runtime.Domain;
 using FactoryOS.Plugins.Runtime.Execution;
+using FactoryOS.Plugins.Workflow.Audit.Execution;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Builder;
@@ -122,6 +124,20 @@ public static class PlatformManagementEndpoints
             ITenantContext tenants, IPermissionContext perms, IPluginRuntime runtime) =>
             WithCaller(http, tenants, perms, caller =>
                 Task.FromResult(Respond(runtime.Configuration.Configure(caller, key, request.Values)))));
+
+        // Export the tenant's audit trail (CSV or JSON) for an auditor. Exporting is itself an audited, attributed
+        // action — the engine records who exported and how many records — so it runs on the authorized management
+        // surface with the caller as the exporter, not the open observability read. The hash of every record travels
+        // with the export, so the recipient can verify the chain themselves rather than trust this system.
+        app.MapGet("/platform/audit/export", (string? format, HttpContext http, ITenantContext tenants,
+            IPermissionContext perms, AuditEngine audit) =>
+            WithCaller(http, tenants, perms, caller =>
+            {
+                var rendering = PlatformManagement.ResolveAuditExport(caller.Tenant, format);
+                var rendered = audit.Export(new AuditQuery { Tenant = caller.Tenant }, rendering.Format, caller.Subject);
+                return Task.FromResult(Results.File(
+                    Encoding.UTF8.GetBytes(rendered), rendering.ContentType, rendering.FileName));
+            }));
 
         return app;
     }

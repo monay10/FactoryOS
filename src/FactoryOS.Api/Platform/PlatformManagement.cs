@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FactoryOS.Domain.Results;
 using FactoryOS.Plugins.Runtime.Domain;
+using FactoryOS.Plugins.Workflow.Audit.Execution;
 
 namespace FactoryOS.Api.Platform;
 
@@ -19,6 +20,12 @@ internal sealed record CallerResolution(PluginCaller? Caller, string? Problem, i
     /// <summary>Whether a caller was resolved.</summary>
     public bool Ok => Caller is not null;
 }
+
+/// <summary>How an audit export should be rendered and delivered.</summary>
+/// <param name="Format">The format the audit engine renders.</param>
+/// <param name="ContentType">The HTTP content type to serve it as.</param>
+/// <param name="FileName">The download file name offered to the caller.</param>
+internal sealed record AuditExportRendering(AuditExportFormat Format, string ContentType, string FileName);
 
 /// <summary>Pure helpers behind the mutating <c>/platform</c> management surface.</summary>
 internal static class PlatformManagement
@@ -66,6 +73,23 @@ internal static class PlatformManagement
             [.. parsed]);
 
         return new CallerResolution(caller, null, 200);
+    }
+
+    /// <summary>
+    /// Resolves the requested audit-export format into the format, content type and download file name. The format
+    /// is chosen case-insensitively; anything other than an explicit <c>json</c> falls back to CSV, the format an
+    /// auditor opens in a spreadsheet.
+    /// </summary>
+    /// <param name="tenant">The tenant whose trail is being exported; names the download file.</param>
+    /// <param name="format">The requested format (<c>csv</c> or <c>json</c>), if any.</param>
+    /// <returns>The export rendering.</returns>
+    public static AuditExportRendering ResolveAuditExport(string tenant, string? format)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenant);
+
+        return string.Equals(format, "json", StringComparison.OrdinalIgnoreCase)
+            ? new AuditExportRendering(AuditExportFormat.Json, "application/json", $"audit-{tenant}.json")
+            : new AuditExportRendering(AuditExportFormat.Csv, "text/csv", $"audit-{tenant}.csv");
     }
 
     /// <summary>Parses permission strings into plugin permissions, dropping any that do not parse.</summary>

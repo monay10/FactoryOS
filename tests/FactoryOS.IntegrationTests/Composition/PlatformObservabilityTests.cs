@@ -5,8 +5,8 @@ using FactoryOS.Plugins.Runtime.Integration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
-using AuditEngine = FactoryOS.Plugins.Workflow.Audit.Execution.AuditEngine;
 using FactoryOS.Plugins.Workflow.Audit.Domain;
+using FactoryOS.Plugins.Workflow.Audit.Execution;
 using MonitoringEngine = FactoryOS.Plugins.Workflow.Monitoring.Execution.MonitoringEngine;
 
 namespace FactoryOS.IntegrationTests.Composition;
@@ -71,6 +71,26 @@ public sealed class PlatformObservabilityTests
         audit.Record(AuditEntries.PluginOperation(Tenant, "alpha", "Installed", AuditActor.User("ops")));
 
         Assert.Empty(PlatformObservability.Audit(audit, "other-factory").Records);
+    }
+
+    [Fact]
+    public void The_audit_export_renders_a_tenant_s_trail_with_the_verifiable_hashes()
+    {
+        using var provider = Build();
+        var audit = provider.GetRequiredService<AuditEngine>();
+        audit.Record(AuditEntries.PluginOperation(Tenant, "alpha", "Installed", AuditActor.User("ops")));
+        audit.Record(AuditEntries.PluginOperation("other-factory", "beta", "Installed", AuditActor.User("ops")));
+
+        var head = audit.ListByTenant(Tenant).Single();
+        var csv = audit.Export(new AuditQuery { Tenant = Tenant }, AuditExportFormat.Csv, "ops");
+        var json = audit.Export(new AuditQuery { Tenant = Tenant }, AuditExportFormat.Json, "ops");
+
+        // The CSV carries the header and only this tenant's record — never the other factory's.
+        Assert.StartsWith("Sequence,Tenant,OccurredOnUtc", csv);
+        Assert.Contains(head.Hash, csv, StringComparison.Ordinal);
+        Assert.DoesNotContain("other-factory", csv, StringComparison.Ordinal);
+        // The hash travels in both renderings, so the recipient can verify the chain independently.
+        Assert.Contains(head.Hash, json, StringComparison.Ordinal);
     }
 
     [Fact]

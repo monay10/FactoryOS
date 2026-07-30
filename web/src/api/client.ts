@@ -199,6 +199,21 @@ export class GatewayClient {
     return this.get<MetricsReport>("/platform/metrics");
   }
 
+  /**
+   * Downloads the tenant's audit trail as a file. Exporting is an authenticated, audited action: the gateway
+   * records who exported and the hash of every record travels with the file, so the recipient can verify the
+   * chain independently. Returns the file as a blob for the browser to save.
+   */
+  async platformAuditExport(format: "csv" | "json"): Promise<Blob> {
+    const response = await this.fetchImpl(`/platform/audit/export?format=${format}`, { headers: this.headers() });
+    if (!response.ok) {
+      throw new Error(
+        response.status === 401 ? "Exporting the audit trail requires signing in." : `export failed: ${response.status}`,
+      );
+    }
+    return await response.blob();
+  }
+
   /** Installs a discovered package for the tenant, granting it the given permissions. */
   async installPlugin(key: string, version: string | null, grants: readonly string[]): Promise<PlatformActionResult> {
     const response = await this.fetchImpl("/platform/plugins", {

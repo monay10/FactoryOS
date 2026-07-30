@@ -162,6 +162,25 @@ describe("GatewayClient", () => {
     expect(report.verified).toBe(3);
   });
 
+  it("downloads the audit export for the requested format with the tenant header", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockImplementation(() => Promise.resolve(new Response("Sequence,Tenant\n1,acme", { status: 200 })));
+    const client = new GatewayClient("acme", fetchMock as unknown as typeof fetch);
+
+    await client.platformAuditExport("csv");
+
+    expect(fetchMock.mock.calls[0][0]).toBe("/platform/audit/export?format=csv");
+    expect((fetchMock.mock.calls[0][1].headers as Record<string, string>)[TENANT_HEADER]).toBe("acme");
+  });
+
+  it("reports that the audit export needs a sign-in when it is refused", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response("", { status: 401 }));
+    const client = new GatewayClient("acme", fetchMock as unknown as typeof fetch);
+
+    await expect(client.platformAuditExport("json")).rejects.toThrow("signing in");
+  });
+
   it("reads the monitoring engine's counters and definitions", async () => {
     const fetchMock = vi
       .fn()
