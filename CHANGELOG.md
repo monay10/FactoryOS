@@ -7,6 +7,28 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0032 — Surface the audit trail in the platform console (2026-07-30)
+
+Made the now-durable audit trail **visible**. The last three commits made platform state survive a restart; this
+one puts the platform's immutable, hash-chained record of what it did in front of an operator, reading the existing
+`/platform/audit` endpoint (Commit 0024). Plugin lifecycle actions driven from the console already produce audit
+records, so the trail fills with real, tenant-scoped, restart-surviving activity.
+
+Added
+- **`web/src/shell/AuditTrail.tsx`** — the audit trail as a table (when · severity · category·action · actor ·
+  detail), newest first, rendered inside the `PlatformConsole` below the plugin/package cards. The card header
+  carries the **chain-verification verdict**: `Chain verified · N` when the hash chain holds, or a loud
+  `Chain broken` when a record was altered, removed or reordered. A non-success result (a denial or failure) is
+  badged alongside the severity.
+- **`GatewayClient.platformAudit()`** + `AuditReport`/`AuditRecordView` types — the typed read of `/platform/audit`.
+- **`auditSeverityTone`** in `lib/format.ts` — a pure severity→tone mapping (Critical/Warning/Notice/Info), unit
+  tested beside the existing tone helpers.
+
+Tested
+- `client.test.ts` — the audit read targets `/platform/audit` with the tenant header and surfaces the chain verdict.
+- `format.test.ts` — the severity→tone mapping. 42 web tests green (was 40); `tsc --noEmit` and the production
+  build pass.
+
 ### Commit 0031 — Persist the security engine's authorization grants (2026-07-30)
 
 Made a tenant's **direct authorization grants survive a restart** — the third application of the domain-persistence

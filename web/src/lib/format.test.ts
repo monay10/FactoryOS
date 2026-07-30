@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { levelTone, percent, stateTone, timeAgo } from "./format";
+import { auditSeverityTone, levelTone, percent, stateTone, timeAgo } from "./format";
 
 describe("format", () => {
   it("renders a fraction as a whole percent", () => {
@@ -23,5 +23,12 @@ describe("format", () => {
     expect(stateTone("Started")).toBe("ok");
     expect(stateTone("Failed")).toBe("bad");
     expect(stateTone("Disabled")).toBe("muted");
+  });
+
+  it("maps audit severities to semantic tones", () => {
+    expect(auditSeverityTone("Critical")).toBe("critical");
+    expect(auditSeverityTone("Warning")).toBe("warning");
+    expect(auditSeverityTone("Notice")).toBe("neutral");
+    expect(auditSeverityTone("Info")).toBe("muted");
   });
 });

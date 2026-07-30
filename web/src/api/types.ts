@@ -286,3 +286,23 @@ export interface PlatformActionResult {
   version: string;
   status: string;
 }
+
+// The tenant's audit trail (the /platform/audit surface): the platform's immutable, hash-chained record of what
+// it did, newest first, plus the verdict of verifying that chain. The trail is durable — it survives a restart.
+
+export interface AuditRecordView {
+  sequence: number;
+  category: string;
+  action: string;
+  severity: string;
+  result: string;
+  actor: string;
+  message: string;
+  occurredOnUtc: string;
+}
+
+export interface AuditReport {
+  chainValid: boolean;
+  verified: number;
+  records: AuditRecordView[];
+}

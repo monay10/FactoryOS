@@ -148,6 +148,20 @@ describe("GatewayClient", () => {
     expect(fetchMock.mock.calls.map((c) => c[0])).toEqual(["/platform/plugins", "/platform/packages"]);
   });
 
+  it("reads the tenant's audit trail with its chain verdict", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockImplementation(() => Promise.resolve(jsonResponse({ chainValid: true, verified: 3, records: [] })));
+    const client = new GatewayClient("acme", fetchMock as unknown as typeof fetch);
+
+    const report = await client.platformAudit();
+
+    expect(fetchMock.mock.calls[0][0]).toBe("/platform/audit");
+    expect((fetchMock.mock.calls[0][1].headers as Record<string, string>)[TENANT_HEADER]).toBe("acme");
+    expect(report.chainValid).toBe(true);
+    expect(report.verified).toBe(3);
+  });
+
   it("POSTs an install with the key, version and grants as JSON", async () => {
     const fetchMock = vi
       .fn()

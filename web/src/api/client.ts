@@ -1,5 +1,6 @@
 import type {
   ActivityFeed,
+  AuditReport,
   BrainAnswers,
   BrainAskAccepted,
   DashboardBoard,
@@ -185,6 +186,11 @@ export class GatewayClient {
   /** The packages discoverable on the host that can be installed. */
   platformPackages(): Promise<PlatformPackage[]> {
     return this.get<PlatformPackage[]>("/platform/packages");
+  }
+
+  /** The tenant's audit trail (newest first) with the hash-chain verification verdict. */
+  platformAudit(): Promise<AuditReport> {
+    return this.get<AuditReport>("/platform/audit");
   }
 
   /** Installs a discovered package for the tenant, granting it the given permissions. */

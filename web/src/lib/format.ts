@@ -34,6 +34,21 @@ export function levelTone(level: string): "critical" | "warning" | "ok" | "neutr
   }
 }
 
+/** Maps an audit record's severity to a semantic badge tone for the trail. */
+export function auditSeverityTone(severity: string): "critical" | "warning" | "neutral" | "muted" {
+  switch (severity.toLowerCase()) {
+    case "critical":
+      return "critical";
+    case "warning":
+      return "warning";
+    case "notice":
+      return "neutral";
+    default:
+      // Info — routine activity, surfaced calmly.
+      return "muted";
+  }
+}
+
 /** Maps a plugin lifecycle state to a semantic tone for the admin console. */
 export function stateTone(state: string): "ok" | "muted" | "bad" {
   switch (state.toLowerCase()) {
