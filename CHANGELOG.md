@@ -7,6 +7,34 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0029 — Fix the container's non-root user, and verify persistence live (2026-07-30)
+
+Brought the stack all the way up and **verified end-to-end that a plugin install survives a restart**. Getting
+there surfaced a second latent Docker bug (the first, the broken build, was Commit 0028).
+
+Fixed
+- **`Dockerfile` runtime stage failed with `adduser: exit 127`** — the `mcr.microsoft.com/dotnet/aspnet:10.0`
+  base image has no `adduser`, so the hand-rolled non-root user creation aborted the build. Replaced it with
+  `USER $APP_UID` — the non-root user the .NET base image already ships for exactly this purpose. (Latent since
+  the image predates the build ever getting this far; only reachable once Commit 0028 fixed restore/publish.)
+
+Changed
+- **`docker-compose.yml`** — a comment noting the api needs a JWT signing key (≥32 bytes) supplied at run time;
+  it is a secret and is deliberately not committed (the Identity layer refuses to start without one).
+
+Verified live (`docker compose up`, api reachable):
+- `GET /health/ready` → **Healthy**, including the `platform` check: *"All 11 platform engines and runtimes are
+  live"* — proof the composed engines, including `IPluginRuntime` backed by `EfPluginStore`, resolved against a
+  real PostgreSQL (the store's start-up `EnsureCreated` succeeded).
+- The `plugin_installations` table exists in Postgres with the expected columns and the `(Tenant, PluginKey)`
+  primary key — `EfPluginStore` provisioned its schema against the live database.
+- **Durability**: an installation row read back through the running api's `GET /platform/plugins`, then the api
+  container **restarted**, and the same installation was still returned — it survived the restart because it
+  lives in Postgres, not in memory.
+
+Note: verification used a throwaway compose override (not committed) to supply a dev JWT key and to avoid host
+port conflicts with other stacks already running on this machine; neither affects the committed files.
+
 ### Commit 0028 — Activate persistence in Docker, and fix the Docker build (2026-07-30)
 
 Turned the dormant persistence of Commit 0027 **on** in the dev environment, and fixed the Docker build it

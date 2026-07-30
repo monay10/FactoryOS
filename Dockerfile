@@ -19,11 +19,12 @@ RUN dotnet publish src/FactoryOS.Api/FactoryOS.Api.csproj \
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
-# Run as a non-root user for production hardening.
-RUN adduser --disabled-password --gecos "" --uid 5001 factoryos
-USER factoryos
-
 COPY --from=build /app/publish ./
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
+
+# Run as the non-root user the .NET base image already provides (UID via $APP_UID). The base aspnet image has
+# no `adduser`, so create nothing — this is the hardening Microsoft's images ship for exactly this purpose.
+USER $APP_UID
+
 ENTRYPOINT ["dotnet", "FactoryOS.Api.dll"]

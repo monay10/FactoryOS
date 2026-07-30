@@ -75,6 +75,8 @@ services:
         condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      # The Identity layer requires a JWT signing key of at least 32 bytes to start. It is a secret and is NOT
+      # committed here — supply it at run time, e.g. `Jwt__SigningKey=...` via an env file or your secret store.
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=factoryos;Username=factoryos;Password=factoryos_dev"
       # Activates the plugin runtime's EF persistence: with this Persistence section present the host swaps its
       # in-memory plugin store for the Postgres-backed one, so a tenant's installed plugins survive a restart.
