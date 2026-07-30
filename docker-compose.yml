@@ -79,9 +79,10 @@ services:
       # committed here — supply it at run time, e.g. `Jwt__SigningKey=...` via an env file or your secret store.
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=factoryos;Username=factoryos;Password=factoryos_dev"
       # Activates the platform's EF persistence: with this Persistence section present the host swaps its in-memory
-      # stores for the Postgres-backed ones — both a tenant's installed plugins (plugin runtime) and its immutable
-      # audit trail survive a restart. Omitting it (a bare host, no database) keeps the in-memory stores. The api
-      # already waits for a healthy postgres via depends_on, so the stores' schema checks at start-up find it ready.
+      # stores for the Postgres-backed ones — a tenant's installed plugins (plugin runtime), its immutable audit
+      # trail, and its direct security grants all survive a restart. Omitting it (a bare host, no database) keeps
+      # the in-memory stores. The api already waits for a healthy postgres via depends_on, so the stores' schema
+      # checks at start-up find it ready.
       Persistence__Provider: "PostgreSql"
       Persistence__ConnectionString: "Host=postgres;Port=5432;Database=factoryos;Username=factoryos;Password=factoryos_dev"
       MessageBus__Host: "rabbitmq"

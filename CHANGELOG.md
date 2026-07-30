@@ -7,6 +7,40 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0031 — Persist the security engine's authorization grants (2026-07-30)
+
+Made a tenant's **direct authorization grants survive a restart** — the third application of the domain-persistence
+pattern (Commits 0027, 0030). A grant is a deliberate admin decision ("this principal may exercise this
+permission"); losing it on a restart is a real security incident (lockout, or worse, silent under-permissioning),
+so it must be durable.
+
+Scoped exactly as the plugin runtime scoped installs-vs-packages: **grants persist; policies and roles do not.**
+Policies and roles are registered from configuration at start-up and rebuilt every time, so only the runtime grants
+need a database. The `ISecurityRepository` split is honoured within one adapter — grants go to the database, policies
+and roles stay in memory.
+
+Added
+- **`src/FactoryOS.Api/Persistence/Security/`** — the EF Core repository for security grants, in the composition
+  root for the same reason as the audit store: it is the one place that sees both the security domain (in the
+  workflow plugin) and the EF foundation (in `FactoryOS.Persistence`).
+  - `SecurityGrantRow` + `SecurityDbContext : FactoryOsDbContext` — a `security_grants` table whose whole row is
+    its key `(Tenant, Subject, Permission)`, so a repeated grant is a no-op and a grant is structurally unreachable
+    from another tenant.
+  - `EfSecurityRepository : ISecurityRepository` — a singleton that persists grants through
+    `IDbContextFactory<SecurityDbContext>` and keeps policies/roles in memory; permissions are parsed on the way in,
+    so a malformed grant is refused at the point it can still be fixed.
+  - `AddSecurityPersistence(configuration)` — the same gating as the audit trail: registers the EF repository only
+    when a `Persistence` section with a connection string exists, and runs before `AddSecurityEngine` so its plain
+    `AddSingleton` wins over the engine's in-memory `TryAdd` default.
+- **Tests** (`tests/FactoryOS.IntegrationTests/Persistence/EfSecurityRepositoryTests.cs`, SQLite in-memory): a
+  grant round-trip that is idempotent, the fresh-repository-over-the-same-database restart analog, revoke reporting
+  whether there was a grant, cross-tenant unreachability, and the scope-boundary proof that a registered role does
+  **not** survive a fresh repository (policies/roles are config-rebuilt, not persisted). 1649 tests green (was 1644).
+
+Changed
+- **`docker-compose.yml`** — the `Persistence__*` comment now notes the section also activates the security grants
+  store, so a tenant's plugins, audit trail and grants all survive a restart.
+
 ### Commit 0030 — Persist the audit trail (2026-07-30)
 
 Made the platform's **immutable audit trail survive a restart** — the second application of the domain-persistence
