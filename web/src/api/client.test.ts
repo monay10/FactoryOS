@@ -137,4 +137,52 @@ describe("GatewayClient", () => {
 
     await expect(client.quarantineLine("line-1")).rejects.toThrow("permission");
   });
+
+  it("reads the plugin runtime's installed plugins and available packages", async () => {
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(jsonResponse([])));
+    const client = new GatewayClient("acme", fetchMock as unknown as typeof fetch);
+
+    await client.platformPlugins();
+    await client.platformPackages();
+
+    expect(fetchMock.mock.calls.map((c) => c[0])).toEqual(["/platform/plugins", "/platform/packages"]);
+  });
+
+  it("POSTs an install with the key, version and grants as JSON", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockImplementation(() => Promise.resolve(jsonResponse({ key: "sample", version: "1.0.0", status: "Running" })));
+    const client = new GatewayClient("acme", fetchMock as unknown as typeof fetch);
+
+    const result = await client.installPlugin("sample", "1.0.0", ["uimetadata.extend"]);
+
+    const [path, init] = fetchMock.mock.calls[0];
+    expect(path).toBe("/platform/plugins");
+    expect(init.method).toBe("POST");
+    expect((init.headers as Record<string, string>)[TENANT_HEADER]).toBe("acme");
+    expect(JSON.parse(init.body as string)).toEqual({ key: "sample", version: "1.0.0", grants: ["uimetadata.extend"] });
+    expect(result.status).toBe("Running");
+  });
+
+  it("POSTs a lifecycle action and DELETEs a removal on the plugin's route", async () => {
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(new Response(null, { status: 204 })));
+    const client = new GatewayClient("acme", fetchMock as unknown as typeof fetch);
+
+    await client.pluginLifecycle("sample", "start");
+    await client.removePlugin("sample");
+
+    expect(fetchMock.mock.calls[0][0]).toBe("/platform/plugins/sample/start");
+    expect(fetchMock.mock.calls[0][1].method).toBe("POST");
+    expect(fetchMock.mock.calls[1][0]).toBe("/platform/plugins/sample");
+    expect(fetchMock.mock.calls[1][1].method).toBe("DELETE");
+  });
+
+  it("surfaces the problem-detail sentence when a management call is refused", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse({ title: "Cannot perform platform management", detail: "Platform management requires an authenticated caller." }, 401),
+    );
+    const client = new GatewayClient("acme", fetchMock as unknown as typeof fetch);
+
+    await expect(client.pluginLifecycle("sample", "start")).rejects.toThrow("requires an authenticated caller");
+  });
 });

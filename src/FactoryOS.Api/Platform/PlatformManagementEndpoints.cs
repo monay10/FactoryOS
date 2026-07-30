@@ -33,7 +33,10 @@ public static class PlatformManagementEndpoints
             IPluginRuntime runtime) =>
             WithCaller(http, tenants, perms, _ => Task.FromResult(Results.Ok(
                 runtime.Discover().Packages.Select(package => new PackageView(
-                    package.Key, package.Version.ToString(), package.IsSigned))))));
+                    package.Key,
+                    package.Version.ToString(),
+                    package.IsSigned,
+                    [.. package.Definition.EffectiveRequests().Select(permission => permission.ToString())]))))));
 
         // Install a discovered package for the tenant, with the permissions the tenant grants it.
         app.MapPost("/platform/plugins", (InstallRequest request, HttpContext http, ITenantContext tenants,
@@ -165,7 +168,8 @@ public static class PlatformManagementEndpoints
 /// <param name="Key">The plugin key.</param>
 /// <param name="Version">The package version.</param>
 /// <param name="Signed">Whether the package carries a signature.</param>
-internal sealed record PackageView(string Key, string Version, bool Signed);
+/// <param name="Requested">The permissions the package asks for, so the tenant can grant them on install.</param>
+internal sealed record PackageView(string Key, string Version, bool Signed, IReadOnlyList<string> Requested);
 
 /// <summary>The result of an install or update.</summary>
 /// <param name="Key">The plugin key.</param>

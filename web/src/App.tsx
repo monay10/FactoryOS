@@ -6,10 +6,11 @@ import { permitFor } from "./lib/permissions";
 import { applyBranding } from "./lib/branding";
 import OperatorShell from "./shell/OperatorShell";
 import AdminConsole from "./shell/AdminConsole";
+import PlatformConsole from "./shell/PlatformConsole";
 import LoginPanel from "./components/LoginPanel";
 import { ErrorNote, Loading } from "./components/ui";
 
-type Area = "operator" | "admin";
+type Area = "operator" | "admin" | "platform";
 
 /** Resolves the tenant from the URL (?tenant=acme) with a dev default, so a single build serves any factory. */
 function resolveTenant(): string {
@@ -77,7 +78,7 @@ export default function App() {
         </div>
         <div className="flex items-center gap-3">
           <div className="flex rounded-lg bg-slate-100 p-0.5 text-sm dark:bg-slate-700">
-            {(["operator", "admin"] as Area[]).map((a) => (
+            {(["operator", "admin", "platform"] as Area[]).map((a) => (
               <button
                 key={a}
                 onClick={() => setArea(a)}
@@ -130,8 +131,10 @@ export default function App() {
             {bootstrap &&
               (area === "operator" ? (
                 <OperatorShell client={client} bootstrap={bootstrap} holds={holds} />
-              ) : (
+              ) : area === "admin" ? (
                 <AdminConsole client={client} />
+              ) : (
+                <PlatformConsole client={client} />
               ))}
           </>
         )}

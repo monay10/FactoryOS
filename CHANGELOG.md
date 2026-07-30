@@ -7,6 +7,40 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0026 — Plugin runtime console (PWA) (2026-07-30)
+
+Made the plugin runtime **clickable in the browser** — the capstone of the arc. Commit 0025 exposed the
+management API; this adds a React screen that drives it, so an operator installs a plugin and walks its
+lifecycle without touching Swagger or curl. `docker compose up`, sign in, open **Platform**.
+
+Added
+- **`web/src/shell/PlatformConsole.tsx`** — a new admin area ("Platform") beside Operator and Admin. It reads
+  `GET /platform/plugins` and `GET /platform/packages` and renders:
+  - the tenant's installed plugins with a status badge and the lifecycle actions valid for each status
+    (start / stop / suspend / resume / unload), plus remove;
+  - the discoverable packages with the permissions each requests, and an **Install** button that grants exactly
+    those on install.
+  - Every write refuses gracefully: the API's problem-detail sentence (e.g. "requires an authenticated caller")
+    is surfaced inline rather than a bare status code.
+- **`web/src/api/client.ts` / `types.ts`** — `platformPlugins`, `platformPackages`, `installPlugin`,
+  `pluginLifecycle`, `removePlugin`, and the `PlatformPlugin` / `PlatformPackage` / `PlatformActionResult`
+  shapes. A `problem()` helper reads RFC 7807 detail from a failed response.
+- **`web/src/App.tsx`** — the "platform" area and its render branch.
+- **Tests** — `web/src/api/client.test.ts`: the platform read routes; install POSTs `{key, version, grants}`
+  as JSON; lifecycle POSTs and remove DELETEs the plugin route; a refused call surfaces the problem detail.
+
+Changed
+- **`GET /platform/packages`** now includes `requested` — the permissions a package asks for — so the console
+  can grant exactly what a plugin needs at install time (`PackageView`, projected from the package's
+  `EffectiveRequests()`).
+
+Notes
+- The console is tenant-scoped like the API: it drives the signed-in caller's tenant, and each write is
+  authorized by the caller's permissions. Sign in first — an unauthenticated caller is refused with a clear
+  message.
+- Out of scope: package upload/registry transport (the console installs from the host's discoverable packages),
+  update/rollback controls in the UI (the API supports them), and a per-plugin health/audit drill-down.
+
 ### Commit 0025 — Plugin management API (2026-07-30)
 
 Made the composed plugin runtime **operable over HTTP**. Commit 0024 made the platform visible; this adds the

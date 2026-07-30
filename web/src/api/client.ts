@@ -6,6 +6,9 @@ import type {
   EnergyMeters,
   EnergySpikes,
   OeeSnapshots,
+  PlatformActionResult,
+  PlatformPackage,
+  PlatformPlugin,
   QualityLines,
   QuarantineResult,
   ShellBootstrap,
@@ -171,4 +174,67 @@ export class GatewayClient {
     }
     return (await response.json()) as StorePlugin;
   }
+
+  // ---- Plugin runtime management (the /platform/* surface) ----
+
+  /** The plugins this tenant has installed on the runtime. */
+  platformPlugins(): Promise<PlatformPlugin[]> {
+    return this.get<PlatformPlugin[]>("/platform/plugins");
+  }
+
+  /** The packages discoverable on the host that can be installed. */
+  platformPackages(): Promise<PlatformPackage[]> {
+    return this.get<PlatformPackage[]>("/platform/packages");
+  }
+
+  /** Installs a discovered package for the tenant, granting it the given permissions. */
+  async installPlugin(key: string, version: string | null, grants: readonly string[]): Promise<PlatformActionResult> {
+    const response = await this.fetchImpl("/platform/plugins", {
+      method: "POST",
+      headers: this.headers({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ key, version, grants }),
+    });
+    if (!response.ok) {
+      throw new Error(await problem(response, `install ${key}`));
+    }
+    return (await response.json()) as PlatformActionResult;
+  }
+
+  /** Runs a lifecycle action (load, start, stop, suspend, resume, unload, rollback) on an installed plugin. */
+  async pluginLifecycle(key: string, action: string): Promise<void> {
+    const response = await this.fetchImpl(`/platform/plugins/${encodeURIComponent(key)}/${action}`, {
+      method: "POST",
+      headers: this.headers(),
+    });
+    if (!response.ok) {
+      throw new Error(await problem(response, `${action} ${key}`));
+    }
+  }
+
+  /** Removes an installed plugin from the tenant (the package is retained for other tenants). */
+  async removePlugin(key: string): Promise<void> {
+    const response = await this.fetchImpl(`/platform/plugins/${encodeURIComponent(key)}`, {
+      method: "DELETE",
+      headers: this.headers(),
+    });
+    if (!response.ok) {
+      throw new Error(await problem(response, `remove ${key}`));
+    }
+  }
+}
+
+/**
+ * Turns a failed platform response into a readable message. The management endpoints return RFC 7807 problem
+ * details, so a refusal (e.g. a missing permission, or acting without a tenant) carries a human sentence in
+ * `detail` — surface that rather than a bare status code. Falls back to the status when there is no body.
+ */
+async function problem(response: Response, action: string): Promise<string> {
+  try {
+    const body = (await response.json()) as { detail?: string; title?: string };
+    const message = body.detail ?? body.title;
+    if (message) return message;
+  } catch {
+    // No JSON body — fall through to the status.
+  }
+  return `${action} failed: ${response.status}`;
 }

@@ -259,3 +259,30 @@ export interface LoginResponse {
   refreshTokenExpiresAt: string;
   permissions: string[];
 }
+
+// Platform runtime management (the /platform/* surface): the tenant's installed plugins and the packages
+// discoverable on the host, plus the lifecycle actions over them. This is the plugin runtime, distinct from
+// the older /store/* marketplace surface.
+
+export interface PlatformPlugin {
+  key: string;
+  version: string;
+  previousVersion: string | null;
+  status: string;
+  enabled: boolean;
+  failureReason: string | null;
+  startedUtc: string | null;
+}
+
+export interface PlatformPackage {
+  key: string;
+  version: string;
+  signed: boolean;
+  requested: string[];
+}
+
+export interface PlatformActionResult {
+  key: string;
+  version: string;
+  status: string;
+}
