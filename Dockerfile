@@ -4,12 +4,14 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
-# Restore first for layer caching: copy solution + project files.
-COPY *.slnx global.json Directory.Build.props ./
+# Restore first for layer caching. Central package management and the NuGet feed config are required for
+# restore; the API is built project-scoped, so only its reference graph is needed: src/ plus the workflow
+# plugin it composes the platform engines from (added when the host began composing them).
+COPY global.json Directory.Build.props Directory.Packages.props NuGet.Config ./
 COPY src/ ./src/
-COPY tests/ ./tests/
+COPY plugins/ ./plugins/
 
-RUN dotnet restore FactoryOS.slnx
+RUN dotnet restore src/FactoryOS.Api/FactoryOS.Api.csproj
 RUN dotnet publish src/FactoryOS.Api/FactoryOS.Api.csproj \
     -c Release -o /app/publish --no-restore /p:UseAppHost=false
 

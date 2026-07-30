@@ -7,6 +7,34 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0028 — Activate persistence in Docker, and fix the Docker build (2026-07-30)
+
+Turned the dormant persistence of Commit 0027 **on** in the dev environment, and fixed the Docker build it
+depends on. Now `docker compose up` runs the API against the compose PostgreSQL, so a plugin installed through
+the console **survives a restart**.
+
+Fixed
+- **`Dockerfile` was broken** and would not build. `FactoryOS.slnx` lists all 59 projects, but the build stage
+  copied only `src/` and `tests/`, so `dotnet restore FactoryOS.slnx` could not find `plugins/`, `connectors/`,
+  `agents/` or `edge/`. It also omitted `Directory.Packages.props` (central package management) and `NuGet.Config`,
+  without which restore fails. The break became certain in Commit 0023, when the API began referencing
+  `plugins/workflow` to compose the platform engines. The build is now **project-scoped**: it copies the CPM and
+  NuGet config plus `src/` and `plugins/`, and restores/publishes `FactoryOS.Api.csproj` and its reference graph
+  (verified locally to produce `FactoryOS.Api.dll`, `FactoryOS.Plugins.Workflow.dll` and `Npgsql.dll`).
+
+Changed
+- **`docker-compose.yml`** — the api service now sets `Persistence__Provider=PostgreSql` and
+  `Persistence__ConnectionString` (the compose Postgres). That is the `Persistence` section
+  `AddPluginRuntimePersistence` gates on, so the host swaps its in-memory plugin store for the EF-backed one. The
+  api already `depends_on` a healthy postgres, so the store's schema check at start-up finds the database ready.
+  A bare host with no such environment still runs in-memory.
+
+Notes
+- Verified without a Docker daemon in this environment: `docker compose config` resolves the compose file, and
+  the Dockerfile's exact restore/publish steps were reproduced locally and succeed. A live
+  `docker compose up` + install + restart is the remaining manual check the wiring enables.
+- No application code changed; the test suite is unchanged (1639 green).
+
 ### Commit 0027 — Persist plugin runtime installs (first domain persistence) (2026-07-30)
 
 Made a tenant's installed plugins **survive a restart**. Until now every engine and the runtime kept their state

@@ -76,6 +76,12 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=factoryos;Username=factoryos;Password=factoryos_dev"
+      # Activates the plugin runtime's EF persistence: with this Persistence section present the host swaps its
+      # in-memory plugin store for the Postgres-backed one, so a tenant's installed plugins survive a restart.
+      # Omitting it (a bare host, no database) keeps the in-memory store. The api already waits for a healthy
+      # postgres via depends_on, so the store's schema check at start-up finds the database ready.
+      Persistence__Provider: "PostgreSql"
+      Persistence__ConnectionString: "Host=postgres;Port=5432;Database=factoryos;Username=factoryos;Password=factoryos_dev"
       MessageBus__Host: "rabbitmq"
       Redis__Configuration: "redis:6379"
       Storage__Endpoint: "minio:9000"
