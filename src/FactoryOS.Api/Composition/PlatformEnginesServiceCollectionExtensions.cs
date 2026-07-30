@@ -32,6 +32,11 @@ public static class PlatformEnginesServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
+        // Persist the audit engine's hot trail when a database is configured. Registered FIRST, before any engine
+        // TryAdds the in-memory IAuditStore, so the EF store (a plain AddSingleton) wins. With no Persistence
+        // section this is a no-op and the trail stays in memory.
+        services.AddAuditPersistence(configuration);
+
         // The platform engines. Each registration is idempotent (TryAdd) and self-contained.
         services.AddSecurityEngine();
         services.AddAuditEngine();

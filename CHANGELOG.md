@@ -7,6 +7,43 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0030 — Persist the audit trail (2026-07-30)
+
+Made the platform's **immutable audit trail survive a restart** — the second application of the domain-persistence
+pattern established for the plugin runtime (Commit 0027), and the highest-value one: an audit trail that vanishes
+on restart is worthless for compliance. In scope is the hot, append-only store (`IAuditStore`) where every audited
+action lands; the archive, retention policies and permissions stay in memory (the archive has no background driver,
+so a running host only ever accumulates in the hot store — it is a clean follow-up vertical).
+
+Added
+- **`src/FactoryOS.Api/Persistence/Audit/`** — the EF Core store for the audit trail, in the composition root
+  because it is the one sanctioned place that sees both the audit domain (in the workflow plugin) and the EF
+  foundation (in `FactoryOS.Persistence`):
+  - `AuditRecordRow` + `AuditDbContext : FactoryOsDbContext` — a flat row mapped to `audit_records`, keyed by the
+    record id, with a unique `(Tenant, Sequence)` index that also serves the by-tenant, in-sequence reads.
+  - `EfAuditStore : IAuditStore` — a singleton over `IDbContextFactory<AuditDbContext>`, mapping each sealed
+    `AuditRecord` to a row and rehydrating it through `AuditRecord.Rehydrate` with the hash it was stored with
+    (never recomputed on read, so a tampered row stays detectable).
+  - `AddAuditPersistence(configuration)` — the same gating as the plugin runtime: registers the EF store only when
+    a `Persistence` section with a connection string exists, and is called **first** in `AddPlatformEngines` so its
+    plain `AddSingleton` wins over the engine's in-memory `TryAdd` default.
+- **Hash-chain integrity across persistence.** The two hash-covered timestamps are stored as round-trip (`"O"`)
+  text rather than database timestamps, so a record reloads byte-for-byte identical on every provider — a Postgres
+  `timestamptz` would truncate the 100-ns precision the chain is hashed over, and silently break `RecomputeHash`.
+- **Tests** (`tests/FactoryOS.IntegrationTests/Persistence/EfAuditStoreTests.cs`, SQLite in-memory): a full-record
+  round-trip, the fresh-store-over-the-same-database restart analog, tenant isolation and `Head`/`Remove`, and —
+  the load-bearing proof — a three-record chain that **still verifies after a reload** (each reloaded record's
+  `RecomputeHash()` matches its sealed `Hash`, and links to its predecessor). The fixture stamps a sub-microsecond
+  timestamp so the equality assertion actually exercises the precision guarantee. 1644 tests green (was 1639).
+
+Changed
+- **`docker-compose.yml`** — the `Persistence__*` comment now notes the section activates the audit trail's store
+  as well as the plugin runtime's, so both a tenant's installed plugins and its audit trail survive a restart.
+
+Note: no new configuration knob — audit persistence reuses the existing `Persistence` section, so the dev stack
+already activates it (Commit 0028). Real EF migrations against Postgres remain a later concern; the store provisions
+its schema with an idempotent `EnsureCreated` on first use, as the plugin runtime store does.
+
 ### Commit 0029 — Fix the container's non-root user, and verify persistence live (2026-07-30)
 
 Brought the stack all the way up and **verified end-to-end that a plugin install survives a restart**. Getting
