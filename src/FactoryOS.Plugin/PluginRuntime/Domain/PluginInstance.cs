@@ -40,6 +40,55 @@ public sealed class PluginInstance
         Settings = settings ?? new PluginSettings(tenant, pluginKey);
     }
 
+    /// <summary>
+    /// Reconstructs an instance from stored state, exactly as it was — status, grants, settings, quota, the
+    /// version an update replaced, whether it is switched off and any recorded failure. This is the path a
+    /// persistence store rehydrates an installation through; behaviour is identical to an instance that reached
+    /// the same state through its lifecycle, so nothing downstream can tell a reloaded installation from a live one.
+    /// </summary>
+    /// <param name="tenant">The tenant that owns it.</param>
+    /// <param name="pluginKey">The plugin it installs.</param>
+    /// <param name="version">The version installed.</param>
+    /// <param name="previousVersion">The version an update replaced, if any.</param>
+    /// <param name="granted">The permissions the tenant grants the plugin.</param>
+    /// <param name="settings">The tenant's settings for the plugin.</param>
+    /// <param name="quota">The resource quota it runs under.</param>
+    /// <param name="status">The lifecycle status.</param>
+    /// <param name="enabled">Whether it is switched on for the tenant.</param>
+    /// <param name="failureReason">Why it failed, if it has.</param>
+    /// <param name="failureKind">How it failed, if it has.</param>
+    /// <param name="startedUtc">When it last started running, if it has.</param>
+    /// <returns>The reconstructed instance.</returns>
+    public static PluginInstance Rehydrate(
+        string tenant,
+        string pluginKey,
+        PluginVersion version,
+        PluginVersion? previousVersion,
+        IEnumerable<PluginPermission> granted,
+        PluginSettings settings,
+        PluginResourceQuota quota,
+        PluginRuntimeStatus status,
+        bool enabled,
+        string? failureReason,
+        PluginFailureKind failureKind,
+        DateTimeOffset? startedUtc)
+    {
+        ArgumentNullException.ThrowIfNull(granted);
+        ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(quota);
+
+        return new PluginInstance(tenant, pluginKey, version, granted, settings)
+        {
+            PreviousVersion = previousVersion,
+            Quota = quota,
+            Status = status,
+            Enabled = enabled,
+            FailureReason = failureReason,
+            FailureKind = failureKind,
+            StartedUtc = startedUtc,
+        };
+    }
+
     /// <summary>Gets the tenant that owns the instance.</summary>
     public string Tenant { get; }
 

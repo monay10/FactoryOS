@@ -63,6 +63,11 @@ public static class PlatformEnginesServiceCollectionExtensions
         // left in place. SecurityEnginePluginAuthorizer stays available for a host that makes the security engine
         // the plugin authority — but that engine has no grants in this host, so binding it would deny everything.
 
+        // Persist the plugin runtime's installations when a database is configured. Registered BEFORE
+        // AddPluginRuntime so the EF store overrides the runtime's in-memory default (which uses TryAdd). With no
+        // Persistence section configured, this is a no-op and the runtime keeps its in-memory store.
+        services.AddPluginRuntimePersistence(configuration);
+
         // The two platform runtimes. The plugin runtime binds its options from Plugins:Runtime.
         services.AddConnectorRuntime();
         services.AddPluginRuntime(configuration);

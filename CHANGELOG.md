@@ -7,6 +7,44 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0027 — Persist plugin runtime installs (first domain persistence) (2026-07-30)
+
+Made a tenant's installed plugins **survive a restart**. Until now every engine and the runtime kept their state
+in memory, so an install done through the 0026 console vanished when the process stopped. Exploration found that
+**nothing in the platform persisted domain state yet** — the EF Core foundation (`FactoryOsDbContext`,
+schema-per-tenant, the auditing interceptor, the SQLite test harness) existed but no engine used it. This is
+therefore the platform's **first domain persistence**, and it establishes the pattern the other engines will
+follow: an EF-backed store that overrides the runtime's in-memory default only when a database is configured.
+
+Added
+- **`FactoryOS.Infrastructure/PluginRuntime`**:
+  - `PluginInstallationRecord` + `PluginRuntimeDbContext : FactoryOsDbContext` — one table (`plugin_installations`),
+    keyed by `(Tenant, PluginKey)`, inheriting the schema-per-tenant and convention pipeline. Value objects are
+    flattened to columns: version/previous-version to text, grants to a `;`-joined list, settings to JSON, the
+    quota to three numbers, status/failure to enum names.
+  - `EfPluginStore : IPluginStore` — a singleton store that opens a short-lived context per operation via
+    `IDbContextFactory<PluginRuntimeDbContext>` (the correct pattern for a singleton over a scoped context) and
+    maps explicitly to/from the domain. It ensures its schema on construction.
+  - `AddPluginRuntimePersistence(configuration)` — the **gating pattern**: registers the EF store (before
+    `AddPluginRuntime`, so it overrides the in-memory `TryAdd` default) **only when a `Persistence` section with a
+    connection string is configured**. With none, the host keeps the in-memory store and needs no database.
+- **`PluginInstance.Rehydrate(...)`** — a domain factory that reconstructs an installation from stored state
+  exactly (status, grants, settings, quota, previous version, enabled, failure, started-at), so a reloaded
+  installation is indistinguishable from a live one. The only domain touch; no other engine changed.
+- **`AddPlatformEngines`** — calls `AddPluginRuntimePersistence(configuration)` before the runtimes.
+- **Tests** — `PluginInstanceRehydrateTests` (field-for-field fidelity) and `EfPluginStoreTests` (SQLite
+  in-memory: save→find round-trip; a **fresh store over the same database reads what a prior store saved** — the
+  restart analog; tenant-scoped listing and isolation; remove).
+
+Notes
+- **Persistence is opt-in and currently dormant in the default host**: `appsettings.json` has no `Persistence`
+  section, so the host runs in-memory as before. Configuring `Persistence:Provider` + `Persistence:ConnectionString`
+  (e.g. PostgreSQL) activates the EF store. Wiring the `docker-compose` Postgres into that section — with the api
+  waiting on a healthy database — is the natural next step, kept out of this commit.
+- `EfPluginStore` calls `EnsureCreated()` on construction (idempotent); real EF migrations against Postgres are a
+  later concern, as is persisting the other engines and the runtime's package/definition/manifest stores (those
+  are rebuilt from disk discovery on start-up, so only the installations needed persisting).
+
 ### Commit 0026 — Plugin runtime console (PWA) (2026-07-30)
 
 Made the plugin runtime **clickable in the browser** — the capstone of the arc. Commit 0025 exposed the
