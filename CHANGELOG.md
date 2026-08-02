@@ -7,6 +7,32 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0036 — Manage security grants over the platform surface (2026-08-02)
+
+Closed the write half of the Commit 0031 gap: security grants were **persisted but unmanageable** — there was no way
+to read or change who holds what. Now there is, on the authenticated `/platform` management surface, mirroring the
+plugin-management pattern. This is usable end to end only because Commit 0035 let a super-admin's authority reach the
+caller; a caller still needs `security.grant` to change grants, and `security.read` to read them.
+
+Managing who-may-do-what is sensitive, so — unlike the open observability reads (plugins, audit, metrics) — even the
+read sits behind authentication and a permission gate. Grant and revoke are attributed to the caller and announced as
+`PermissionGranted`/`PermissionRevoked` events (and persisted when persistence is configured); the grants shown are a
+subject's own, never the permissions its roles carry.
+
+Added
+- **`GET /platform/security/grants?subject=<s>`** — the subject's direct grants in the caller's tenant. Requires
+  `security.read`; a missing subject is a 400.
+- **`POST /platform/security/grants`** `{subject, permission}` — grants a permission (attributed to the caller);
+  returns the refreshed grants. Requires `security.grant`.
+- **`DELETE /platform/security/grants?subject=<s>&permission=<p>`** — revokes a permission. Requires `security.grant`;
+  revoking one the subject did not hold is a 404, so the caller learns there was nothing to remove.
+- **`PlatformSecurity`** — the pure, tenant-scoped read projection and the `security.read`/`security.grant` permission
+  vocabulary, tested against the real composed security engine; **`SecurityEngine.GrantsFor(tenant, subject)`**, the
+  facade read the projection uses.
+- **Web:** `GatewayClient.securityGrants`/`grantPermission`/`revokePermission`, and a **Security grants** panel in the
+  platform console — load a subject, see its grants as removable chips, grant a new permission. A refusal (needs
+  signing in, or lacks `security.grant`) surfaces its own message.
+
 ### Commit 0035 — Honour the super-admin wildcard in the platform caller (2026-08-02)
 
 Fixed a correctness gap surfaced by an end-to-end run: an **administrator could not perform any `/platform`

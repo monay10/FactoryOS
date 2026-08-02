@@ -84,6 +84,13 @@ public sealed class SecurityEngine
     /// <returns>The policies.</returns>
     public IReadOnlyList<SecurityPolicy> Policies(string tenant) => _repository.PoliciesFor(tenant);
 
+    /// <summary>Gets the permissions granted directly to a subject in a tenant.</summary>
+    /// <remarks>These are the subject's own grants, not the permissions it inherits through its roles.</remarks>
+    /// <param name="tenant">The tenant.</param>
+    /// <param name="subject">The subject.</param>
+    /// <returns>The directly granted permission strings.</returns>
+    public IReadOnlyList<string> GrantsFor(string tenant, string subject) => _repository.GrantsFor(tenant, subject);
+
     /// <summary>Decides a request, records it, and announces the outcome.</summary>
     /// <param name="context">Everything the decision is made from.</param>
     /// <returns>The decision, carrying why it went the way it did.</returns>

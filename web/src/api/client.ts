@@ -13,6 +13,7 @@ import type {
   PlatformPlugin,
   QualityLines,
   QuarantineResult,
+  SecurityGrants,
   ShellBootstrap,
   StockResponse,
   StoreCatalog,
@@ -212,6 +213,44 @@ export class GatewayClient {
       );
     }
     return await response.blob();
+  }
+
+  /**
+   * Reads the permissions granted directly to a subject in the tenant. Reading who-may-do-what is sensitive, so it is
+   * authenticated and permission-gated: a 401 means signing in is needed, a 403 that the caller lacks `security.read`.
+   */
+  async securityGrants(subject: string): Promise<SecurityGrants> {
+    const response = await this.fetchImpl(`/platform/security/grants?subject=${encodeURIComponent(subject)}`, {
+      headers: this.headers(),
+    });
+    if (!response.ok) {
+      throw new Error(await problem(response, `read grants for ${subject}`));
+    }
+    return (await response.json()) as SecurityGrants;
+  }
+
+  /** Grants a permission to a subject in the tenant; returns the subject's refreshed grants. Requires `security.grant`. */
+  async grantPermission(subject: string, permission: string): Promise<SecurityGrants> {
+    const response = await this.fetchImpl("/platform/security/grants", {
+      method: "POST",
+      headers: this.headers({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ subject, permission }),
+    });
+    if (!response.ok) {
+      throw new Error(await problem(response, `grant ${permission} to ${subject}`));
+    }
+    return (await response.json()) as SecurityGrants;
+  }
+
+  /** Revokes a permission from a subject in the tenant. Requires `security.grant`. */
+  async revokePermission(subject: string, permission: string): Promise<void> {
+    const response = await this.fetchImpl(
+      `/platform/security/grants?subject=${encodeURIComponent(subject)}&permission=${encodeURIComponent(permission)}`,
+      { method: "DELETE", headers: this.headers() },
+    );
+    if (!response.ok) {
+      throw new Error(await problem(response, `revoke ${permission} from ${subject}`));
+    }
   }
 
   /** Installs a discovered package for the tenant, granting it the given permissions. */

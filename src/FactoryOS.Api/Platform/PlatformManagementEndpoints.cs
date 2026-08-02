@@ -11,6 +11,7 @@ using FactoryOS.Plugins.Runtime.Domain;
 using FactoryOS.Plugins.Runtime.Execution;
 using FactoryOS.Plugins.Workflow.Audit.Execution;
 using Microsoft.AspNetCore.Http;
+using SecurityEngine = FactoryOS.Plugins.Workflow.Security.Execution.SecurityEngine;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -139,8 +140,79 @@ public static class PlatformManagementEndpoints
                     Encoding.UTF8.GetBytes(rendered), rendering.ContentType, rendering.FileName));
             }));
 
+        // Read the permissions granted directly to a subject in the caller's tenant. Who-may-do-what is sensitive, so
+        // it sits behind the authenticated management surface and requires the caller to hold security.read.
+        app.MapGet("/platform/security/grants", (string? subject, HttpContext http, ITenantContext tenants,
+            IPermissionContext perms, SecurityEngine security) =>
+            WithCaller(http, tenants, perms, caller =>
+            {
+                if (string.IsNullOrWhiteSpace(subject))
+                {
+                    return Task.FromResult(Results.Problem(
+                        statusCode: StatusCodes.Status400BadRequest, title: "Missing subject",
+                        detail: "A subject is required to read its grants."));
+                }
+
+                return Task.FromResult(caller.Holds(PlatformSecurity.ReadGrants)
+                    ? Results.Ok(PlatformSecurity.Grants(security, caller.Tenant, subject))
+                    : Forbidden(PlatformSecurity.ReadGrants));
+            }));
+
+        // Grant a permission to a subject in the caller's tenant. The caller must hold security.grant; the grant is
+        // attributed to the caller and announced as a PermissionGranted event (and persisted when persistence is on).
+        app.MapPost("/platform/security/grants", (SecurityGrantRequest request, HttpContext http,
+            ITenantContext tenants, IPermissionContext perms, SecurityEngine security) =>
+            WithCaller(http, tenants, perms, caller =>
+            {
+                if (request is null || string.IsNullOrWhiteSpace(request.Subject)
+                    || string.IsNullOrWhiteSpace(request.Permission))
+                {
+                    return Task.FromResult(Results.Problem(
+                        statusCode: StatusCodes.Status400BadRequest, title: "Incomplete grant",
+                        detail: "A subject and a permission are required."));
+                }
+
+                if (!caller.Holds(PlatformSecurity.WriteGrants))
+                {
+                    return Task.FromResult(Forbidden(PlatformSecurity.WriteGrants));
+                }
+
+                security.Grant(caller.Tenant, request.Subject, request.Permission, caller.Subject);
+                return Task.FromResult(Results.Ok(PlatformSecurity.Grants(security, caller.Tenant, request.Subject)));
+            }));
+
+        // Revoke a permission from a subject in the caller's tenant. Requires security.grant. Revoking a permission the
+        // subject did not hold is a 404, so the caller learns there was nothing to remove.
+        app.MapDelete("/platform/security/grants", (string? subject, string? permission, HttpContext http,
+            ITenantContext tenants, IPermissionContext perms, SecurityEngine security) =>
+            WithCaller(http, tenants, perms, caller =>
+            {
+                if (string.IsNullOrWhiteSpace(subject) || string.IsNullOrWhiteSpace(permission))
+                {
+                    return Task.FromResult(Results.Problem(
+                        statusCode: StatusCodes.Status400BadRequest, title: "Incomplete revoke",
+                        detail: "A subject and a permission are required."));
+                }
+
+                if (!caller.Holds(PlatformSecurity.WriteGrants))
+                {
+                    return Task.FromResult(Forbidden(PlatformSecurity.WriteGrants));
+                }
+
+                return Task.FromResult(security.RevokePermission(caller.Tenant, subject, permission, caller.Subject)
+                    ? Results.NoContent()
+                    : Results.Problem(
+                        statusCode: StatusCodes.Status404NotFound, title: "No such grant",
+                        detail: $"'{subject}' did not hold '{permission}' in this tenant."));
+            }));
+
         return app;
     }
+
+    // Refuses an operation the caller is authenticated for but lacks the permission to perform (403).
+    private static IResult Forbidden(PluginPermission required) => Results.Problem(
+        statusCode: StatusCodes.Status403Forbidden, title: "Forbidden",
+        detail: $"This operation requires the '{required}' permission.");
 
     private static void MapLifecycle(
         WebApplication app, string verb, Func<IPluginRuntime, PluginCaller, string, Task<Result>> operation)
@@ -218,3 +290,8 @@ internal sealed record GrantRequest(IReadOnlyList<string>? Grants);
 /// <summary>A request to replace the plugin's tenant configuration values.</summary>
 /// <param name="Values">The configuration values.</param>
 internal sealed record ConfigureRequest(Dictionary<string, string?> Values);
+
+/// <summary>A request to grant a permission to a subject in the caller's tenant.</summary>
+/// <param name="Subject">The subject to grant the permission to.</param>
+/// <param name="Permission">The permission to grant, in the <c>resource.action</c> grammar.</param>
+internal sealed record SecurityGrantRequest(string Subject, string Permission);

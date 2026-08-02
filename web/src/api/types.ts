@@ -331,3 +331,13 @@ export interface MetricsReport {
   bridgeFaults: number;
   definitions: MetricDefinitionView[];
 }
+
+// The permissions granted directly to a subject in the tenant (the /platform/security/grants surface). These are
+// the subject's own grants, not the permissions it inherits through its roles. Managing them is an authenticated,
+// permission-gated action.
+
+export interface SecurityGrants {
+  tenant: string;
+  subject: string;
+  grants: string[];
+}

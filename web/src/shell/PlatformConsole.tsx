@@ -5,6 +5,7 @@ import { useAsync } from "../lib/useAsync";
 import { Badge, Card, ErrorNote, Loading, StatTile } from "../components/ui";
 import AuditTrail from "./AuditTrail";
 import MetricsPanel from "./MetricsPanel";
+import SecurityGrants from "./SecurityGrants";
 
 /** Maps a runtime status to a badge tone. Running is good, Failed is bad, a switched-off state is muted. */
 function statusTone(status: string): string {
@@ -199,6 +200,8 @@ export default function PlatformConsole({ client }: { client: GatewayClient }) {
           </div>
         )}
       </Card>
+
+      <SecurityGrants client={client} />
 
       <AuditTrail client={client} />
 

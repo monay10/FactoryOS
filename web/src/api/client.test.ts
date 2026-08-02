@@ -181,6 +181,54 @@ describe("GatewayClient", () => {
     await expect(client.platformAuditExport("json")).rejects.toThrow("signing in");
   });
 
+  it("reads a subject's security grants with the subject in the query and the tenant header", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockImplementation(() => Promise.resolve(jsonResponse({ tenant: "acme", subject: "alice", grants: ["energy.read"] })));
+    const client = new GatewayClient("acme", fetchMock as unknown as typeof fetch);
+
+    const view = await client.securityGrants("alice");
+
+    expect(fetchMock.mock.calls[0][0]).toBe("/platform/security/grants?subject=alice");
+    expect((fetchMock.mock.calls[0][1].headers as Record<string, string>)[TENANT_HEADER]).toBe("acme");
+    expect(view.grants).toEqual(["energy.read"]);
+  });
+
+  it("POSTs a grant with the subject and permission and returns the refreshed grants", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockImplementation(() => Promise.resolve(jsonResponse({ tenant: "acme", subject: "alice", grants: ["energy.read"] })));
+    const client = new GatewayClient("acme", fetchMock as unknown as typeof fetch);
+
+    const view = await client.grantPermission("alice", "energy.read");
+
+    const [path, init] = fetchMock.mock.calls[0];
+    expect(path).toBe("/platform/security/grants");
+    expect(init.method).toBe("POST");
+    expect(JSON.parse(init.body as string)).toEqual({ subject: "alice", permission: "energy.read" });
+    expect(view.grants).toEqual(["energy.read"]);
+  });
+
+  it("DELETEs a revoke with the subject and permission in the query", async () => {
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(new Response(null, { status: 204 })));
+    const client = new GatewayClient("acme", fetchMock as unknown as typeof fetch);
+
+    await client.revokePermission("alice", "energy.read");
+
+    const [path, init] = fetchMock.mock.calls[0];
+    expect(path).toBe("/platform/security/grants?subject=alice&permission=energy.read");
+    expect(init.method).toBe("DELETE");
+  });
+
+  it("surfaces the problem-detail sentence when a grant is forbidden", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse({ title: "Forbidden", detail: "This operation requires the 'security.grant' permission." }, 403),
+    );
+    const client = new GatewayClient("acme", fetchMock as unknown as typeof fetch);
+
+    await expect(client.grantPermission("alice", "energy.read")).rejects.toThrow("security.grant");
+  });
+
   it("reads the monitoring engine's counters and definitions", async () => {
     const fetchMock = vi
       .fn()
