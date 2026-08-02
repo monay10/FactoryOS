@@ -7,6 +7,29 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0038 — Search the audit trail (2026-08-02)
+
+The audit observability read (Commit 0032) showed only the **most recent 100 records**, with no way to investigate a
+specific event in a trail that grows with every operation. Added a **search** over the trail — the one platform read
+that always has rich, growing data — so an operator can find what they need by actor, message text, severity,
+category, action, result or time window.
+
+The engine already had a rich `AuditQuery` search; this exposes it over HTTP as another tenant-scoped observability
+read (like the recent trail — no auth beyond the tenant), with the filter-parsing as a pure, tested function. Every
+filter is optional and combines with AND; a mistyped category/action/severity/result/timestamp is a **400**, not a
+silent no-op that would mislead by returning unfiltered results. The limit is clamped so a search can never ask for an
+unbounded page.
+
+Added
+- **`GET /platform/audit/search`** — filters `category`, `action`, `severity` (minimum), `result`, `actor`, `from`,
+  `to`, `contains`, `limit`; returns the matching records newest first and the match count.
+- **`PlatformObservability.ParseAuditQuery(...)`** (rejects unrecognised filters, clamps the limit) and
+  **`SearchAudit(...)`** (projects newest-first), tested against the real composed engine; the per-record projection
+  is now shared with the recent-trail read.
+- **Web:** `GatewayClient.auditSearch(filters)` (drops empty filters from the query); a filter bar on the **Audit
+  trail** card — actor, message-contains and a minimum-severity select — that switches the table to the matches with
+  a count and a Clear, and surfaces a rejected filter's message.
+
 ### Commit 0037 — Browse the tenant's grants roster (2026-08-02)
 
 Closed a usability gap Commit 0036 created: the grants surface could only look up **one subject at a time**, so an

@@ -307,6 +307,26 @@ export interface AuditReport {
   records: AuditRecordView[];
 }
 
+// A filtered search of the audit trail (the /platform/audit/search surface). Every filter is optional and combines
+// with AND; the result is the matching records, newest first, and how many matched.
+
+export interface AuditSearchFilters {
+  category?: string;
+  action?: string;
+  severity?: string;
+  result?: string;
+  actor?: string;
+  from?: string;
+  to?: string;
+  contains?: string;
+  limit?: number;
+}
+
+export interface AuditSearchResult {
+  count: number;
+  records: AuditRecordView[];
+}
+
 // The monitoring engine's report (the /platform/metrics surface): its own lifetime counters plus the metric
 // series registered on the host. Counters accumulate as the platform runs; bridge faults flag a cross-engine
 // integration that is misbehaving.

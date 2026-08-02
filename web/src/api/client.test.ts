@@ -162,6 +162,32 @@ describe("GatewayClient", () => {
     expect(report.verified).toBe(3);
   });
 
+  it("searches the audit trail, sending only the non-empty filters in the query", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockImplementation(() => Promise.resolve(jsonResponse({ count: 1, records: [] })));
+    const client = new GatewayClient("acme", fetchMock as unknown as typeof fetch);
+
+    const result = await client.auditSearch({ actor: "ops", severity: "Warning", contains: "" });
+
+    const url = fetchMock.mock.calls[0][0] as string;
+    expect(url.startsWith("/platform/audit/search?")).toBe(true);
+    const params = new URLSearchParams(url.split("?")[1]);
+    expect(params.get("actor")).toBe("ops");
+    expect(params.get("severity")).toBe("Warning");
+    expect(params.has("contains")).toBe(false); // empty filters are dropped
+    expect(result.count).toBe(1);
+  });
+
+  it("surfaces the problem-detail sentence when an audit filter is rejected", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse({ title: "Invalid audit filter", detail: "'nope' is not a valid AuditCategory." }, 400),
+    );
+    const client = new GatewayClient("acme", fetchMock as unknown as typeof fetch);
+
+    await expect(client.auditSearch({ category: "nope" })).rejects.toThrow("not a valid AuditCategory");
+  });
+
   it("downloads the audit export for the requested format with the tenant header", async () => {
     const fetchMock = vi
       .fn()

@@ -50,6 +50,22 @@ public static class PlatformObservabilityEndpoints
         app.MapGet("/platform/audit", (ITenantContext tenants, AuditEngine audit) =>
             Resolve(tenants, tenant => Results.Ok(PlatformObservability.Audit(audit, tenant))));
 
+        // Search the tenant's audit trail (newest first). Every filter is optional and combines with AND; an
+        // unrecognised category/action/severity/result/timestamp is a 400 rather than being silently ignored.
+        app.MapGet("/platform/audit/search", (
+            string? category, string? action, string? severity, string? result, string? actor,
+            string? from, string? to, string? contains, int? limit, ITenantContext tenants, AuditEngine audit) =>
+            Resolve(tenants, tenant =>
+            {
+                var parse = PlatformObservability.ParseAuditQuery(
+                    tenant, category, action, severity, result, actor, from, to, contains, limit);
+
+                return parse.Ok
+                    ? Results.Ok(PlatformObservability.SearchAudit(audit, parse.Query!))
+                    : Results.Problem(
+                        statusCode: StatusCodes.Status400BadRequest, title: "Invalid audit filter", detail: parse.Error);
+            }));
+
         // The monitoring engine's counters and registered metric definitions.
         app.MapGet("/platform/metrics", (ITenantContext tenants, MonitoringEngine monitoring) =>
             Resolve(tenants, _ => Results.Ok(PlatformObservability.Metrics(monitoring))));

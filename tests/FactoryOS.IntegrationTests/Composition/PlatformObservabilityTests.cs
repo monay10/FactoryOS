@@ -94,6 +94,58 @@ public sealed class PlatformObservabilityTests
     }
 
     [Fact]
+    public void The_audit_search_filters_by_actor_and_returns_newest_first()
+    {
+        using var provider = Build();
+        var audit = provider.GetRequiredService<AuditEngine>();
+        audit.Record(AuditEntries.PluginOperation(Tenant, "alpha", "Installed", AuditActor.User("ops")));
+        audit.Record(AuditEntries.PluginOperation(Tenant, "beta", "Started", AuditActor.User("admin")));
+        audit.Record(AuditEntries.PluginOperation(Tenant, "gamma", "Stopped", AuditActor.User("ops")));
+
+        var parse = PlatformObservability.ParseAuditQuery(
+            Tenant, null, null, null, null, actor: "ops", null, null, null, null);
+        Assert.True(parse.Ok);
+        var view = PlatformObservability.SearchAudit(audit, parse.Query!);
+
+        Assert.Equal(2, view.Count);
+        Assert.All(view.Records, record => Assert.Equal("ops", record.Actor));
+        Assert.True(view.Records[0].Sequence > view.Records[1].Sequence);
+    }
+
+    [Fact]
+    public void The_audit_search_never_reads_across_tenants()
+    {
+        using var provider = Build();
+        var audit = provider.GetRequiredService<AuditEngine>();
+        audit.Record(AuditEntries.PluginOperation(Tenant, "alpha", "Installed", AuditActor.User("ops")));
+
+        var parse = PlatformObservability.ParseAuditQuery(
+            "other-factory", null, null, null, null, null, null, null, null, null);
+
+        Assert.Empty(PlatformObservability.SearchAudit(audit, parse.Query!).Records);
+    }
+
+    [Fact]
+    public void An_unrecognised_audit_filter_is_rejected_rather_than_ignored()
+    {
+        var parse = PlatformObservability.ParseAuditQuery(
+            Tenant, category: "NotACategory", null, null, null, null, null, null, null, null);
+
+        Assert.False(parse.Ok);
+        Assert.Contains("AuditCategory", parse.Error, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void The_audit_search_limit_is_clamped_to_the_maximum()
+    {
+        var parse = PlatformObservability.ParseAuditQuery(
+            Tenant, null, null, null, null, null, null, null, null, limit: 100_000);
+
+        Assert.True(parse.Ok);
+        Assert.Equal(PlatformObservability.MaxAuditSearchLimit, parse.Query!.Limit);
+    }
+
+    [Fact]
     public void Metrics_lists_the_plugin_runtime_definitions_once_the_metric_sink_is_live()
     {
         using var provider = Build();

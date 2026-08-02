@@ -1,6 +1,8 @@
 import type {
   ActivityFeed,
   AuditReport,
+  AuditSearchFilters,
+  AuditSearchResult,
   MetricsReport,
   BrainAnswers,
   BrainAskAccepted,
@@ -194,6 +196,24 @@ export class GatewayClient {
   /** The tenant's audit trail (newest first) with the hash-chain verification verdict. */
   platformAudit(): Promise<AuditReport> {
     return this.get<AuditReport>("/platform/audit");
+  }
+
+  /**
+   * Searches the tenant's audit trail (newest first). Every filter is optional and combines with AND; empty filters
+   * are dropped from the query. An unrecognised category/severity/timestamp is a 400 the caller should surface.
+   */
+  async auditSearch(filters: AuditSearchFilters): Promise<AuditSearchResult> {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(filters)) {
+      if (value !== undefined && value !== null && `${value}`.trim() !== "") {
+        params.set(key, `${value}`.trim());
+      }
+    }
+    const response = await this.fetchImpl(`/platform/audit/search?${params.toString()}`, { headers: this.headers() });
+    if (!response.ok) {
+      throw new Error(await problem(response, "search the audit trail"));
+    }
+    return (await response.json()) as AuditSearchResult;
   }
 
   /** The monitoring engine's lifetime counters and the metric series registered on the host. */
