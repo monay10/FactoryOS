@@ -158,6 +158,15 @@ public static class PlatformManagementEndpoints
                     : Forbidden(PlatformSecurity.ReadGrants));
             }));
 
+        // The tenant's grants roster — every subject that holds a direct grant, so the surface is browsable without
+        // knowing a subject to look up. Sensitive like the per-subject read, so it requires security.read.
+        app.MapGet("/platform/security/roster", (HttpContext http, ITenantContext tenants,
+            IPermissionContext perms, SecurityEngine security) =>
+            WithCaller(http, tenants, perms, caller =>
+                Task.FromResult(caller.Holds(PlatformSecurity.ReadGrants)
+                    ? Results.Ok(PlatformSecurity.Roster(security, caller.Tenant))
+                    : Forbidden(PlatformSecurity.ReadGrants))));
+
         // Grant a permission to a subject in the caller's tenant. The caller must hold security.grant; the grant is
         // attributed to the caller and announced as a PermissionGranted event (and persisted when persistence is on).
         app.MapPost("/platform/security/grants", (SecurityGrantRequest request, HttpContext http,

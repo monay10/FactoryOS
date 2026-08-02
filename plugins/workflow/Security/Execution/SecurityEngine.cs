@@ -91,6 +91,12 @@ public sealed class SecurityEngine
     /// <returns>The directly granted permission strings.</returns>
     public IReadOnlyList<string> GrantsFor(string tenant, string subject) => _repository.GrantsFor(tenant, subject);
 
+    /// <summary>Gets every direct grant in a tenant, as (subject, permission) pairs.</summary>
+    /// <remarks>These are direct grants only, not the permissions subjects inherit through their roles.</remarks>
+    /// <param name="tenant">The tenant.</param>
+    /// <returns>The grants, ordered by subject then permission.</returns>
+    public IReadOnlyList<SecurityGrantEntry> GrantsIn(string tenant) => _repository.GrantsIn(tenant);
+
     /// <summary>Decides a request, records it, and announces the outcome.</summary>
     /// <param name="context">Everything the decision is made from.</param>
     /// <returns>The decision, carrying why it went the way it did.</returns>

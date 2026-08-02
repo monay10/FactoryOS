@@ -341,3 +341,13 @@ export interface SecurityGrants {
   subject: string;
   grants: string[];
 }
+
+export interface SecuritySubjectGrants {
+  subject: string;
+  grants: string[];
+}
+
+export interface SecurityRoster {
+  tenant: string;
+  subjects: SecuritySubjectGrants[];
+}

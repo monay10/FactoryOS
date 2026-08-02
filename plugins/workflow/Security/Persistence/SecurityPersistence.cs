@@ -49,6 +49,11 @@ public interface ISecurityRepository
     /// <param name="subject">The principal.</param>
     /// <returns>The permission strings.</returns>
     IReadOnlyList<string> GrantsFor(string tenant, string subject);
+
+    /// <summary>Gets every direct grant in a tenant, as (subject, permission) pairs.</summary>
+    /// <param name="tenant">The tenant.</param>
+    /// <returns>The grants, ordered by subject then permission.</returns>
+    IReadOnlyList<SecurityGrantEntry> GrantsIn(string tenant);
 }
 
 /// <summary>An in-memory <see cref="ISecurityRepository"/>.</summary>
@@ -139,6 +144,36 @@ public sealed class InMemorySecurityRepository : ISecurityRepository
         {
             return grants.OrderBy(grant => grant, StringComparer.Ordinal).ToArray();
         }
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyList<SecurityGrantEntry> GrantsIn(string tenant)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenant);
+
+        // Keys are "tenant|subject"; the "|" in the prefix keeps a tenant from matching another whose name it prefixes.
+        var prefix = tenant + "|";
+        var entries = new List<SecurityGrantEntry>();
+        foreach (var pair in _grants)
+        {
+            if (!pair.Key.StartsWith(prefix, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var subject = pair.Key[prefix.Length..];
+            lock (pair.Value)
+            {
+                foreach (var permission in pair.Value)
+                {
+                    entries.Add(new SecurityGrantEntry(subject, permission));
+                }
+            }
+        }
+
+        return [.. entries
+            .OrderBy(entry => entry.Subject, StringComparer.Ordinal)
+            .ThenBy(entry => entry.Permission, StringComparer.Ordinal)];
     }
 
     // The tenant is part of the key rather than a filter, so a grant made in one tenant cannot be read in

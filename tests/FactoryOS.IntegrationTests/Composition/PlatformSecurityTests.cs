@@ -1,3 +1,4 @@
+using System.Linq;
 using FactoryOS.Api.Platform;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,7 @@ public sealed class PlatformSecurityTests
 {
     private const string Tenant = "acme";
     private static readonly string[] OrderedGrants = ["energy.read", "quality.read"];
+    private static readonly string[] RosterSubjects = ["alice", "bob"];
 
     private static ServiceProvider Build()
     {
@@ -82,5 +84,33 @@ public sealed class PlatformSecurityTests
         Assert.True(security.RevokePermission(Tenant, "alice", "energy.read", "admin"));
         Assert.Empty(PlatformSecurity.Grants(security, Tenant, "alice").Grants);
         Assert.False(security.RevokePermission(Tenant, "alice", "energy.read", "admin"));
+    }
+
+    [Fact]
+    public void The_roster_lists_every_subject_with_grants_grouped_and_ordered()
+    {
+        using var provider = Build();
+        var security = provider.GetRequiredService<SecurityEngine>();
+
+        security.Grant(Tenant, "bob", "quality.read", "admin");
+        security.Grant(Tenant, "alice", "quality.read", "admin");
+        security.Grant(Tenant, "alice", "energy.read", "admin");
+
+        var roster = PlatformSecurity.Roster(security, Tenant);
+
+        Assert.Equal(Tenant, roster.Tenant);
+        Assert.Equal(RosterSubjects, roster.Subjects.Select(subject => subject.Subject));
+        Assert.Equal(OrderedGrants, roster.Subjects.Single(subject => subject.Subject == "alice").Grants);
+    }
+
+    [Fact]
+    public void The_roster_never_leaks_across_tenants()
+    {
+        using var provider = Build();
+        var security = provider.GetRequiredService<SecurityEngine>();
+
+        security.Grant(Tenant, "alice", "energy.read", "admin");
+
+        Assert.Empty(PlatformSecurity.Roster(security, "other-factory").Subjects);
     }
 }

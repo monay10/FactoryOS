@@ -1,3 +1,4 @@
+using System.Linq;
 using FactoryOS.Api.Persistence.Security;
 using FactoryOS.Persistence.Multitenancy;
 using FactoryOS.Plugins.Workflow.Security.Domain;
@@ -61,6 +62,22 @@ public sealed class EfSecurityRepositoryTests : IDisposable
         Assert.Empty(repository.GrantsFor("globex", "u-1"));
         Assert.False(repository.Revoke("globex", "u-1", "energy.read"));
         Assert.Equal(["energy.read"], repository.GrantsFor("acme", "u-1"));
+    }
+
+    [Fact]
+    public void A_fresh_repository_reads_back_a_tenant_s_whole_grants_roster_grouped_and_ordered()
+    {
+        var writer = new EfSecurityRepository(_factory);
+        writer.Grant("acme", "u-2", "quality.read");
+        writer.Grant("acme", "u-1", "energy.write");
+        writer.Grant("acme", "u-1", "energy.read");
+        writer.Grant("globex", "u-9", "safety.read"); // another tenant — must not appear in acme's roster
+
+        // A brand-new repository over the same database — the restart analog.
+        var entries = new EfSecurityRepository(_factory).GrantsIn("acme");
+
+        var flat = entries.Select(entry => $"{entry.Subject}/{entry.Permission}").ToArray();
+        Assert.Equal(["u-1/energy.read", "u-1/energy.write", "u-2/quality.read"], flat);
     }
 
     [Fact]

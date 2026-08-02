@@ -14,6 +14,7 @@ import type {
   QualityLines,
   QuarantineResult,
   SecurityGrants,
+  SecurityRoster,
   ShellBootstrap,
   StockResponse,
   StoreCatalog,
@@ -227,6 +228,18 @@ export class GatewayClient {
       throw new Error(await problem(response, `read grants for ${subject}`));
     }
     return (await response.json()) as SecurityGrants;
+  }
+
+  /**
+   * Reads the tenant's grants roster — every subject that holds a direct grant — so the surface is browsable without
+   * knowing a subject to look up. Requires `security.read` (401 → sign in, 403 → lacks the permission).
+   */
+  async securityRoster(): Promise<SecurityRoster> {
+    const response = await this.fetchImpl("/platform/security/roster", { headers: this.headers() });
+    if (!response.ok) {
+      throw new Error(await problem(response, "read the grants roster"));
+    }
+    return (await response.json()) as SecurityRoster;
   }
 
   /** Grants a permission to a subject in the tenant; returns the subject's refreshed grants. Requires `security.grant`. */

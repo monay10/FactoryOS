@@ -194,6 +194,19 @@ describe("GatewayClient", () => {
     expect(view.grants).toEqual(["energy.read"]);
   });
 
+  it("reads the tenant's grants roster with the tenant header", async () => {
+    const fetchMock = vi.fn().mockImplementation(() =>
+      Promise.resolve(jsonResponse({ tenant: "acme", subjects: [{ subject: "alice", grants: ["energy.read"] }] })),
+    );
+    const client = new GatewayClient("acme", fetchMock as unknown as typeof fetch);
+
+    const roster = await client.securityRoster();
+
+    expect(fetchMock.mock.calls[0][0]).toBe("/platform/security/roster");
+    expect((fetchMock.mock.calls[0][1].headers as Record<string, string>)[TENANT_HEADER]).toBe("acme");
+    expect(roster.subjects[0].subject).toBe("alice");
+  });
+
   it("POSTs a grant with the subject and permission and returns the refreshed grants", async () => {
     const fetchMock = vi
       .fn()

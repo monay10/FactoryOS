@@ -17,6 +17,16 @@ namespace FactoryOS.Api.Platform;
 /// <param name="Grants">The directly granted permission strings, ordered.</param>
 internal sealed record SecurityGrantsView(string Tenant, string Subject, IReadOnlyList<string> Grants);
 
+/// <summary>One subject in a tenant's grants roster, with the permissions it holds directly.</summary>
+/// <param name="Subject">The subject.</param>
+/// <param name="Grants">The subject's directly granted permission strings, ordered.</param>
+internal sealed record SecuritySubjectGrantsView(string Subject, IReadOnlyList<string> Grants);
+
+/// <summary>Every subject that holds a direct grant in a tenant, so the roster is browsable without guessing.</summary>
+/// <param name="Tenant">The tenant the roster belongs to.</param>
+/// <param name="Subjects">The subjects with grants, ordered by subject.</param>
+internal sealed record SecurityRosterView(string Tenant, IReadOnlyList<SecuritySubjectGrantsView> Subjects);
+
 /// <summary>Pure helpers and the permission vocabulary behind the <c>/platform/security</c> management surface.</summary>
 internal static class PlatformSecurity
 {
@@ -43,5 +53,27 @@ internal static class PlatformSecurity
             .ToArray();
 
         return new SecurityGrantsView(tenant, subject, grants);
+    }
+
+    /// <summary>
+    /// Projects every subject that holds a direct grant in a tenant, grouped by subject and ordered, so an operator
+    /// can browse who has what rather than having to know a subject to look one up.
+    /// </summary>
+    /// <param name="security">The composed security engine.</param>
+    /// <param name="tenant">The tenant whose roster is read.</param>
+    /// <returns>The tenant's grants roster.</returns>
+    public static SecurityRosterView Roster(SecurityEngine security, string tenant)
+    {
+        ArgumentNullException.ThrowIfNull(security);
+
+        var subjects = security.GrantsIn(tenant)
+            .GroupBy(entry => entry.Subject, StringComparer.Ordinal)
+            .OrderBy(group => group.Key, StringComparer.Ordinal)
+            .Select(group => new SecuritySubjectGrantsView(
+                group.Key,
+                [.. group.Select(entry => entry.Permission).OrderBy(permission => permission, StringComparer.Ordinal)]))
+            .ToArray();
+
+        return new SecurityRosterView(tenant, subjects);
     }
 }

@@ -7,6 +7,28 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0037 — Browse the tenant's grants roster (2026-08-02)
+
+Closed a usability gap Commit 0036 created: the grants surface could only look up **one subject at a time**, so an
+operator had to know a subject to see its grants — there was no way to discover who holds anything. Added a tenant
+grants **roster**: every subject that holds a direct grant, and what it holds.
+
+The read reaches all the way down — the security repository gained a `GrantsIn(tenant)` enumeration, implemented in
+both the in-memory and the persistent (Commit 0031) repositories, so the roster is correct whether grants live in
+memory or in the database. It is tenant-scoped by construction: the in-memory store keys grants by `tenant|subject`
+and the roster matches on the `tenant|` prefix (the `|` stops one tenant matching another it prefixes); the EF store
+filters by `Tenant`. Reading the roster is as sensitive as the per-subject read, so it too requires `security.read`.
+
+Added
+- **`GET /platform/security/roster`** — every subject in the caller's tenant that holds a direct grant, grouped by
+  subject and ordered. Requires `security.read`.
+- **`ISecurityRepository.GrantsIn(tenant)`** (both implementations) + **`SecurityEngine.GrantsIn(tenant)`** facade +
+  **`PlatformSecurity.Roster(...)`** projection, tested against the real composed engine and, for the persistent
+  path, proven to survive a fresh repository (the restart analog).
+- **Web:** `GatewayClient.securityRoster()`; the platform console's **Security grants** panel now loads the roster up
+  front and lists the subjects as chips — picking one loads it into the editor, so grants are browsable, not blind.
+  The roster refreshes after every grant and revoke.
+
 ### Commit 0036 — Manage security grants over the platform surface (2026-08-02)
 
 Closed the write half of the Commit 0031 gap: security grants were **persisted but unmanageable** — there was no way

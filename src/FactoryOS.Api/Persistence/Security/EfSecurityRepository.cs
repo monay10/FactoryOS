@@ -126,4 +126,19 @@ public sealed class EfSecurityRepository : ISecurityRepository
             .ToList()
             .OrderBy(permission => permission, StringComparer.Ordinal)];
     }
+
+    /// <inheritdoc />
+    public IReadOnlyList<SecurityGrantEntry> GrantsIn(string tenant)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenant);
+
+        using var context = _factory.CreateDbContext();
+        return [.. context.Grants.AsNoTracking()
+            .Where(grant => grant.Tenant == tenant)
+            .Select(grant => new { grant.Subject, grant.Permission })
+            .ToList()
+            .OrderBy(grant => grant.Subject, StringComparer.Ordinal)
+            .ThenBy(grant => grant.Permission, StringComparer.Ordinal)
+            .Select(grant => new SecurityGrantEntry(grant.Subject, grant.Permission))];
+    }
 }
