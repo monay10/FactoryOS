@@ -7,6 +7,31 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0039 — Audit authentication (2026-08-03)
+
+The audit trail, search and export (Commits 0032/0034/0038) had almost nothing to show in a running host: the only
+things that recorded were plugin lifecycle operations (and no plugins are installed) and an audit export itself.
+**Sign-in — the single most important thing to have in a security audit — was not recorded at all.** The audit model
+already anticipated it (`AuditEntries.SignIn`, `AuditCategory.Authentication`); the auth endpoints simply never called
+it. Now they do.
+
+Every sign-in **attempt** is recorded — success and failure both. A failed sign-in is not noise: a wrong password or a
+probe against an unknown user is exactly what a security review looks for, so it lands in the trail as a `Warning`
+`Failure`, attributed to the user name presented. This also, finally, gives the audit trail, search and export real,
+growing data in any running host.
+
+Added
+- `POST /auth/login` records an `AuditEntries.SignIn(tenant, user, succeeded)` on every attempt (via the composed
+  `AuditEngine`, the same way the audit-export endpoint uses it directly). The tenant and presented user name are
+  known on both the success and failure paths.
+
+Tests
+- The auth-endpoints integration harness now composes the audit engine and asserts a successful login records a
+  successful sign-in (attributed to the user) and a failed login records a failed one.
+
+Live-verified: a good login, a wrong password and a probe against an unknown user all land in the trail; the audit
+search finds the failures by `severity=Warning` and the probe by its actor.
+
 ### Commit 0038 — Search the audit trail (2026-08-02)
 
 The audit observability read (Commit 0032) showed only the **most recent 100 records**, with no way to investigate a

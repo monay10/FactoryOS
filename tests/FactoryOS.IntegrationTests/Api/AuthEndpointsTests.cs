@@ -5,6 +5,8 @@ using FactoryOS.Api;
 using FactoryOS.Domain.Abstractions;
 using FactoryOS.Domain.Time;
 using FactoryOS.Identity.Seeding;
+using FactoryOS.Plugins.Workflow.Audit.Domain;
+using AuditEngine = FactoryOS.Plugins.Workflow.Audit.Execution.AuditEngine;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -40,6 +42,7 @@ public sealed class AuthEndpointsTests
 
         builder.Services.AddSystemClock();
         builder.Services.AddIdentityModule(builder.Configuration);
+        builder.Services.AddAuditEngine();
 
         var app = builder.Build();
 
@@ -76,6 +79,40 @@ public sealed class AuthEndpointsTests
         Assert.Contains(
             "*",
             login.GetProperty("permissions").EnumerateArray().Select(element => element.GetString()));
+    }
+
+    [Fact]
+    public async Task A_successful_login_is_audited_as_a_successful_sign_in()
+    {
+        using var server = await StartAsync();
+        using var client = server.CreateClient();
+
+        await PostAsync(client, "/auth/login", LoginBody());
+
+        var audit = server.Services.GetRequiredService<AuditEngine>();
+        var signIn = Assert.Single(
+            audit.ListByTenant(IdentitySeedOptions.DefaultTenantId.ToString()),
+            record => record.Action == AuditAction.SignedIn);
+        Assert.Equal(AuditResult.Success, signIn.Result);
+        Assert.Equal("admin", signIn.Actor.Id);
+    }
+
+    [Fact]
+    public async Task A_failed_login_is_audited_as_a_failed_sign_in()
+    {
+        using var server = await StartAsync();
+        using var client = server.CreateClient();
+
+        var response = await client.PostAsJsonAsync(
+            "/auth/login",
+            new { tenantId = IdentitySeedOptions.DefaultTenantId, userName = "admin", password = "wrong-password" });
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
+        var audit = server.Services.GetRequiredService<AuditEngine>();
+        var signIn = Assert.Single(
+            audit.ListByTenant(IdentitySeedOptions.DefaultTenantId.ToString()),
+            record => record.Action == AuditAction.SignedIn);
+        Assert.Equal(AuditResult.Failure, signIn.Result);
     }
 
     [Fact]

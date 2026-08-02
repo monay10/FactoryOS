@@ -1,9 +1,11 @@
 using FactoryOS.Identity.Authentication;
 using FactoryOS.Identity.Claims;
 using FactoryOS.Identity.Tokens;
+using FactoryOS.Plugins.Workflow.Audit.Domain;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using AuditEngine = FactoryOS.Plugins.Workflow.Audit.Execution.AuditEngine;
 
 namespace FactoryOS.Api;
 
@@ -25,7 +27,8 @@ public static class AuthEndpoints
 
         // Exchanges credentials for a signed access token via the Identity layer. The token carries the user's
         // permission claims; the SPA sends it as a Bearer token and the gateway filters navigation by those claims.
-        endpoints.MapPost("/auth/login", (LoginRequest request, IAuthenticator authenticator, IAccessTokenService tokens) =>
+        endpoints.MapPost("/auth/login", (
+            LoginRequest request, IAuthenticator authenticator, IAccessTokenService tokens, AuditEngine audit) =>
         {
             if (string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.Password))
             {
@@ -33,6 +36,12 @@ public static class AuthEndpoints
             }
 
             var result = authenticator.Authenticate(request.TenantId, request.UserName, request.Password);
+
+            // Record every attempt — a failed sign-in is a security-relevant event (a wrong password, a probe), not
+            // noise, so the trail carries both. The tenant and the presented user name are known on both paths.
+            audit.Record(AuditEntries.SignIn(
+                request.TenantId.ToString(), request.UserName, succeeded: result.IsSuccess));
+
             return result.IsFailure
                 ? Results.Unauthorized()
                 : Results.Ok(ToResponse(result.Value, tokens));
