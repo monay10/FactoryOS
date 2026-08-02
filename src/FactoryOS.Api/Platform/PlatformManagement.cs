@@ -30,6 +30,14 @@ internal sealed record AuditExportRendering(AuditExportFormat Format, string Con
 /// <summary>Pure helpers behind the mutating <c>/platform</c> management surface.</summary>
 internal static class PlatformManagement
 {
+    // The identity layer issues a bare "*" super-admin grant (the same convention the gateway's PermissionMatch
+    // honours). Its plugin-permission form is the both-segments wildcard, which Grants every permission. This is the
+    // one place identity's "*" convention crosses into the runtime's resource.action vocabulary — mapping it here is
+    // what lets a super-admin's authority survive into the caller. (A plugin, by contrast, is never implicitly made
+    // super-admin: ParseGrants keeps dropping a bare "*", so a plugin must be granted explicit permissions.)
+    private static readonly PluginPermission SuperAdmin =
+        PluginPermission.Of(PluginPermission.Wildcard, PluginPermission.Wildcard);
+
     /// <summary>
     /// Resolves a request into a <see cref="PluginCaller"/>. Management requires an authenticated caller in a
     /// tenant: a request with no resolved tenant is refused (400), and one with no identity — an unrestricted
@@ -61,7 +69,11 @@ internal static class PlatformManagement
         var parsed = new List<PluginPermission>();
         foreach (var permission in permissions)
         {
-            if (PluginPermission.TryParse(permission, out var value))
+            if (string.Equals(permission?.Trim(), PluginPermission.Wildcard, StringComparison.Ordinal))
+            {
+                parsed.Add(SuperAdmin);
+            }
+            else if (PluginPermission.TryParse(permission, out var value))
             {
                 parsed.Add(value);
             }

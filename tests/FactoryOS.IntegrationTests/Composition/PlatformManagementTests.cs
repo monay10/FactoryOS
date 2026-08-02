@@ -1,6 +1,8 @@
 using FactoryOS.Api.Platform;
+using FactoryOS.Contracts.Plugins;
 using FactoryOS.Domain.Results;
 using FactoryOS.Plugins.Runtime.Domain;
+using FactoryOS.Plugins.Runtime.Security;
 using FactoryOS.Plugins.Workflow.Audit.Execution;
 using Xunit;
 
@@ -50,6 +52,47 @@ public sealed class PlatformManagementTests
         Assert.Equal(2, caller.Permissions.Count);
         Assert.True(caller.Holds(PluginPermission.Parse("plugin.install")));
         Assert.True(caller.Holds(PluginPermission.Parse("plugin.start")));
+    }
+
+    [Fact]
+    public void The_super_admin_wildcard_claim_becomes_a_caller_that_holds_every_permission()
+    {
+        // The identity layer issues the Administrator role a bare "*". The caller resolved from it must hold every
+        // platform permission — not none, which is what dropping the unparsed "*" would leave.
+        var resolution = PlatformManagement.ResolveCaller(
+            tenant: "acme", unrestricted: false, subject: "admin", permissions: ["*"]);
+
+        Assert.True(resolution.Ok);
+        var caller = resolution.Caller!;
+        Assert.True(caller.Holds(PluginPermission.Parse("plugin.install")));
+        Assert.True(caller.Holds(PluginPermission.Parse("plugin.remove")));
+        Assert.True(caller.Holds(PluginPermission.Parse("security.grant")));
+    }
+
+    [Fact]
+    public void The_default_authorizer_admits_a_super_admin_caller_resolved_from_the_wildcard_claim()
+    {
+        // End to end: an Administrator's "*" claim, resolved into a caller, passes the live authorizer the host binds
+        // (PermissionPluginAuthorizer) for an operation an ordinary viewer could never perform.
+        var caller = PlatformManagement.ResolveCaller(
+            tenant: "acme", unrestricted: false, subject: "admin", permissions: ["*"]).Caller!;
+        var instance = new PluginInstance("acme", "energy", PluginVersion.Parse("1.0.0"));
+
+        var decision = new PermissionPluginAuthorizer().Authorize(caller, instance, PluginPermissions.Remove);
+
+        Assert.True(decision.Allowed);
+    }
+
+    [Fact]
+    public void A_caller_without_the_wildcard_does_not_hold_permissions_it_was_not_granted()
+    {
+        // The mapping must not over-grant: an ordinary caller holds only what it was given, nothing more.
+        var resolution = PlatformManagement.ResolveCaller(
+            tenant: "acme", unrestricted: false, subject: "viewer", permissions: ["plugin.observe"]);
+
+        var caller = resolution.Caller!;
+        Assert.True(caller.Holds(PluginPermission.Parse("plugin.observe")));
+        Assert.False(caller.Holds(PluginPermission.Parse("plugin.remove")));
     }
 
     [Fact]

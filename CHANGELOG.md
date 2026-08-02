@@ -7,6 +7,32 @@ appends an entry.
 
 ## [Unreleased]
 
+### Commit 0035 — Honour the super-admin wildcard in the platform caller (2026-08-02)
+
+Fixed a correctness gap surfaced by an end-to-end run: an **administrator could not perform any `/platform`
+management operation.** The identity layer issues the Administrator role a bare `*` (super-admin) — the same
+convention the gateway's `PermissionMatch`, the identity `Permission`, and the security engine all honour — and a
+signed session carries it verbatim into `IPermissionContext`. But `PlatformManagement.ResolveCaller`, which turns
+that context into the `PluginCaller` the runtime authorizes against, parsed each permission with
+`PluginPermission.TryParse`, which rejects a bare `*` (it is not a `resource.action`). So the wildcard was silently
+**dropped**, leaving the admin caller holding nothing; the live authorizer (`PermissionPluginAuthorizer`, which
+checks `caller.Holds(required)`) then refused every install, lifecycle, configuration, grant and audit-export call.
+
+The fix maps identity's bare `*` to the runtime's both-segments wildcard permission (`*.*`, which `Grants` every
+permission) at the one seam where identity's convention crosses into the runtime's `resource.action` vocabulary —
+`ResolveCaller`. Nothing else changes: a plugin is still never implicitly made super-admin (`ParseGrants` keeps
+dropping a bare `*`, so a plugin must be granted explicit permissions), and manifest permission parsing is untouched.
+
+Changed
+- **`PlatformManagement.ResolveCaller`** — a permission string equal to the super-admin `*` now becomes the wildcard
+  `PluginPermission` instead of being dropped, so a super-admin's authority survives into the platform caller.
+
+Added (tests)
+- The wildcard claim resolves to a caller that holds every permission (`plugin.install`, `plugin.remove`,
+  `security.grant`); an ordinary caller still holds only what it was granted (no over-grant).
+- End to end: a caller resolved from `["*"]` is **admitted by the live `PermissionPluginAuthorizer`** for an
+  operation an ordinary viewer could never perform — proving identity `*` → caller → authorizer now allows.
+
 ### Commit 0034 — Export the audit trail for auditors (2026-07-30)
 
 Made the durable audit trail **exportable** — CSV for a spreadsheet, JSON for a machine. The `AuditExportService`
